@@ -1,0 +1,176 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ─── DEFAULT THEME: Indigo ─── */
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 224 71% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71% 4%;
+    --primary: 243 75% 59%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 9% 46%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 224 71% 4%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 243 75% 59%;
+    --radius: 0.5rem;
+    --sidebar-background: 224 71% 4%;
+    --sidebar-foreground: 213 31% 91%;
+    --sidebar-primary: 243 75% 59%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 223 47% 11%;
+    --sidebar-accent-foreground: 213 31% 91%;
+    --sidebar-border: 223 47% 11%;
+    --sidebar-ring: 243 75% 59%;
+  }
+
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+    --card: 223 47% 7%;
+    --card-foreground: 213 31% 91%;
+    --popover: 223 47% 7%;
+    --popover-foreground: 213 31% 91%;
+    --primary: 243 75% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 223 47% 11%;
+    --secondary-foreground: 213 31% 91%;
+    --muted: 223 47% 11%;
+    --muted-foreground: 215 20% 55%;
+    --accent: 223 47% 11%;
+    --accent-foreground: 213 31% 91%;
+    --destructive: 0 63% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 142 76% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --border: 223 47% 14%;
+    --input: 223 47% 14%;
+    --ring: 243 75% 65%;
+    --sidebar-background: 224 71% 2%;
+    --sidebar-foreground: 213 31% 91%;
+    --sidebar-primary: 243 75% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 223 47% 8%;
+    --sidebar-accent-foreground: 213 31% 91%;
+    --sidebar-border: 223 47% 8%;
+    --sidebar-ring: 243 75% 65%;
+  }
+
+  /* ─── ROSE THEME ─── */
+  [data-theme="rose"] {
+    --primary: 346 77% 50%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 346 77% 50%;
+    --sidebar-primary: 346 77% 50%;
+    --sidebar-ring: 346 77% 50%;
+  }
+
+  [data-theme="rose"].dark {
+    --primary: 346 77% 60%;
+    --ring: 346 77% 60%;
+    --sidebar-primary: 346 77% 60%;
+  }
+
+  /* ─── EMERALD THEME ─── */
+  [data-theme="emerald"] {
+    --primary: 152 69% 36%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 152 69% 36%;
+    --sidebar-primary: 152 69% 36%;
+    --sidebar-ring: 152 69% 36%;
+  }
+
+  [data-theme="emerald"].dark {
+    --primary: 152 69% 48%;
+    --ring: 152 69% 48%;
+    --sidebar-primary: 152 69% 48%;
+  }
+
+  /* ─── AMBER THEME ─── */
+  [data-theme="amber"] {
+    --primary: 32 95% 44%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 32 95% 44%;
+    --sidebar-primary: 32 95% 44%;
+    --sidebar-ring: 32 95% 44%;
+  }
+
+  [data-theme="amber"].dark {
+    --primary: 32 95% 55%;
+    --ring: 32 95% 55%;
+    --sidebar-primary: 32 95% 55%;
+  }
+
+  /* ─── CYAN THEME ─── */
+  [data-theme="cyan"] {
+    --primary: 189 94% 36%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 189 94% 36%;
+    --sidebar-primary: 189 94% 36%;
+    --sidebar-ring: 189 94% 36%;
+  }
+
+  [data-theme="cyan"].dark {
+    --primary: 189 94% 48%;
+    --ring: 189 94% 48%;
+    --sidebar-primary: 189 94% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out forwards;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 2px;
+  }
+}
