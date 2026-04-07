@@ -35,7 +35,7 @@ function CertificateCard({ cert }: { cert: any }) {
             <span className="text-primary-foreground font-display font-bold text-lg">SB</span>
           </div>
           <div className="text-left">
-            <p className="font-display font-bold text-xl text-foreground">SkillBridge</p>
+            <p className="font-display font-bold text-xl text-foreground">CareAble</p>
             <p className="text-xs text-muted-foreground">Academy of Professional Skills</p>
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function CertificatePage() {
   const handleShare = async () => {
     const url = window.location.href;
     if (navigator.share) {
-      await navigator.share({ title: "My SkillBridge Certificate", url });
+      await navigator.share({ title: "My CareAble Certificate", url });
     } else {
       await navigator.clipboard.writeText(url);
       toast({ variant: "success", title: "Link copied!", description: "Certificate URL copied to clipboard." });
@@ -194,8 +194,8 @@ export default function CertificatePage() {
               Anyone can verify the authenticity of this certificate using the verification code{" "}
               <span className="font-mono font-semibold text-primary">{cert.verificationCode}</span>{" "}
               at{" "}
-              <a href="https://skillbridge.dev/verify" className="text-primary hover:underline inline-flex items-center gap-1">
-                skillbridge.dev/verify <ExternalLink className="h-3 w-3" />
+              <a href="https://CareAble.dev/verify" className="text-primary hover:underline inline-flex items-center gap-1">
+                CareAble.dev/verify <ExternalLink className="h-3 w-3" />
               </a>
             </p>
             <div className="flex flex-col sm:flex-row gap-4 text-sm">

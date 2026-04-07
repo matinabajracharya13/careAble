@@ -73,7 +73,7 @@ export default function SignupPage() {
     try {
       const { token, user } = await authApi.signup(data);
       login(token, user);
-      toast({ variant: "success", title: `Welcome to SkillBridge, ${user.name}!` });
+      toast({ variant: "success", title: `Welcome to CareAble, ${user.name}!` });
       router.push("/onboarding");
     } catch (err: any) {
       toast({ variant: "destructive", title: "Signup failed", description: err.message });
@@ -103,7 +103,7 @@ export default function SignupPage() {
                 <span className="text-primary-foreground font-display font-bold text-sm">SB</span>
               </div>
               <h1 className="text-3xl font-display font-bold mb-2">Create your account</h1>
-              <p className="text-muted-foreground text-sm">Join thousands of professionals and companies on SkillBridge.</p>
+              <p className="text-muted-foreground text-sm">Join thousands of professionals and companies on CareAble.</p>
             </div>
             <ul className="space-y-3">
               {PERKS.map((p) => (

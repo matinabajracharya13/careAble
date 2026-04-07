@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/toast';
@@ -69,7 +70,7 @@ const FEATURES = [
   {
     icon: Shield,
     title: 'Trusted by Enterprise',
-    description: '340+ companies from startups to Fortune 500 use SkillBridge to screen candidates and upskill their workforce.',
+    description: '340+ companies from startups to Fortune 500 use CareAble to screen candidates and upskill their workforce.',
     color: 'text-success',
     bg: 'bg-success/10'
   },
@@ -90,7 +91,7 @@ const FEATURES = [
   {
     icon: Users,
     title: 'Dual-Sided Platform',
-    description: "Whether you're seeking talent or growing your career, SkillBridge has a tailored experience for you.",
+    description: "Whether you're seeking talent or growing your career, CareAble has a tailored experience for you.",
     color: 'text-accent',
     bg: 'bg-accent/10'
   }
@@ -112,21 +113,21 @@ const TESTIMONIALS = [
     name: 'Amelia Carter',
     role: 'Frontend Developer',
     company: 'Freelance',
-    text: 'My SkillBridge JavaScript certificate landed me three interviews in a week. Employers immediately understood my level.',
+    text: 'My CareAble JavaScript certificate landed me three interviews in a week. Employers immediately understood my level.',
     rating: 5
   },
   {
     name: 'Marcus Lee',
     role: 'Talent Acquisition Lead',
     company: 'TechCorp',
-    text: 'We reduced time-to-hire by 40% by using SkillBridge assessments as a first screening step. The quality of candidates improved dramatically.',
+    text: 'We reduced time-to-hire by 40% by using CareAble assessments as a first screening step. The quality of candidates improved dramatically.',
     rating: 5
   },
   {
     name: 'Priya Nair',
     role: 'Data Analyst',
     company: 'DataFlow',
-    text: "I used SkillBridge to identify my skill gaps and then prove I'd filled them. My salary increased 22% after certification.",
+    text: "I used CareAble to identify my skill gaps and then prove I'd filled them. My salary increased 22% after certification.",
     rating: 5
   }
 ];
@@ -376,7 +377,7 @@ export default function LandingPage() {
           <div className='text-center mb-12 space-y-3'>
             <Badge className='bg-primary/10 text-primary border-primary/20'>Our partners</Badge>
             <h2 className='text-3xl font-display font-bold'>Trusted by industry leaders</h2>
-            <p className='text-muted-foreground'>These organisations use SkillBridge to build stronger teams.</p>
+            <p className='text-muted-foreground'>These organisations use CareAble to build stronger teams.</p>
           </div>
 
           {/* Platinum */}
@@ -488,7 +489,7 @@ export default function LandingPage() {
                   <h3 className='font-display font-semibold text-lg mb-4'>Contact information</h3>
                   <div className='space-y-4 text-sm text-muted-foreground'>
                     {[
-                      { icon: Mail, text: 'hello@skillbridge.dev' },
+                      { icon: Mail, text: 'hello@CareAble.dev' },
                       { icon: Phone, text: '+61 2 0000 0000' },
                       { icon: MapPin, text: 'Sydney, NSW, Australia' }
                     ].map(({ icon: Icon, text }) => (
@@ -590,10 +591,14 @@ export default function LandingPage() {
         <div className='container mx-auto px-4'>
           <div className='flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground'>
             <div className='flex items-center gap-2'>
-              <div className='h-6 w-6 rounded bg-primary flex items-center justify-center'>
-                <span className='text-[10px] font-bold text-primary-foreground'>SB</span>
-              </div>
-              <span className='font-display font-semibold text-foreground'>SkillBridge</span>
+              <div className='h-6 w-6 rounded flex items-center justify-center'>
+                <Image
+                  src='/logo.png'
+                  alt='Logo'
+                  width={32}
+                  height={32}
+                />              </div>
+              <span className='font-display font-semibold text-foreground'>CareAble</span>
               <span>© 2026</span>
             </div>
             <div className='flex gap-6'>

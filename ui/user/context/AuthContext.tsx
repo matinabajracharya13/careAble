@@ -43,8 +43,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("skillbridge_token");
-    const storedUser = localStorage.getItem("skillbridge_user");
+    const storedToken = localStorage.getItem("CareAble_token");
+    const storedUser = localStorage.getItem("CareAble_user");
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
@@ -55,22 +55,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback((token: string, user: User) => {
     setToken(token);
     setUser(user);
-    localStorage.setItem("skillbridge_token", token);
-    localStorage.setItem("skillbridge_user", JSON.stringify(user));
+    localStorage.setItem("CareAble_token", token);
+    localStorage.setItem("CareAble_user", JSON.stringify(user));
   }, []);
 
   const logout = useCallback(() => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem("skillbridge_token");
-    localStorage.removeItem("skillbridge_user");
+    localStorage.removeItem("CareAble_token");
+    localStorage.removeItem("CareAble_user");
   }, []);
 
   const updateUser = useCallback((updates: Partial<User>) => {
     setUser((prev) => {
       if (!prev) return null;
       const updated = { ...prev, ...updates };
-      localStorage.setItem("skillbridge_user", JSON.stringify(updated));
+      localStorage.setItem("CareAble_user", JSON.stringify(updated));
       return updated;
     });
   }, []);
