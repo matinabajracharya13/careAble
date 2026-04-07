@@ -71,11 +71,8 @@ export default function LoginPage() {
 
         <Card variant="elevated">
           <CardHeader className="text-center pb-4">
-            <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/20 animate-pulse-glow">
-              <span className="text-primary-foreground font-display font-bold">SB</span>
-            </div>
             <CardTitle className="text-2xl">Welcome back</CardTitle>
-            <CardDescription>Sign in to your SkillBridge account</CardDescription>
+            <CardDescription>Sign in to your CareAble account</CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-5">

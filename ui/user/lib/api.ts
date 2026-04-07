@@ -8,7 +8,7 @@ import type {
 } from "@/types";
 
 // ── Base API (swap this URL for your real backend) ────────────────────────────
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://api.skillbridge.dev";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://api.CareAble.dev";
 
 async function fetchWithAuth<T>(
   endpoint: string,
@@ -16,7 +16,7 @@ async function fetchWithAuth<T>(
 ): Promise<T> {
   const token =
     typeof window !== "undefined"
-      ? localStorage.getItem("skillbridge_token")
+      ? localStorage.getItem("CareAble_token")
       : null;
 
   const res = await fetch(`${BASE_URL}${endpoint}`, {
@@ -226,7 +226,7 @@ export const certificateApi = {
       score: 87,
       issuedAt: new Date().toISOString(),
       verificationCode: `SB-${id.slice(0, 8).toUpperCase()}`,
-      issuerName: "SkillBridge Academy",
+      issuerName: "CareAble Academy",
     };
   },
 };

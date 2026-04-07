@@ -835,7 +835,7 @@ function ActivityTab() {
     <div className="space-y-4">
       <div>
         <h3 className="font-display font-semibold text-lg">Activity timeline</h3>
-        <p className="text-sm text-muted-foreground">Your recent actions on SkillBridge.</p>
+        <p className="text-sm text-muted-foreground">Your recent actions on CareAble.</p>
       </div>
 
       <div className="relative">

@@ -268,7 +268,7 @@ function EmployerDashboard({ user }: { user: NonNullable<ReturnType<typeof useAu
                 <p className="text-sm font-semibold text-accent">Insight</p>
               </div>
               <p className="text-xs text-muted-foreground">
-                Candidates with SkillBridge certificates have a 40% higher retention rate at 12 months.
+                Candidates with CareAble certificates have a 40% higher retention rate at 12 months.
               </p>
             </CardContent>
           </Card>

@@ -1,4 +1,4 @@
-# SkillBridge
+# CareAble
 
 > A full-stack-ready Next.js 14 app for skill assessment, certification, and talent matching.
 
@@ -111,7 +111,7 @@ NEXT_PUBLIC_API_URL=https://api.yourbackend.com
 ## Project Structure
 
 ```
-skillbridge/
+CareAble/
 ├── app/                    # Next.js App Router pages
 │   ├── page.tsx            # Landing
 │   ├── login/page.tsx
