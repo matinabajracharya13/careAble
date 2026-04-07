@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Fonts ─────────────────────────────────────────────── */
+
+/* ── Base Theme: Cobalt (default) ───────────────────────── */
+:root,
+[data-theme='cobalt'] {
+  --font-sans: 'Syne', system-ui, sans-serif;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 0.625rem;
+
+  /* Light */
+  --background: 220 20% 97%;
+  --foreground: 220 25% 8%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 25% 8%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 25% 8%;
+  --primary: 221 83% 53%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 14% 91%;
+  --secondary-foreground: 220 25% 8%;
+  --muted: 220 14% 91%;
+  --muted-foreground: 220 10% 45%;
+  --accent: 199 89% 48%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 142 71% 45%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 0%;
+  --border: 220 13% 88%;
+  --input: 220 13% 88%;
+  --ring: 221 83% 53%;
+}
+
+/* ── Theme: Emerald ─────────────────────────────────────── */
+[data-theme='emerald'] {
+  --primary: 160 84% 39%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 173 80% 40%;
+  --accent-foreground: 0 0% 100%;
+  --ring: 160 84% 39%;
+}
+
+/* ── Theme: Violet ──────────────────────────────────────── */
+[data-theme='violet'] {
+  --primary: 263 70% 50%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 291 64% 42%;
+  --accent-foreground: 0 0% 100%;
+  --ring: 263 70% 50%;
+}
+
+/* ── Theme: Rose ────────────────────────────────────────── */
+[data-theme='rose'] {
+  --primary: 346 77% 50%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 326 73% 52%;
+  --accent-foreground: 0 0% 100%;
+  --ring: 346 77% 50%;
+}
+
+/* ── Theme: Amber ───────────────────────────────────────── */
+[data-theme='amber'] {
+  --primary: 38 92% 50%;
+  --primary-foreground: 0 0% 0%;
+  --accent: 25 95% 53%;
+  --accent-foreground: 0 0% 0%;
+  --ring: 38 92% 50%;
+}
+
+/* ── Theme: Slate ───────────────────────────────────────── */
+[data-theme='slate'] {
+  --primary: 215 20% 30%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 215 15% 45%;
+  --accent-foreground: 0 0% 100%;
+  --ring: 215 20% 30%;
+}
+
+/* ── Dark Mode ──────────────────────────────────────────── */
+.dark {
+  --background: 220 25% 6%;
+  --foreground: 220 15% 95%;
+  --card: 220 22% 10%;
+  --card-foreground: 220 15% 95%;
+  --popover: 220 22% 10%;
+  --popover-foreground: 220 15% 95%;
+  --secondary: 220 20% 16%;
+  --secondary-foreground: 220 15% 95%;
+  --muted: 220 20% 16%;
+  --muted-foreground: 220 10% 55%;
+  --border: 220 18% 18%;
+  --input: 220 18% 18%;
+  --destructive: 0 72% 51%;
+  --success: 142 76% 36%;
+  --warning: 38 92% 50%;
+}
+
+/* ── Base Styles ────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground;
+  }
+
+  /* Focus ring */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+/* ── Utility Classes ────────────────────────────────────── */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+
+  .glass {
+    @apply bg-card/80 backdrop-blur-md border border-border/50;
+  }
+
+  .glow {
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.2);
+  }
+
+  .noise-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-enter {
+    @apply animate-fade-in;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/30;
+  }
+
+  .btn-shine {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-shine::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -75%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transform: skewX(-25deg);
+    transition: left 0.5s ease;
+  }
+
+  .btn-shine:hover::after {
+    left: 125%;
+  }
+}
