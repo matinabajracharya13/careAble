@@ -1,4 +1,6 @@
-import HeatmapSkeleton from './components/heatmap/HeatmapSkeleton';
+// import HeatmapSkeleton from './components/heatmap/HeatmapSkeleton';
+import RadarHeatmap from './components/heatmap/RadarHeatmap';
+import heatmapData from './data/heatmapData.json';
 
 export default function App() {
   return (
@@ -6,7 +8,7 @@ export default function App() {
     <div className='min-h-screen bg-background'>
       {/* Navbar */}
       <h1 className='text-2xl font-bold p-4'>Welcome to Cartable</h1>
-      <HeatmapSkeleton />
+      <RadarHeatmap data={heatmapData} />
     </div>
   );
 }

@@ -1,0 +1,14 @@
+[
+  { "id": "d1", "score": 4.5, "fullMark": 5, "zone": "Strength" },
+  { "id": "d2", "score": 4.0, "fullMark": 5, "zone": "Strength" },
+  { "id": "d3", "score": 3.2, "fullMark": 5, "zone": "Growth" },
+  { "id": "d4", "score": 3.1, "fullMark": 5, "zone": "Growth" },
+  { "id": "d5", "score": 3.8, "fullMark": 5, "zone": "Growth" },
+  { "id": "d6", "score": 3.5, "fullMark": 5, "zone": "Growth" },
+  { "id": "d7", "score": 4.2, "fullMark": 5, "zone": "Strength" },
+  { "id": "d8", "score": 4.1, "fullMark": 5, "zone": "Strength" },
+  { "id": "d9", "score": 2.9, "fullMark": 5, "zone": "Support" },
+  { "id": "d10", "score": 2.4, "fullMark": 5, "zone": "Support" },
+  { "id": "d11", "score": 3.5, "fullMark": 5, "zone": "Growth" },
+  { "id": "d12", "score": 3.6, "fullMark": 5, "zone": "Growth" }
+]
