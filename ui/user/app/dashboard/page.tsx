@@ -14,6 +14,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge, Progr
 import { assessmentApi } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { cn, getLevelBadgeClass } from "@/lib/utils";
+import RadarHeatmap from '@/components/heatmap/RadarHeatmap';
+import { MOCK_HEATMAP_DATA } from '@/constants/mockData';
 
 // ── Career Dashboard ──────────────────────────────────────────────────────────
 function CareerDashboard({ user }: { user: NonNullable<ReturnType<typeof useAuth>["user"]> }) {
@@ -28,6 +30,7 @@ function CareerDashboard({ user }: { user: NonNullable<ReturnType<typeof useAuth
     { label: "Avg. score", value: "87%", icon: TrendingUp, color: "text-accent", bg: "bg-accent/10" },
     { label: "Hours studied", value: "4.5", icon: Clock, color: "text-warning", bg: "bg-warning/10" },
   ];
+
 
   return (
     <div className="space-y-8">
@@ -63,8 +66,15 @@ function CareerDashboard({ user }: { user: NonNullable<ReturnType<typeof useAuth
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Available assessments */}
         <div className="lg:col-span-2 space-y-4">
+
+          {/* Heatmap container*/}
+          <div className=" mb-6">
+            <RadarHeatmap data={MOCK_HEATMAP_DATA} />
+          </div>
+
+        {/* Available assessments */}
+
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-display font-semibold">Available Assessments</h2>
             <Link href="/assessment" className="text-sm text-primary hover:underline flex items-center gap-1">
