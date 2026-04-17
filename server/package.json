@@ -11,7 +11,8 @@
     "migrate:latest": "knex --knexfile knexfile.ts migrate:latest",
     "migrate:rollback": "knex --knexfile knexfile.ts migrate:rollback",
     "migrate:status": "knex --knexfile knexfile.ts migrate:status",
-    "migrate:make": "knex --knexfile knexfile.ts migrate:make"
+    "migrate:make": "knex --knexfile knexfile.ts migrate:make",
+    "seed": "knex --knexfile knexfile.ts seed:run"
   },
   "dependencies": {
     "better-sqlite3": "^12.8.0",
