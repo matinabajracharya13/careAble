@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Radar, RadarChart, PolarGrid, PolarAngleAxis,
-  PolarRadiusAxis, ResponsiveContainer
+  PolarRadiusAxis, ResponsiveContainer, Tooltip
 } from 'recharts';
 import { COMPETENCY_DOMAINS } from '../../constants/skills';
 
@@ -24,6 +24,35 @@ const RadarHeatmap = ({ data }: { data: HeatmapData[] }) => {
     };
   });
 
+  /**
+ * CustomTooltip Component
+ * This renders the floating bubble when a user hovers over a data point.
+ */
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
+  // Only render if the tooltip is active and has data
+  if (active && payload && payload.length) {
+    // Ensure we get the correct "score" value
+    const dataPoint = payload?.find((p: any) => p.dataKey === "score");
+
+    const score = dataPoint?.value || 0;
+    const name = dataPoint?.payload.displayName;
+
+    // Determine the color theme based on the score zone
+    let themeColor = "text-blue-600 border-blue-100 bg-blue-50";
+    if (score >= 4.0) themeColor = "text-green-600 border-green-100 bg-green-50";
+    else if (score >= 3.0) themeColor = "text-yellow-600 border-yellow-100 bg-yellow-50";
+    else themeColor = "text-red-600 border-red-100 bg-red-50";
+
+    return (
+      <div className={`p-3 rounded-xl border-2 shadow-lg backdrop-blur-sm ${themeColor}`}>
+        <p className="font-bold text-sm mb-0.5">{name}</p>
+        <p className="text-xs font-black uppercase tracking-wider">Score: {score.toFixed(1)}</p>
+      </div>
+    );
+  }
+  return null;
+  };
+
   return (
     /* MAIN CONTAINER*/
     <div className="bg-white p-4 md:p-8 rounded-2xl border border-gray-100 shadow-sm flex flex-col h-full min-h-fit overflow-hidden">
@@ -42,8 +71,16 @@ const RadarHeatmap = ({ data }: { data: HeatmapData[] }) => {
             cy="50%" 
             outerRadius="75%" 
             data={formattedData} 
-            style={{ outline: 'none' }}
+            style={{ outline: 'none', border: 'none' }}
           >
+            {/* Add Tooltip here - it must be inside RadarChart */}
+            <Tooltip content={<CustomTooltip />} shared = {false} cursor={{ stroke: "transparent", fill: "transparent" }} isAnimationActive={false}  />
+            
+            {/* Backgroud zones */}
+            <Radar dataKey="greenZone" stroke="none" fill="#4ade80" fillOpacity={0.12} isAnimationActive={false} />
+            <Radar dataKey="growth" stroke="none" fill="#facc15" fillOpacity={0.15} isAnimationActive={false} />
+            <Radar dataKey="support" stroke="none" fill="#f87171" fillOpacity={0.18} isAnimationActive={false} />
+            
             {/* Circular grid layout */}
             <PolarGrid gridType="circle" stroke="#e2e8f0" strokeOpacity={0.8} />
             
