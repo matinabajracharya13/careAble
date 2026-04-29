@@ -154,7 +154,7 @@ const RadarHeatmap = ({ data }: { data: HeatmapData[] }) => {
           <h4 className="font-bold text-green-700 mb-2">Top Strengths</h4>
           {strengths.map(item => (
             <p key={item.id} className="text-sm">
-              ✔ {item.displayName} ({item.score.toFixed(1)})
+              <span className="text-green-500 italic font-bold">✔</span> {item.displayName} ({item.score.toFixed(1)})
             </p>
           ))}
         </div>
@@ -164,7 +164,7 @@ const RadarHeatmap = ({ data }: { data: HeatmapData[] }) => {
           <h4 className="font-bold text-yellow-700 mb-2">Growth Areas</h4>
           {growth.map(item => (
             <p key={item.id} className="text-sm">
-              → {item.displayName} ({item.score.toFixed(1)})
+              <span className="text-yellow-500 font-bold">→</span> {item.displayName} ({item.score.toFixed(1)})
             </p>
           ))}
         </div>
@@ -174,7 +174,7 @@ const RadarHeatmap = ({ data }: { data: HeatmapData[] }) => {
           <h4 className="font-bold text-red-700 mb-2">Needs Support</h4>
           {support.map(item => (
             <p key={item.id} className="text-sm">
-              ⚠ {item.displayName} ({item.score.toFixed(1)})
+              <span className="text-red-500 font-bold">⚠</span> {item.displayName} ({item.score.toFixed(1)})
             </p>
           ))}
         </div>
