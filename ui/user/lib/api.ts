@@ -163,14 +163,21 @@ export const onboardingApi = {
 // ── Assessment API ────────────────────────────────────────────────────────────
 
 export const assessmentApi = {
-  getAssessments: async (): Promise<Assessment[]> => {
+  getAssessments: async (): Promise<Assessment> => {
     await delay(500);
     return MOCK_ASSESSMENTS;
   },
 
   getAssessment: async (id: string): Promise<Assessment> => {
     await delay(400);
-    const a = MOCK_ASSESSMENTS.find((a) => a.id === id);
+    const a = MOCK_ASSESSMENTS
+    if (!a) throw new Error("Assessment not found");
+    return a;
+  },
+
+  saveProgress: async (id: string,data:any): Promise<Assessment> => {
+    await delay(400);
+    const a = MOCK_ASSESSMENTS
     if (!a) throw new Error("Assessment not found");
     return a;
   },
@@ -180,27 +187,27 @@ export const assessmentApi = {
     answers: Record<string, string>
   ): Promise<AssessmentResult> => {
     await delay(1200);
-    const assessment = MOCK_ASSESSMENTS.find((a) => a.id === assessmentId);
+    const assessment = MOCK_ASSESSMENTS;
     if (!assessment) throw new Error("Assessment not found");
 
     // Calculate score
-    let correct = 0;
-    const answerDetails: AssessmentResult["answers"] = assessment.questions.map((q) => {
-      const selected = answers[q.id] ?? "";
-      const isCorrect = selected === q.correctAnswer;
-      if (isCorrect) correct++;
-      return { questionId: q.id, selectedAnswer: selected, correct: isCorrect };
-    });
+    const score = 100;
+    // const answerDetails: AssessmentResult["answers"] = assessment.topics.map((q) => {
+    //   const selected = answers[q.id] ?? "";
+    //   const isCorrect = selected === q.correctAnswer;
+    //   if (isCorrect) correct++;
+    //   return { questionId: q.id, selectedAnswer: selected, correct: isCorrect };
+    // });
 
-    const score = Math.round((correct / assessment.questions.length) * 100);
-    const passed = score >= assessment.passingScore;
-
+    // const score = Math.round((correct / assessment.questions.length) * 100);
+    // const passed = score >= assessment.passingScore;
+    const passed =true
     const result: AssessmentResult = {
       assessmentId,
       userId: "current-user",
       score,
       passed,
-      answers: answerDetails,
+      answers: [],
       completedAt: new Date().toISOString(),
       timeSpent: 1200,
       certificateId: passed ? `cert-${Date.now()}` : undefined,
@@ -242,162 +249,83 @@ export const contactApi = {
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 
-const MOCK_ASSESSMENTS: Assessment[] = [
-  {
-    id: "assess1",
-    title: "JavaScript Fundamentals",
-    description: "Test your knowledge of core JavaScript concepts including closures, promises, and modern ES6+ features.",
-    category: "Technology",
-    level: "intermediate",
-    duration: 30,
-    passingScore: 70,
-    totalQuestions: 5,
-    questions: [
-      {
-        id: "aq1", text: "What is a closure in JavaScript?",
-        type: "multiple_choice",
-        options: [
-          { label: "A function that closes the browser", value: "a" },
-          { label: "A function with access to its outer scope's variables", value: "b" },
-          { label: "A method to close event listeners", value: "c" },
-          { label: "A way to end a loop", value: "d" },
-        ],
-        correctAnswer: "b",
-        explanation: "A closure is a function that retains access to its outer (enclosing) scope's variables, even after the outer function has returned.",
-        points: 20,
-      },
-      {
-        id: "aq2", text: "Which of the following is NOT a JavaScript data type?",
-        type: "multiple_choice",
-        options: [
-          { label: "Symbol", value: "a" },
-          { label: "BigInt", value: "b" },
-          { label: "Float", value: "c" },
-          { label: "Undefined", value: "d" },
-        ],
-        correctAnswer: "c",
-        explanation: "JavaScript has: string, number, bigint, boolean, undefined, symbol, null, and object. 'Float' is not a distinct type.",
-        points: 20,
-      },
-      {
-        id: "aq3", text: "What does `Array.prototype.reduce()` do?",
-        type: "multiple_choice",
-        options: [
-          { label: "Removes duplicate values from an array", value: "a" },
-          { label: "Reduces the array length by one", value: "b" },
-          { label: "Applies a function to accumulate array values into a single result", value: "c" },
-          { label: "Filters elements based on a condition", value: "d" },
-        ],
-        correctAnswer: "c",
-        explanation: "reduce() executes a reducer function on each element of the array, resulting in a single output value.",
-        points: 20,
-      },
-      {
-        id: "aq4", text: "Which statement about Promises is TRUE?",
-        type: "multiple_choice",
-        options: [
-          { label: "Promises can be in three states: pending, fulfilled, or rejected", value: "a" },
-          { label: "A resolved promise can be rejected later", value: "b" },
-          { label: "Promises are synchronous operations", value: "c" },
-          { label: "You can only chain one .then() to a Promise", value: "d" },
-        ],
-        correctAnswer: "a",
-        explanation: "A Promise is always in one of three states: pending (initial), fulfilled (completed), or rejected (failed). Once settled it cannot change.",
-        points: 20,
-      },
-      {
-        id: "aq5", text: "What is the output of: `typeof null`?",
-        type: "multiple_choice",
-        options: [
-          { label: '"null"', value: "a" },
-          { label: '"undefined"', value: "b" },
-          { label: '"object"', value: "c" },
-          { label: '"boolean"', value: "d" },
-        ],
-        correctAnswer: "c",
-        explanation: "This is a known bug in JavaScript. typeof null returns 'object' for historical reasons.",
-        points: 20,
-      },
-    ],
-  },
-  {
-    id: "assess2",
-    title: "Project Management Essentials",
-    description: "Validate your understanding of agile methodologies, risk management, and stakeholder communication.",
-    category: "Management",
-    level: "beginner",
-    duration: 25,
-    passingScore: 65,
-    totalQuestions: 5,
-    questions: [
-      {
-        id: "pm1", text: "In Scrum, what is the purpose of a Sprint Retrospective?",
-        type: "multiple_choice",
-        options: [
-          { label: "To plan the next sprint's goals", value: "a" },
-          { label: "To review the product increment with stakeholders", value: "b" },
-          { label: "To reflect on the team process and identify improvements", value: "c" },
-          { label: "To assign tasks to team members", value: "d" },
-        ],
-        correctAnswer: "c",
-        explanation: "The Sprint Retrospective is a meeting where the Scrum team inspects itself and creates a plan for improvements to be enacted during the next Sprint.",
-        points: 20,
-      },
-      {
-        id: "pm2", text: "What does 'scope creep' mean in project management?",
-        type: "multiple_choice",
-        options: [
-          { label: "Reducing the project scope to meet deadlines", value: "a" },
-          { label: "Uncontrolled changes or continuous growth in a project's scope", value: "b" },
-          { label: "Documenting the project scope in detail", value: "c" },
-          { label: "Creeping deadlines due to team delays", value: "d" },
-        ],
-        correctAnswer: "b",
-        explanation: "Scope creep refers to uncontrolled changes or continuous growth in project scope, often without adjustments to time, cost, or resources.",
-        points: 20,
-      },
-      {
-        id: "pm3", text: "A critical path in project management refers to:",
-        type: "multiple_choice",
-        options: [
-          { label: "The most expensive series of tasks", value: "a" },
-          { label: "The longest sequence of dependent tasks that determines project duration", value: "b" },
-          { label: "Tasks that can be completed in parallel", value: "c" },
-          { label: "The path to executive approval", value: "d" },
-        ],
-        correctAnswer: "b",
-        explanation: "The critical path is the longest sequence of tasks that must be completed for the project to finish, determining the minimum project duration.",
-        points: 20,
-      },
-      {
-        id: "pm4", text: "What is a RACI matrix used for?",
-        type: "multiple_choice",
-        options: [
-          { label: "Tracking project budgets", value: "a" },
-          { label: "Scheduling sprint ceremonies", value: "b" },
-          { label: "Clarifying roles and responsibilities for project activities", value: "c" },
-          { label: "Assessing project risks", value: "d" },
-        ],
-        correctAnswer: "c",
-        explanation: "RACI stands for Responsible, Accountable, Consulted, and Informed. It's a matrix used to clarify roles and responsibilities.",
-        points: 20,
-      },
-      {
-        id: "pm5", text: "Which is a key principle of Agile development?",
-        type: "multiple_choice",
-        options: [
-          { label: "Following a plan is the highest priority", value: "a" },
-          { label: "Comprehensive documentation over working software", value: "b" },
-          { label: "Responding to change over following a plan", value: "c" },
-          { label: "Contract negotiation over customer collaboration", value: "d" },
-        ],
-        correctAnswer: "c",
-        explanation: "The Agile Manifesto values 'Responding to change over following a plan' as one of its four core values.",
-        points: 20,
-      },
-    ],
-  },
-];
+const MOCK_ASSESSMENTS: Assessment = {
+  id: "wellbeing1",
+  title: "Caregiver Wellbeing Assessment",
+  category: "Wellbeing",
+  description: "Understand your wellbeing across key life areas.",
+  totalQuestions: 32,
+
+  topics: [
+    {
+      id: "social",
+      title: "Social Connection & Belonging",
+      questions: [
+        { id: "sc1", text: "I maintain social connections outside my caregiving role.", type: "slider" },
+        { id: "sc2", text: "I feel connected to peers, family, or community.", type: "slider" },
+        { id: "sc3", text: "I seek support when feeling isolated.", type: "slider" },
+        { id: "sc4", text: "I maintain interests or identity beyond caregiving.", type: "slider" },
+        { id: "sc5", text: "I experience a sense of belonging rather than isolation.", type: "slider" },
+      ],
+    },
+
+    {
+      id: "emotional",
+      title: "Emotional Wellbeing",
+      questions: [
+        { id: "em1", text: "I feel emotionally supported in my daily life.", type: "slider" },
+        { id: "em2", text: "I am able to manage stress effectively.", type: "slider" },
+        { id: "em3", text: "I feel overwhelmed by responsibilities.", type: "slider" },
+        { id: "em4", text: "I feel emotionally drained at the end of the day.", type: "slider" },
+        { id: "em5", text: "I can find time to relax and recharge.", type: "slider" },
+      ],
+    },
+
+    {
+      id: "physical",
+      title: "Physical Health",
+      questions: [
+        { id: "ph1", text: "I get enough sleep regularly.", type: "slider" },
+        { id: "ph2", text: "I maintain a balanced and healthy diet.", type: "slider" },
+        { id: "ph3", text: "I engage in regular physical activity.", type: "slider" },
+        { id: "ph4", text: "I feel physically exhausted most of the time.", type: "slider" },
+        { id: "ph5", text: "I take time to rest when needed.", type: "slider" },
+        { id: "ph6", text: "I experience physical strain from caregiving tasks.", type: "slider" },
+      ],
+    },
+
+    {
+      id: "financial",
+      title: "Financial Stability",
+      questions: [
+        { id: "fi1", text: "I feel financially secure in my current situation.", type: "slider" },
+        { id: "fi2", text: "I can comfortably manage my daily expenses.", type: "slider" },
+        { id: "fi3", text: "I have access to financial support if needed.", type: "slider" },
+        { id: "fi4", text: "Caregiving has impacted my financial stability.", type: "slider" },
+        { id: "fi5", text: "I am able to plan for future financial needs.", type: "slider" },
+      ],
+    },
+
+    // 🔥 BIG TOPIC (10 QUESTIONS)
+    {
+      id: "caregiving",
+      title: "Caregiving Experience",
+      questions: [
+        { id: "cg1", text: "I feel confident in my caregiving abilities.", type: "slider" },
+        { id: "cg2", text: "I understand the needs of the person I care for.", type: "slider" },
+        { id: "cg3", text: "I feel overwhelmed by caregiving responsibilities.", type: "slider" },
+        { id: "cg4", text: "I receive adequate support in my caregiving role.", type: "slider" },
+        { id: "cg5", text: "I can balance caregiving with my personal life.", type: "slider" },
+        { id: "cg6", text: "I feel appreciated for the care I provide.", type: "slider" },
+        { id: "cg7", text: "I have access to resources that help me caregive effectively.", type: "slider" },
+        { id: "cg8", text: "I feel तनाव (stress) related to caregiving duties.", type: "slider" },
+        { id: "cg9", text: "I can take breaks when needed from caregiving.", type: "slider" },
+        { id: "cg10", text: "I feel in control of my caregiving responsibilities.", type: "slider" },
+      ],
+    },
+  ],
+};
+
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
