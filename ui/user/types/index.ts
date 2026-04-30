@@ -67,27 +67,44 @@ export interface OnboardingResponse {
 
 export type AssessmentStatus = "not_started" | "in_progress" | "completed" | "failed";
 
-export interface AssessmentQuestion {
-  id: string;
-  text: string;
-  type: "multiple_choice" | "true_false" | "scenario";
-  options: QuestionOption[];
-  correctAnswer?: string;  // only populated server-side
-  explanation?: string;
-  points: number;
-  timeLimit?: number;      // seconds
-}
 
 export interface Assessment {
   id: string;
   title: string;
   description: string;
   category: string;
-  level: "beginner" | "intermediate" | "advanced";
-  duration: number;        // minutes
-  passingScore: number;    // percentage
+
+  // optional now (since self-assessment may not need them)
+  level?: "beginner" | "intermediate" | "advanced";
+  duration?: number | null;        // optional / not required
+  passingScore?: number | null;    // optional / not used
+
   totalQuestions: number;
+
+  // NEW: topic-based structure
+  topics: AssessmentTopic[];
+}
+
+export interface AssessmentTopic {
+  id: string;
+  title: string;
+  description?: string;
+
   questions: AssessmentQuestion[];
+}
+
+export interface AssessmentQuestion {
+  id: string;
+  text: string;
+
+  type?: "slider"; // for now only slider (future-proof)
+
+  // slider config (flexible for reuse)
+  scale?: {
+    min: number; // 1
+    max: number; // 5
+    labels: Record<number, string>;
+  };
 }
 
 export interface AssessmentResult {

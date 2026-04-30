@@ -19,12 +19,7 @@ export default function AssessmentListPage() {
     queryFn: assessmentApi.getAssessments,
   });
 
-  const filtered = assessments?.filter((a) => {
-    const matchSearch = a.title.toLowerCase().includes(search.toLowerCase()) ||
-      a.category.toLowerCase().includes(search.toLowerCase());
-    const matchLevel = levelFilter === "all" || a.level === levelFilter;
-    return matchSearch && matchLevel;
-  });
+
 
   return (
     <div className="min-h-screen bg-background pt-20 pb-12">
@@ -47,22 +42,7 @@ export default function AssessmentListPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="max-w-sm"
           />
-          <div className="flex gap-2">
-            {["all", "beginner", "intermediate", "advanced"].map((level) => (
-              <button
-                key={level}
-                onClick={() => setLevelFilter(level)}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all",
-                  levelFilter === level
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-muted-foreground hover:bg-secondary/80"
-                )}
-              >
-                {level}
-              </button>
-            ))}
-          </div>
+          
         </div>
 
         {/* Grid */}
@@ -72,42 +52,42 @@ export default function AssessmentListPage() {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-5">
-            {filtered?.map((a, i) => (
-              <Card key={a.id} className={cn("card-hover animate-fade-in")} style={{ animationDelay: `${i * 0.07}s` }}>
+            
+              <Card key={assessments?.id} className={cn("card-hover animate-fade-in")} style={{ animationDelay: `${1 * 0.07}s` }}>
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                       <BookOpen className="h-6 w-6 text-primary" />
                     </div>
-                    <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-full border capitalize", getLevelBadgeClass(a.level))}>
-                      {a.level}
-                    </span>
+                    {/* <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-full border capitalize", getLevelBadgeClass(assessments?.level))}>
+                      {assessments?.level}
+                    </span> */}
                   </div>
 
                   <div>
-                    <h3 className="font-display font-semibold text-lg">{a.title}</h3>
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{a.description}</p>
+                    <h3 className="font-display font-semibold text-lg">{assessments?.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{assessments?.description}</p>
                   </div>
 
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <BookOpen className="h-3.5 w-3.5" />
-                      {a.totalQuestions} questions
+                      {assessments?.totalQuestions} questions
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
-                      {a.duration} min
+                      {assessments?.duration} min
                     </span>
                     <span className="flex items-center gap-1">
                       <Target className="h-3.5 w-3.5" />
-                      Pass: {a.passingScore}%
+                      Pass: {assessments?.passingScore}%
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between pt-2 border-t border-border">
-                    <span className="text-xs text-muted-foreground">{a.category}</span>
+                    <span className="text-xs text-muted-foreground">{assessments?.category}</span>
                     <Button size="sm" asChild>
-                      <Link href={`/assessment/${a.id}`}>
+                      <Link href={`/assessment/1`}>
                         Start assessment
                         <ChevronRight className="h-4 w-4" />
                       </Link>
@@ -115,17 +95,16 @@ export default function AssessmentListPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
           </div>
         )}
 
-        {filtered?.length === 0 && !isLoading && (
+        {/* {filtered?.length === 0 && !isLoading && (
           <div className="text-center py-20 text-muted-foreground">
             <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-20" />
             <p className="font-semibold">No assessments found</p>
             <p className="text-sm mt-1">Try adjusting your filters.</p>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
