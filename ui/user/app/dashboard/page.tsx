@@ -86,27 +86,27 @@ function CareerDashboard({ user }: { user: NonNullable<ReturnType<typeof useAuth
             <div className="flex items-center justify-center h-32"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
           ) : (
             <div className="space-y-3">
-              {assessments?.map((a) => (
-                <Card key={a.id} className="card-hover">
+              
+                <Card key={assessments?.id} className="card-hover">
                   <CardContent className="p-5 flex items-center gap-4">
                     <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                       <BookOpen className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-sm truncate">{a.title}</p>
-                        <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full border", getLevelBadgeClass(a.level))}>
-                          {a.level}
+                        <p className="font-semibold text-sm truncate">{assessments?.title}</p>
+                        <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full border", getLevelBadgeClass(assessments?.level as string))}>
+                          {assessments?.level}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">{a.totalQuestions} questions · {a.duration} min · Pass: {a.passingScore}%</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{assessments?.totalQuestions} questions · {assessments?.duration} min · Pass: {assessments?.passingScore}%</p>
                     </div>
                     <Button size="sm" variant="outline" asChild className="shrink-0">
-                      <Link href={`/assessment/${a.id}`}>Start</Link>
+                      <Link href={`/assessment/${assessments?.id}`}>Start</Link>
                     </Button>
                   </CardContent>
                 </Card>
-              ))}
+              
             </div>
           )}
         </div>
