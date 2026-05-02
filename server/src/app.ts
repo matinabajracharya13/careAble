@@ -7,6 +7,7 @@ import { requestLoggerAll } from './middleware/requestLogger'
 import { errorHandler, notFound } from './middleware/errorHandler'
 import healthRoutes from './routes/healthRoutes'
 import userRoutes from './routes/userRoutes'
+import assessmentRoutes from './routes/assessmentRoutes'
 
 const app: Application = express()
 
@@ -40,6 +41,7 @@ app.use(requestLoggerAll)
 // ─── Routes ────────────────────────────────────────────────
 app.use('/api/health', healthRoutes)
 app.use('/api/users', userRoutes)
+app.use('/api/assessments', assessmentRoutes)
 
 // ─── Error handling ────────────────────────────────────────
 app.use(notFound)
