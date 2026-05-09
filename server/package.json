@@ -23,7 +23,9 @@
     "helmet": "^8.0.0",
     "knex": "^3.2.9",
     "morgan": "^1.10.0",
-    "mysql2": "^3.20.0"
+    "mysql2": "^3.20.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
