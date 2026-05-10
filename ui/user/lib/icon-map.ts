@@ -1,0 +1,7 @@
+import { GraduationCap, Briefcase, Shield } from 'lucide-react';
+
+export const ICON_MAP: Record<string, React.ElementType> = {
+  graduation_cap: GraduationCap,
+  briefcase: Briefcase,
+  shield: Shield
+};

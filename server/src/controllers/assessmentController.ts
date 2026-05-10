@@ -1,17 +1,17 @@
-import { Request, Response, NextFunction } from "express";
-import { AppError } from "../middleware/errorHandler";
-import { ApiResponse } from "../types";
+import { NextFunction, Request, Response } from 'express';
+import { AppError } from '../middleware/errorHandler';
+import { ApiResponse } from '../types';
 
 import {
   findAllAssessments,
   findAssessmentById,
-  insertAssessment,
-  updateAssessmentById,
-  deleteAssessmentById,
-  findTopicsByAssessment,
-  findQuestionsByTopicIds,
   findOptionsByQuestionIds,
-} from "../repositories/assessmentRepository";
+  findQuestionsByTopicIds,
+  findTopicsByAssessment,
+  getAllProgress,
+  getProgressByID,
+  saveProgress
+} from '../repositories/assessmentRepository';
 
 // GET ALL
 export const getAssessments = async (_req: Request, res: Response, next: NextFunction) => {
@@ -20,14 +20,14 @@ export const getAssessments = async (_req: Request, res: Response, next: NextFun
 
     const response: ApiResponse = {
       success: true,
-      message: "Assessments fetched successfully",
-      data,
+      message: 'Assessments fetched successfully',
+      data
     };
 
     res.json(response);
-  } catch (error){
-    console.log(error)
-    next(new AppError("Failed to fetch assessments", 500));
+  } catch (error) {
+    console.log(error);
+    next(new AppError('Failed to fetch assessments', 500));
   }
 };
 
@@ -37,15 +37,11 @@ export const getAssessmentById = async (req: Request, res: Response, next: NextF
     const id = Number(req.params.id);
 
     const assessment = await findAssessmentById(id);
-    if (!assessment) return next(new AppError("Assessment not found", 404));
+    if (!assessment) return next(new AppError('Assessment not found', 404));
 
     const topics = await findTopicsByAssessment(id);
-    const questions = await findQuestionsByTopicIds(
-      topics.map((t) => t.assessment_topic_id)
-    );
-    const options = await findOptionsByQuestionIds(
-      questions.map((q) => q.assessment_question_id)
-    );
+    const questions = await findQuestionsByTopicIds(topics.map((t) => t.assessment_topic_id));
+    const options = await findOptionsByQuestionIds(questions.map((q) => q.assessment_question_id));
 
     const formattedTopics = topics.map((topic) => ({
       id: topic.code,
@@ -61,26 +57,91 @@ export const getAssessmentById = async (req: Request, res: Response, next: NextF
             .map((o) => ({
               id: o.assessment_question_options_id,
               label: o.option_label,
-              value: o.numeric_value ?? o.option_value,
-            })),
-        })),
+              value: o.numeric_value ?? o.option_value
+            }))
+        }))
     }));
 
     const response: ApiResponse = {
       success: true,
-      message: "Assessment fetched successfully",
+      message: 'Assessment fetched successfully',
       data: {
         id: assessment.assessment_id,
         title: assessment.title,
         category: assessment.domain,
         description: assessment.description,
         totalQuestions: questions.length,
-        topics: formattedTopics,
-      },
+        topics: formattedTopics
+      }
     };
 
     res.json(response);
   } catch {
-    next(new AppError("Failed to fetch assessment", 500));
+    next(new AppError('Failed to fetch assessment', 500));
+  }
+};
+
+export const saveAssessmentProgress = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const assessmentId = Number(req.params.id);
+
+    // ⚠️ Replace with authenticated user later
+    const userId = 1;
+
+    const { answers, currentTopicIndex, currentPage } = req.body;
+
+    await saveProgress(userId, assessmentId, {
+      answers,
+      currentTopicIndex,
+      currentPage
+    });
+
+    const response: ApiResponse = {
+      success: true,
+      message: 'Progress saved successfully'
+    };
+
+    res.status(200).json(response);
+  } catch (err) {
+    next(new AppError('Failed to save progress', 500));
+  }
+};
+
+export const getUserAssessmentProgress = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // replace later with req.user.userId
+    const userId = 1;
+
+    const progress = await getAllProgress(userId);
+
+    const response: ApiResponse = {
+      success: true,
+      message: 'Assessment progress fetched successfully',
+      data: progress
+    };
+
+    res.status(200).json(response);
+  } catch (err) {
+    next(new AppError('Failed to fetch assessment progress', 500));
+  }
+};
+
+export const getUserAssessmentProgressByID = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // replace later with req.user.userId
+    const userId = 1;
+    const progressId = Number(req.params.id);
+
+    const progress = await getProgressByID(userId, progressId);
+
+    const response: ApiResponse = {
+      success: true,
+      message: 'Assessment progress fetched successfully',
+      data: progress
+    };
+
+    res.status(200).json(response);
+  } catch (err) {
+    next(new AppError('Failed to fetch assessment progress', 500));
   }
 };

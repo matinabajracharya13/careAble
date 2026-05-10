@@ -33,6 +33,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { SITE_CONFIG } from '@/config/site';
 
 // ── Validation ────────────────────────────────────────────────────────────────
 const contactSchema = z.object({
@@ -197,10 +198,7 @@ export default function LandingPage() {
               Deserves to be <span className='gradient-text italic'>Seen</span>
             </h1>
 
-            <p className='text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed'>
-              A platform recognising the skills of Australia's hidden caregiving workforce and connecting them to the support and
-              opportunities they deserve.
-            </p>
+            <p className='text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed'>{SITE_CONFIG.description}</p>
 
             <div className='flex flex-col sm:flex-row gap-4 justify-center pt-4'>
               <Button
@@ -597,7 +595,8 @@ export default function LandingPage() {
                   alt='Logo'
                   width={32}
                   height={32}
-                />              </div>
+                />{' '}
+              </div>
               <span className='font-display font-semibold text-foreground'>CareAble</span>
               <span>© 2026</span>
             </div>

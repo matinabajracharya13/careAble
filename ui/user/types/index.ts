@@ -1,17 +1,15 @@
 // ── Auth & User ─────────────────────────────────────────────────────────────
 
-export type UserRole = "employer" | "career";
-
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: UserRole;
+  role: string;
   avatar?: string;
   onboardingCompleted: boolean;
   skills?: string[];
-  company?: string;       // employer only
-  jobTitle?: string;      // career only
+  company?: string; // employer only
+  jobTitle?: string; // career only
   createdAt: string;
 }
 
@@ -24,14 +22,7 @@ export interface AuthState {
 
 // ── Onboarding ───────────────────────────────────────────────────────────────
 
-export type QuestionType =
-  | "text"
-  | "textarea"
-  | "select"
-  | "multiselect"
-  | "radio"
-  | "checkbox"
-  | "range";
+export type QuestionType = 'text' | 'textarea' | 'select' | 'multiselect' | 'radio' | 'checkbox' | 'range';
 
 export interface QuestionOption {
   label: string;
@@ -65,19 +56,14 @@ export interface OnboardingResponse {
 
 // ── Assessment ───────────────────────────────────────────────────────────────
 
-export type AssessmentStatus = "not_started" | "in_progress" | "completed" | "failed";
-
+export type AssessmentStatus = 'not_started' | 'in_progress' | 'completed' | 'failed';
 
 export interface Assessment {
-  id: string;
   title: string;
   description: string;
   category: string;
-
-  // optional now (since self-assessment may not need them)
-  level?: "beginner" | "intermediate" | "advanced";
-  duration?: number | null;        // optional / not required
-  passingScore?: number | null;    // optional / not used
+  assessment_id: number;
+  domain: string;
 
   totalQuestions: number;
 
@@ -89,7 +75,6 @@ export interface AssessmentTopic {
   id: string;
   title: string;
   description?: string;
-
   questions: AssessmentQuestion[];
 }
 
@@ -97,7 +82,7 @@ export interface AssessmentQuestion {
   id: string;
   text: string;
 
-  type?: "slider"; // for now only slider (future-proof)
+  type?: 'slider'; // for now only slider (future-proof)
 
   // slider config (flexible for reuse)
   scale?: {
@@ -114,7 +99,7 @@ export interface AssessmentResult {
   passed: boolean;
   answers: { questionId: string; selectedAnswer: string; correct: boolean }[];
   completedAt: string;
-  timeSpent: number;       // seconds
+  timeSpent: number; // seconds
   certificateId?: string;
 }
 
@@ -152,7 +137,7 @@ export interface Partner {
   name: string;
   logo: string;
   url: string;
-  tier: "platinum" | "gold" | "silver";
+  tier: 'platinum' | 'gold' | 'silver';
 }
 
 // ── API Response ─────────────────────────────────────────────────────────────
@@ -173,11 +158,27 @@ export interface PaginatedResponse<T> {
 
 // ── Theme ─────────────────────────────────────────────────────────────────────
 
-export type ColorTheme = "cobalt" | "emerald" | "violet" | "rose" | "amber" | "slate";
+export type ColorTheme = 'cobalt' | 'emerald' | 'violet' | 'rose' | 'amber' | 'slate';
 
 export interface ThemeConfig {
   name: string;
   value: ColorTheme;
   primaryColor: string;
   description: string;
+}
+
+export interface AssessmentProgress {
+  assessment_id: number;
+  progress_id: number;
+  answers: string;
+  current_topic_index: number;
+  current_page: number;
+}
+
+export interface Roles {
+  id: number;
+  role_name: string;
+  description: string;
+  label: string;
+  icon_key: string;
 }

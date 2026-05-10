@@ -1,4 +1,13 @@
-import type { User, OnboardingCategory, Assessment, AssessmentResult, Certificate, ContactFormData } from '@/types';
+import type {
+  User,
+  OnboardingCategory,
+  Assessment,
+  AssessmentResult,
+  Certificate,
+  ContactFormData,
+  AssessmentProgress,
+  Roles
+} from '@/types';
 
 // ── Base API (swap this URL for your real backend) ────────────────────────────
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.CareAble.dev';
@@ -12,6 +21,22 @@ async function fetchWithAuth<T>(endpoint: string, options: RequestInit = {}): Pr
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers
+    }
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: res.statusText }));
+    throw new Error(error.message ?? 'API error');
+  }
+
+  return res.json();
+}
+
+async function fetchWithAuthNoJson(endpoint: string, options: RequestInit = {}) {
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json'
     }
   });
 
@@ -60,17 +85,12 @@ export const authApi = {
     return match;
   },
 
-  signup: async (data: { name: string; email: string; password: string; role: 'employer' | 'career' }) => {
-    await delay(1000);
-    const user: User = {
-      id: `u${Date.now()}`,
-      email: data.email,
-      name: data.name,
-      role: data.role,
-      onboardingCompleted: false,
-      createdAt: new Date().toISOString()
-    };
-    return { token: `mock-token-${Date.now()}`, user };
+  signup: async (data: { name: string; email: string; password: string; role: string }) => {
+    const res = await fetchWithAuthNoJson('/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+    return res.data;
   }
 };
 
@@ -285,6 +305,15 @@ export const assessmentApi = {
     return res.data;
   },
 
+  getUserAssessmentProgress: async (): Promise<AssessmentProgress[]> => {
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: AssessmentProgress[];
+    }>('/assessments/progress');
+    return res.data;
+  },
+
   getAssessment: async (id: string): Promise<Assessment> => {
     const res = await fetchWithAuth<{
       success: boolean;
@@ -295,29 +324,45 @@ export const assessmentApi = {
     return res.data;
   },
 
-  saveProgress: async (id: string, data: any): Promise<Assessment> => {
-    await delay(400);
-    const a = MOCK_ASSESSMENTS;
-    if (!a) throw new Error('Assessment not found');
-    return a;
+  getProgress: async (assessmentId: string): Promise<AssessmentProgress> => {
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: AssessmentProgress;
+    }>(`/assessments/${assessmentId}/progress`);
+    return res.data;
+  },
+
+  saveProgress: async (
+    assessmentId: string,
+    payload: {
+      answers: Record<string, string>;
+      currentTopicIndex: number;
+      currentPage: number;
+    }
+  ) => {
+    return fetchWithAuth(`/assessments/${assessmentId}/save-progress`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
   },
 
   submitAssessment: async (assessmentId: string, answers: Record<string, string>): Promise<AssessmentResult> => {
     await delay(1200);
-    const assessment = MOCK_ASSESSMENTS;
-    if (!assessment) throw new Error('Assessment not found');
+    // const assessment = MOCK_ASSESSMENTS;
+    // if (!assessment) throw new Error('Assessment not found');
 
-    // Calculate score
+    // // Calculate score
     const score = 100;
-    // const answerDetails: AssessmentResult["answers"] = assessment.topics.map((q) => {
-    //   const selected = answers[q.id] ?? "";
-    //   const isCorrect = selected === q.correctAnswer;
-    //   if (isCorrect) correct++;
-    //   return { questionId: q.id, selectedAnswer: selected, correct: isCorrect };
-    // });
+    // // const answerDetails: AssessmentResult["answers"] = assessment.topics.map((q) => {
+    // //   const selected = answers[q.id] ?? "";
+    // //   const isCorrect = selected === q.correctAnswer;
+    // //   if (isCorrect) correct++;
+    // //   return { questionId: q.id, selectedAnswer: selected, correct: isCorrect };
+    // // });
 
-    // const score = Math.round((correct / assessment.questions.length) * 100);
-    // const passed = score >= assessment.passingScore;
+    // // const score = Math.round((correct / assessment.questions.length) * 100);
+    // // const passed = score >= assessment.passingScore;
     const passed = true;
     const result: AssessmentResult = {
       assessmentId,
@@ -364,83 +409,15 @@ export const contactApi = {
   }
 };
 
-// ── Mock Data ─────────────────────────────────────────────────────────────────
+/*
+Public Routes (no auth required)
+*/
 
-const MOCK_ASSESSMENTS: Assessment = {
-  id: 'wellbeing1',
-  title: 'Caregiver Wellbeing Assessment',
-  category: 'Wellbeing',
-  description: 'Understand your wellbeing across key life areas.',
-  totalQuestions: 32,
-
-  topics: [
-    {
-      id: 'social',
-      title: 'Social Connection & Belonging',
-      questions: [
-        { id: 'sc1', text: 'I maintain social connections outside my caregiving role.', type: 'slider' },
-        { id: 'sc2', text: 'I feel connected to peers, family, or community.', type: 'slider' },
-        { id: 'sc3', text: 'I seek support when feeling isolated.', type: 'slider' },
-        { id: 'sc4', text: 'I maintain interests or identity beyond caregiving.', type: 'slider' },
-        { id: 'sc5', text: 'I experience a sense of belonging rather than isolation.', type: 'slider' }
-      ]
-    },
-
-    {
-      id: 'emotional',
-      title: 'Emotional Wellbeing',
-      questions: [
-        { id: 'em1', text: 'I feel emotionally supported in my daily life.', type: 'slider' },
-        { id: 'em2', text: 'I am able to manage stress effectively.', type: 'slider' },
-        { id: 'em3', text: 'I feel overwhelmed by responsibilities.', type: 'slider' },
-        { id: 'em4', text: 'I feel emotionally drained at the end of the day.', type: 'slider' },
-        { id: 'em5', text: 'I can find time to relax and recharge.', type: 'slider' }
-      ]
-    },
-
-    {
-      id: 'physical',
-      title: 'Physical Health',
-      questions: [
-        { id: 'ph1', text: 'I get enough sleep regularly.', type: 'slider' },
-        { id: 'ph2', text: 'I maintain a balanced and healthy diet.', type: 'slider' },
-        { id: 'ph3', text: 'I engage in regular physical activity.', type: 'slider' },
-        { id: 'ph4', text: 'I feel physically exhausted most of the time.', type: 'slider' },
-        { id: 'ph5', text: 'I take time to rest when needed.', type: 'slider' },
-        { id: 'ph6', text: 'I experience physical strain from caregiving tasks.', type: 'slider' }
-      ]
-    },
-
-    {
-      id: 'financial',
-      title: 'Financial Stability',
-      questions: [
-        { id: 'fi1', text: 'I feel financially secure in my current situation.', type: 'slider' },
-        { id: 'fi2', text: 'I can comfortably manage my daily expenses.', type: 'slider' },
-        { id: 'fi3', text: 'I have access to financial support if needed.', type: 'slider' },
-        { id: 'fi4', text: 'Caregiving has impacted my financial stability.', type: 'slider' },
-        { id: 'fi5', text: 'I am able to plan for future financial needs.', type: 'slider' }
-      ]
-    },
-
-    // 🔥 BIG TOPIC (10 QUESTIONS)
-    {
-      id: 'caregiving',
-      title: 'Caregiving Experience',
-      questions: [
-        { id: 'cg1', text: 'I feel confident in my caregiving abilities.', type: 'slider' },
-        { id: 'cg2', text: 'I understand the needs of the person I care for.', type: 'slider' },
-        { id: 'cg3', text: 'I feel overwhelmed by caregiving responsibilities.', type: 'slider' },
-        { id: 'cg4', text: 'I receive adequate support in my caregiving role.', type: 'slider' },
-        { id: 'cg5', text: 'I can balance caregiving with my personal life.', type: 'slider' },
-        { id: 'cg6', text: 'I feel appreciated for the care I provide.', type: 'slider' },
-        { id: 'cg7', text: 'I have access to resources that help me caregive effectively.', type: 'slider' },
-        { id: 'cg8', text: 'I feel तनाव (stress) related to caregiving duties.', type: 'slider' },
-        { id: 'cg9', text: 'I can take breaks when needed from caregiving.', type: 'slider' },
-        { id: 'cg10', text: 'I feel in control of my caregiving responsibilities.', type: 'slider' }
-      ]
-    }
-  ]
+export const roleApi = {
+  getRoles: async (): Promise<Roles[]> => {
+    const res = await fetchWithAuthNoJson('/roles');
+    return res.data;
+  }
 };
 
 function delay(ms: number) {

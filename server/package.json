@@ -15,12 +15,14 @@
     "seed": "knex --knexfile knexfile.ts seed:run"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.8.0",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.3",
     "knex": "^3.2.9",
     "morgan": "^1.10.0",
     "mysql2": "^3.20.0",

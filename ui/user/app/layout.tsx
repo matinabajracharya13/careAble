@@ -5,11 +5,12 @@ import { ThemeConfigProvider } from '@/context/ThemeContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { Toaster } from '@/components/ui/toast';
 import QueryProvider from '@/components/shared/QueryProvider';
+import { SITE_CONFIG } from '@/config/site';
 
 export const metadata: Metadata = {
-  title: 'CareAble – Every Carer Deserves to be seen',
-  description: `A platform recognising the skills of Australia's hidden caregiving workforce and connecting them to the support and opportunities they deserve.`,
-  keywords: ['self', 'assessment', 'certificate']
+  title: SITE_CONFIG.title,
+  description: SITE_CONFIG.description,
+  keywords: SITE_CONFIG.keywords
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
