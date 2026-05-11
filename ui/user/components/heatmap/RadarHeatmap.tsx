@@ -76,26 +76,6 @@ const RadarHeatmap = ({ data }: { data: HeatmapData[] }) => {
     return null;
   };
 
-  // =========================
-  // EMPTY STATE (NEW)
-  // =========================
-
-  if (!hasData) {
-    return (
-      <div className="bg-white p-10 rounded-2xl text-center shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-700 mb-4">
-          You haven't completed your assessment
-        </h2>
-
-        <button
-          onClick={() => router.push('/assessment')}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition"
-        >
-          Start Assessment
-        </button>
-      </div>
-    );
-  }
 
   return (
     /* MAIN CONTAINER*/
