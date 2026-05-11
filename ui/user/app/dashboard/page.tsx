@@ -16,6 +16,7 @@ import { useAuth } from "@/context/AuthContext";
 import { cn, getLevelBadgeClass } from "@/lib/utils";
 import RadarHeatmap from '@/components/heatmap/RadarHeatmap';
 import { MOCK_HEATMAP_DATA } from '@/constants/mockData';
+import HeatmapEmptyState from '@/components/heatmap/HeatmapEmptyState';
 
 // ── Career Dashboard ──────────────────────────────────────────────────────────
 function CareerDashboard({ user }: { user: NonNullable<ReturnType<typeof useAuth>["user"]> }) {
@@ -30,6 +31,23 @@ function CareerDashboard({ user }: { user: NonNullable<ReturnType<typeof useAuth
     { label: "Avg. score", value: "87%", icon: TrendingUp, color: "text-accent", bg: "bg-accent/10" },
     { label: "Hours studied", value: "4.5", icon: Clock, color: "text-warning", bg: "bg-warning/10" },
   ];
+
+  // =========================
+  // Assessment State Management
+  // =========================
+
+  // Mock heatmap data (replace with API data later)
+
+  // Generate random heatmap data for testing (replace with real API data)
+  // const heatmapData = MOCK_HEATMAP_DATA;
+
+  // Empty state display logic (important for UX when user has no data)
+  const heatmapData: any[] = [];
+
+  // Check whether user has completed assessment
+  const hasAssessmentData =
+    heatmapData &&
+    heatmapData.length > 0;
 
 
   return (
@@ -68,9 +86,38 @@ function CareerDashboard({ user }: { user: NonNullable<ReturnType<typeof useAuth
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
 
-          {/* Heatmap container*/}
-          <div className=" mb-6">
-            <RadarHeatmap data={MOCK_HEATMAP_DATA} />
+        {/* =========================
+              HEATMAP STATE MANAGEMENT
+          ========================= */}
+
+          <div className="mb-6">
+
+            {/* Loading state */}
+            {isLoading ? (
+
+              <div className="bg-white rounded-2xl p-10 shadow-sm border border-slate-100 flex flex-col items-center justify-center">
+
+                {/* Loading spinner */}
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+
+                {/* Loading text */}
+                <p className="text-sm text-slate-500">
+                  Loading assessment results...
+                </p>
+
+              </div>
+
+            ) : !hasAssessmentData ? (
+
+              /* Empty heatmap state */
+              <HeatmapEmptyState />
+
+            ) : (
+
+              /* Success state - show heatmap */
+              <RadarHeatmap data={heatmapData} />
+
+            )}
           </div>
 
         {/* Available assessments */}
