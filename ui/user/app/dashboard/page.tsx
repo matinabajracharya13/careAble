@@ -295,7 +295,7 @@ export default function DashboardPage() {
 
   React.useEffect(() => {
     if (!isLoading && !isAuthenticated) router.push("/login");
-    if (!isLoading && isAuthenticated && user && !user.onboardingCompleted) router.push("/onboarding");
+    if (!isLoading && isAuthenticated && user && !user.onboarding_completed) router.push("/onboarding");
   }, [isLoading, isAuthenticated, user, router]);
 
   if (isLoading || !user) {

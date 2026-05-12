@@ -1,3 +1,5 @@
+import 'express';
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
@@ -21,3 +23,8 @@ export interface Roles {
   label: string;
   icon_key: string;
 }
+
+export interface OnboardingAnswer  {
+  question_id: number;
+  answer: string | string[] | boolean | number | null;
+};

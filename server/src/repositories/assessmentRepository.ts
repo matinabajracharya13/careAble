@@ -1,4 +1,4 @@
-import db from '../db';
+import db from '@/db';
 
 // ─────────────────────────────────────────────
 // BASIC CRUD
@@ -106,4 +106,18 @@ export const getProgressByID = (userId: number, progressId: number) => {
       progress_id: progressId
     })
     .first();
+};
+
+export const saveAssessmentResponses = async (
+  attemptId: number,
+  responses: { question_id: number; answer: number }[]
+) => {
+  const rows = responses.map((item) => ({
+    attempt_id: attemptId,
+    assessment_question_id: item.question_id,
+    selected_option_id: item.answer,
+    numeric_value: item.answer
+  }));
+
+  return db('assessment_responses').insert(rows);
 };

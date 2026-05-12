@@ -6,7 +6,7 @@ export interface User {
   name: string;
   role: string;
   avatar?: string;
-  onboardingCompleted: boolean;
+  onboarding_completed: boolean;
   skills?: string[];
   company?: string; // employer only
   jobTitle?: string; // career only
@@ -181,4 +181,17 @@ export interface Roles {
   description: string;
   label: string;
   icon_key: string;
+}
+
+export interface SignupPayload {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  date_of_birth: string;
+  postcode: string;
+  password: string;
+  role: string;
+  accepted_terms: boolean;
+  research_consent: boolean;
 }

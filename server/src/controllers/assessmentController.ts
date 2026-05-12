@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { AppError } from '../middleware/errorHandler';
-import { ApiResponse } from '../types';
+import { AppError } from '@/middleware/errorHandler';
+import { ApiResponse } from '@/types';
 
 import {
   findAllAssessments,
@@ -10,8 +10,9 @@ import {
   findTopicsByAssessment,
   getAllProgress,
   getProgressByID,
+  saveAssessmentResponses,
   saveProgress
-} from '../repositories/assessmentRepository';
+} from '@/repositories/assessmentRepository';
 
 // GET ALL
 export const getAssessments = async (_req: Request, res: Response, next: NextFunction) => {
@@ -143,5 +144,57 @@ export const getUserAssessmentProgressByID = async (req: Request, res: Response,
     res.status(200).json(response);
   } catch (err) {
     next(new AppError('Failed to fetch assessment progress', 500));
+  }
+};
+
+export const submitAssessmentResponses = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = (req as any).user?.user_id;
+    const { attempt_id, responses } = req.body;
+
+    if (!userId) {
+      return next(new AppError('Unauthorized', 401));
+    }
+    console.log(req.body)
+    res.status(400).json({})
+
+    if ( !responses || !Array.isArray(responses)) {
+      return next(
+        new AppError('Attempt ID and assessment responses are required', 400)
+      );
+    }
+
+
+    /*
+      Expected format:
+      {
+        attempt_id: 1,
+        responses: {
+          "1": 3,
+          "2": 4,
+          "3": 2
+        }
+      }
+    */
+
+    const formattedResponses = Object.entries(responses).map(
+      ([questionId, answer]) => ({
+        question_id: Number(questionId),
+        answer: Number(answer)
+      })
+    );
+
+    await saveAssessmentResponses(attempt_id, formattedResponses);
+
+    res.status(201).json({
+      success: true,
+      message: 'Assessment responses submitted successfully'
+    });
+  } catch (error) {
+    next(error);
   }
 };

@@ -46,7 +46,8 @@ export function Navbar() {
     router.push('/');
   };
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
-
+  console.log(user)
+  
   return (
     <header
       className={cn(

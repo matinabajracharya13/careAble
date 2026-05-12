@@ -1,4 +1,4 @@
-import db from '../db';
+import db from '@/db';
 
 export const findRoleByName = async (role_name: string) => {
   return await db('roles').where({ role_name: role_name }).first();

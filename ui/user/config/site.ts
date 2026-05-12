@@ -6,3 +6,10 @@ export const SITE_CONFIG = {
   keywords: ['self', 'assessment', 'certificate'],
   url: 'https://careable.com'
 };
+
+export const APP_PERKS = [
+  'Free skill assessments', 
+  'Verified certificates', 
+  'Trusted by 340+ companies', 
+  'No credit card required'
+];
