@@ -3,13 +3,14 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
-import { requestLoggerAll } from './middleware/requestLogger';
-import { errorHandler, notFound } from './middleware/errorHandler';
-import healthRoutes from './routes/healthRoutes';
-import userRoutes from './routes/userRoutes';
-import assessmentRoutes from './routes/assessmentRoutes';
-import authRoutes from './routes/authRoutes';
-import roleRoutes from './routes/roleRoutes';
+import { requestLoggerAll } from '@/middleware/requestLogger';
+import { errorHandler, notFound } from '@/middleware/errorHandler';
+import healthRoutes from '@/routes/healthRoutes';
+import userRoutes from '@/routes/userRoutes';
+import assessmentRoutes from '@/routes/assessmentRoutes';
+import authRoutes from '@/routes/authRoutes';
+import roleRoutes from '@/routes/roleRoutes';
+import onboardingRoutes from '@/routes/onboardingRoutes';
 
 const app: Application = express();
 const allowedOrigins = ['http://localhost:3000', 'http://localhost:5173', process.env.CLIENT_URL];
@@ -51,7 +52,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/assessments', assessmentRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/roles', roleRoutes);
-
+app.use('/api/onboarding', onboardingRoutes);
 // ─── Error handling ────────────────────────────────────────
 app.use(notFound);
 app.use(errorHandler);

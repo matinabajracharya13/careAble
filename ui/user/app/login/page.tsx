@@ -76,22 +76,7 @@ export default function LoginPage() {
           </CardHeader>
 
           <CardContent className="space-y-5">
-            {/* Demo quick-fill */}
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" size="sm" type="button" onClick={() => fillDemo("career")} className="text-xs">
-                Demo: Career
-              </Button>
-              <Button variant="outline" size="sm" type="button" onClick={() => fillDemo("employer")} className="text-xs">
-                Demo: Employer
-              </Button>
-            </div>
-
-            <div className="relative">
-              <Separator />
-              <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-3 text-xs text-muted-foreground">
-                or enter manually
-              </span>
-            </div>
+            
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-1.5">

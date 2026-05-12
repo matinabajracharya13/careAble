@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { ApiResponse } from '../types'
+import { ApiResponse } from '@/types'
 
 export const healthCheck = (_req: Request, res: Response): void => {
   const response: ApiResponse<{ uptime: number; timestamp: string }> = {

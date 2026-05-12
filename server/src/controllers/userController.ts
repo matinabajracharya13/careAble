@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import { AppError } from '../middleware/errorHandler'
-import { ApiResponse } from '../types'
+import { AppError } from '@/middleware/errorHandler'
+import { ApiResponse } from '@/types'
 
 // In-memory store — replace with your DB later
 interface User {

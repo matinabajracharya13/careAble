@@ -40,17 +40,32 @@ export async function up(knex: Knex): Promise<void> {
     table.foreign("assigned_by").references("user_id").inTable("users").onDelete("SET NULL");
   });
 
+  await knex.schema.createTable('onboarding_categories', (table) => {
+    table.increments('category_id').primary();
+    table.string('title').notNullable();
+    table.text('description');
+    table.string('icon');
+    table.integer('display_order').defaultTo(0);
+    table.timestamp('created_at').defaultTo(knex.fn.now());
+    table.timestamp('updated_at').defaultTo(knex.fn.now());
+  });
+
+
   // 4. onboarding_questions
   await knex.schema.createTable("onboarding_questions", (table) => {
     table.increments("question_id").primary();
     table.string("question_text");
     table.string("question_type").comment("text, boolean, single_select, multi_select");
-    table.string("user_category");
+    table.string('input_type');
+    table.string("category_id");
     table.boolean("is_required");
     table.string("default_answer");
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table.timestamp("updated_at").defaultTo(knex.fn.now());
+
+    table.foreign("category_id").references("category_id").inTable("onboarding_categories").onDelete("CASCADE");
   });
+
 
   // 5. question_options
   await knex.schema.createTable("question_options", (table) => {
@@ -58,6 +73,8 @@ export async function up(knex: Knex): Promise<void> {
     table.integer("question_id").unsigned().nullable();
     table.string("option_text");
     table.integer("option_value");
+    table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamp("updated_at").defaultTo(knex.fn.now());
 
     table
       .foreign("question_id")
@@ -218,6 +235,8 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists("assessments");
   await knex.schema.dropTableIfExists("onboarding_answers");
   await knex.schema.dropTableIfExists("question_options");
+  await knex.schema.dropTableIfExists("onboarding_categories");
+  
   await knex.schema.dropTableIfExists("onboarding_questions");
   await knex.schema.dropTableIfExists("user_roles");
   await knex.schema.dropTableIfExists("roles");
