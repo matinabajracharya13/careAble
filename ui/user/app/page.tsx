@@ -129,7 +129,7 @@ const TESTIMONIALS = [
     role: 'Data Analyst',
     company: 'DataFlow',
     text: "I used CareAble to identify my skill gaps and then prove I'd filled them. My salary increased 22% after certification.",
-    rating: 5
+    rating: 4
   }
 ];
 
