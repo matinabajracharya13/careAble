@@ -1,4 +1,5 @@
 import db from '@/db';
+import { generateCertificate } from './certificateRepository';
 
 // ─────────────────────────────────────────────
 // BASIC CRUD
@@ -50,11 +51,12 @@ export const findOptionsByQuestionIds = (questionIds: number[]) => {
   return db('assessment_question_options').whereIn('assessment_question_id', questionIds);
 };
 
-export const findProgress = (userId: number, assessmentId: number) => {
+export const findProgress = (userId: number, assessmentId: number, attemptId: number) => {
   return db('assessment_progress')
     .where({
       user_id: userId,
-      assessment_id: assessmentId
+      assessment_id: assessmentId,
+      attempt_id: attemptId
     })
     .first();
 };
@@ -62,19 +64,21 @@ export const findProgress = (userId: number, assessmentId: number) => {
 export const saveProgress = async (
   userId: number,
   assessmentId: number,
+  attemptId: number,
   data: {
     answers: Record<string, string>;
     currentTopicIndex: number;
     currentPage: number;
   }
 ) => {
-  const existing = await findProgress(userId, assessmentId);
+  const existing = await findProgress(userId, assessmentId, attemptId);
 
   if (existing) {
     return db('assessment_progress')
       .where({
         user_id: userId,
-        assessment_id: assessmentId
+        assessment_id: assessmentId,
+        attempt_id: attemptId
       })
       .update({
         answers: JSON.stringify(data.answers),
@@ -89,35 +93,159 @@ export const saveProgress = async (
     assessment_id: assessmentId,
     answers: JSON.stringify(data.answers),
     current_topic_index: data.currentTopicIndex,
-    current_page: data.currentPage
+    current_page: data.currentPage,
+    attempt_id: attemptId
   });
 };
 
-export const getAllProgress = (userId: number) => {
-  return db('assessment_progress').where({
-    user_id: userId
-  });
+export const getAllAttempt = (userId: number) => {
+  return db('assessment_attempts')
+    .where({
+      user_id: userId
+    })
+    .select('assessment_id', 'attempt_id', 'status');
 };
 
-export const getProgressByID = (userId: number, progressId: number) => {
+export const getProgressByID = (userId: number, assessmentId: number, attemptId: number) => {
   return db('assessment_progress')
     .where({
       user_id: userId,
-      progress_id: progressId
+      assessment_id: assessmentId,
+      attempt_id: attemptId
     })
     .first();
 };
 
 export const saveAssessmentResponses = async (
   attemptId: number,
-  responses: { question_id: number; answer: number }[]
+  userId: number,
+  assessmentId: number,
+  responses: { question_id: number; selected_option_id: number; numeric_value: number }[]
 ) => {
-  const rows = responses.map((item) => ({
-    attempt_id: attemptId,
-    assessment_question_id: item.question_id,
-    selected_option_id: item.answer,
-    numeric_value: item.answer
-  }));
+  const trx = await db.transaction();
+  try {
+    const rows = responses.map((item) => ({
+      attempt_id: attemptId,
+      assessment_question_id: item.question_id,
+      selected_option_id: item.selected_option_id,
+      numeric_value: item.numeric_value
+    }));
 
-  return db('assessment_responses').insert(rows);
+    await trx('assessment_responses').insert(rows);
+    await trx('assessment_attempts')
+      .where({
+        attempt_id: attemptId,
+        user_id: userId,
+        assessment_id: assessmentId
+      })
+      .update({
+        status: 'completed',
+        submitted_at: trx.fn.now()
+      });
+    await trx.commit();
+  } catch (err) {
+    await trx.rollback();
+
+    throw err;
+  }
+};
+
+export const createAssessmentAttempt = async (assessmentID: number, userID: number) => {
+  const rows = {
+    assessment_id: assessmentID,
+    user_id: userID,
+    started_at: db.fn.now(),
+    status: 'in_progress'
+  };
+
+  const [attempt] = await db('assessment_attempts')
+    .insert(rows)
+    .returning(['attempt_id', 'assessment_id', 'user_id', 'started_at', 'status']);
+
+  return attempt;
+};
+
+export const processAssessmentResult = async (
+  attemptId: number,
+  assessmentId: number,
+  userId: number
+) => {
+  // Fetch responses + question domain data in one query
+  const rows = await db('assessment_responses as ar')
+  .join(
+    'assessment_questions as aq',
+    'aq.assessment_question_id',
+    'ar.assessment_question_id'
+  )
+  .where('ar.attempt_id', attemptId)
+  .andWhere('aq.assessment_id', assessmentId)
+  .select(
+    'ar.numeric_value',
+    'aq.domain'
+  );
+
+  const domainMap = new Map<
+    string,
+    { totalScore: number; questionCount: number }
+  >();
+
+  // Aggregate domain scores
+  for (const row of rows) {
+    const domain = row.domain || 'default';
+
+    if (!domainMap.has(domain)) {
+      domainMap.set(domain, {
+        totalScore: 0,
+        questionCount: 0
+      });
+    }
+
+    const current = domainMap.get(domain)!;
+
+    current.totalScore += Number(row.numeric_value);
+    current.questionCount += 1;
+  }
+
+  // Prepare domain scoring results
+  const domainRows = Array.from(domainMap.entries()).map(
+    ([domain, values]) => {
+      const meanScore = values.totalScore / values.questionCount;
+
+      let capability_level: string;
+
+      if (meanScore >= 4.0) {
+        capability_level = 'Strength';
+      } else if (meanScore >= 3.0) {
+        capability_level = 'Growth';
+      } else {
+        capability_level = 'Support';
+      }
+
+      return {
+        attempt_id: attemptId,
+        assessment_id: assessmentId,
+        domain,
+        score: Number(meanScore.toFixed(2)),
+        full_score: 5,
+        capability_level
+      };
+    }
+  );
+
+  // Insert domain scores
+  if (domainRows.length) {
+    await db('domain_scores').insert(domainRows);
+  }
+
+  // Top capability areas
+  const topCapabilityAreas = domainRows
+    .filter((domain) => domain.score >= 4.0)
+    .map((domain) => domain.domain);
+
+  return {
+    success: true,
+    completed_domains: domainRows.length,
+    top_capability_areas: topCapabilityAreas,
+    domains: domainRows
+  };
 };

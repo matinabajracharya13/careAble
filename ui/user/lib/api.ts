@@ -8,7 +8,9 @@ import type {
   AssessmentProgress,
   Roles,
   SignupPayload,
-  ApiResponse
+  ApiResponse,
+  AssessmentAttempt,
+  AssessmentSubmissionData
 } from '@/types';
 
 // ── Base API (swap this URL for your real backend) ────────────────────────────
@@ -54,9 +56,9 @@ async function fetchWithAuthNoJson(endpoint: string, options: RequestInit = {}) 
 
 export const authApi = {
   login: async (email: string, password: string) => {
-     const res = await fetchWithAuthNoJson('/auth/login', {
+    const res = await fetchWithAuthNoJson('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({email, password})
+      body: JSON.stringify({ email, password })
     });
     return res.data;
   },
@@ -83,7 +85,6 @@ export const authApi = {
 
 export const onboardingApi = {
   getCategories: async (): Promise<OnboardingCategory[]> => {
-    
     const res = await fetchWithAuth<{
       success: boolean;
       message: string;
@@ -94,11 +95,9 @@ export const onboardingApi = {
 
   submitResponses: async (data: Record<string, unknown>) => {
     console.log('Submitting onboarding data:', data);
-   const res = await fetchWithAuth(`/onboarding/complete`,{
-     
+    const res = await fetchWithAuth(`/onboarding/complete`, {
       method: 'POST',
       body: JSON.stringify(data)
-    
     });
     return res;
   }
@@ -117,12 +116,24 @@ export const assessmentApi = {
     return res.data;
   },
 
+  startAssessment: async (assessmentId: number): Promise<AssessmentAttempt> => {
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: AssessmentAttempt;
+    }>(`/assessments/${assessmentId}/start`, {
+      method: 'POST'
+    });
+
+    return res.data;
+  },
+
   getUserAssessmentProgress: async (): Promise<AssessmentProgress[]> => {
     const res = await fetchWithAuth<{
       success: boolean;
       message: string;
       data: AssessmentProgress[];
-    }>('/assessments/progress');
+    }>('/assessments/attempts');
     return res.data;
   },
 
@@ -136,38 +147,43 @@ export const assessmentApi = {
     return res.data;
   },
 
-  getProgress: async (assessmentId: string): Promise<AssessmentProgress> => {
+  getProgress: async (assessmentId: string, attemptId: string): Promise<AssessmentProgress> => {
     const res = await fetchWithAuth<{
       success: boolean;
       message: string;
       data: AssessmentProgress;
-    }>(`/assessments/${assessmentId}/progress`);
+    }>(`/assessments/${assessmentId}/attempts/${attemptId}/progress`);
     return res.data;
   },
 
   saveProgress: async (
     assessmentId: string,
+    attemptId: string,
     payload: {
-      answers: Record<string, string>;
+      answers: Record<string, { value: number; optionId: number }>;
       currentTopicIndex: number;
       currentPage: number;
     }
   ) => {
-    return fetchWithAuth(`/assessments/${assessmentId}/save-progress`, {
+    return fetchWithAuth(`/assessments/${assessmentId}/attempts/${attemptId}/save-progress`, {
       method: 'POST',
       body: JSON.stringify(payload)
     });
   },
 
-  submitAssessment: async (assessmentId: string, payload: {
-      answers: Record<string, string>;
-     
-    }): Promise<AssessmentResult> => {
+  submitAssessment: async (
+    assessmentId: string,
+    attemptId: string,
+
+    payload: {
+      answers: Record<string, { value: number; optionId: number }>;
+    }
+  ): Promise<AssessmentSubmissionData> => {
     const res = await fetchWithAuth<{
       success: boolean;
       message: string;
-      data: AssessmentResult;
-    }>(`/assessments/${assessmentId}/submit`, {
+      data: AssessmentSubmissionData;
+    }>(`/assessments/${assessmentId}/attempts/${attemptId}/submit`, {
       method: 'POST',
       body: JSON.stringify(payload)
     });
@@ -178,21 +194,21 @@ export const assessmentApi = {
 // ── Certificate API ───────────────────────────────────────────────────────────
 
 export const certificateApi = {
-  getCertificate: async (id: string): Promise<Certificate> => {
-    await delay(400);
-    return {
-      id,
-      userId: 'u2',
-      userName: 'James Okonkwo',
-      assessmentId: 'assess1',
-      assessmentTitle: 'JavaScript Fundamentals',
-      category: 'Technology',
-      level: 'Intermediate',
-      score: 87,
-      issuedAt: new Date().toISOString(),
-      verificationCode: `SB-${id.slice(0, 8).toUpperCase()}`,
-      issuerName: 'CareAble Academy'
-    };
+  getCertificate: async (): Promise<Certificate[]> => {
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: Certificate[];
+    }>(`/certificates`);
+    return res.data;
+  },
+  getCertificateByCode: async (code: string): Promise<Certificate> => {
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: Certificate;
+    }>(`/certificates/${code}`);
+    return res.data;
   }
 };
 
