@@ -37,7 +37,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     }
 
     const existingUser = await findUserByEmail(email);
-
+    console.log(existingUser);
     if (existingUser) {
       return next(new AppError('Email already exists', 409));
     }
@@ -201,7 +201,7 @@ export const getCurrentUser = async (req: Request, res: Response, next: NextFunc
     if (!user) {
       return next(new AppError('User not found', 404));
     }
-    const { user_id,email, first_name, last_name, phone, dob, postcode, role, onboarding_completed, email_verified } = user;
+    const { user_id, email, first_name, last_name, phone, dob, postcode, role, onboarding_completed, email_verified } = user;
     const response: ApiResponse = {
       success: true,
       message: 'Current user retrieved successfully',
