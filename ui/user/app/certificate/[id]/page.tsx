@@ -51,7 +51,7 @@ function CertificateCard({ cert }: { cert: any }) {
 
         {/* Recipient */}
         <div className='space-y-1'>
-          <h2 className='text-4xl font-display italic font-bold gradient-text'>{cert.userName}</h2>
+          <h2 className='text-4xl font-display italic font-bold gradient-text'>{cert.full_name}</h2>
           <p className='text-sm text-muted-foreground'>has successfully demonstrated proficiency in</p>
         </div>
 

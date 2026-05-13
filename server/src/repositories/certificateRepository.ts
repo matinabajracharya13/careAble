@@ -4,6 +4,7 @@ const baseQuery = () => {
   return db('certificates as c')
     .join('assessment_attempts as aa', 'aa.attempt_id', 'c.attempt_id')
     .join('assessments as a', 'a.assessment_id', 'aa.assessment_id')
+    .join('users as u', 'u.user_id', 'aa.user_id')
     .select(
       'c.certificate_id',
       'c.certificate_code',
@@ -12,8 +13,16 @@ const baseQuery = () => {
       'c.pdf_url',
       'c.validity_status',
       'c.validity_date',
+
       'a.title as assessment_title',
-      'a.description as assessment_description'
+      'a.description as assessment_description',
+
+      'u.user_id',
+      'u.first_name',
+      'u.last_name',
+      'u.email',
+
+      db.raw("u.first_name || ' ' || u.last_name as full_name")
     );
 };
 
@@ -30,7 +39,7 @@ export const findCertificateByCode = async (code: string, userId: number) => {
     .first();
 };
 
-export const generateCertificate = async (attemptId: number, assessmentId: number) => {
+export const generateCertificate = async (attemptId: number, assessmentId: number,userId: number) => {
   const code = `CERT-${Date.now()}-${attemptId}`;
 
   await db('certificates').insert({
@@ -39,7 +48,8 @@ export const generateCertificate = async (attemptId: number, assessmentId: numbe
     issued_at: new Date(),
     validity_status: 'valid',
     validity_date: null,
-    pdf_url: null
+    pdf_url: null,
+    user_id: userId
   });
 };
 

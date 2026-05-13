@@ -180,7 +180,7 @@ export const submitAssessmentResponses = async (req: Request, res: Response, nex
     }));
 
     await saveAssessmentResponses(attemptId, userId, assessmentId, formattedResponses);
-    const result = await processAssessmentResult(attemptId, assessmentId);
+    const result = await processAssessmentResult(attemptId, assessmentId,userId);
 
     // 4. fetch certificate (if generated)
     const certificate = await getCertificateByAttemptId(attemptId);
@@ -191,11 +191,11 @@ export const submitAssessmentResponses = async (req: Request, res: Response, nex
       data: {
         attemptId,
         assessmentId,
-        passed: result.passed,
         certificate: certificate || null
       }
     });
   } catch (error) {
+    console.log(error)
     next(error);
   }
 };

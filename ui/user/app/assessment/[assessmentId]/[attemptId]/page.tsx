@@ -57,7 +57,7 @@ export default function TopicStepperAssessment() {
         title: 'Assessment submitted',
         description: 'Your responses have been saved.'
       });
-      router.push(`/certificates/${data.certificate?.certificate_code}`);
+      router.push(`/certificate/${data.certificate?.certificate_code}`);
     },
     onError: () => {
       toast({

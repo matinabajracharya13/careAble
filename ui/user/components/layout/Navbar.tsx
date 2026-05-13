@@ -19,7 +19,6 @@ const CAREER_NAV = [
 const EMPLOYER_NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/employer', label: 'Talent Pool', icon: Users },
-  { href: '/assessment', label: 'Assessments', icon: BookOpen }
 ];
 
 export function Navbar() {

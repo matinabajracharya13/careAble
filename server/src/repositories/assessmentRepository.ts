@@ -165,66 +165,87 @@ export const createAssessmentAttempt = async (assessmentID: number, userID: numb
   return attempt;
 };
 
-export const processAssessmentResult = async (attemptId: number, assessmentId: number) => {
-  // 1. fetch responses
-  const responses = await db('assessment_responses').where({ attempt_id: attemptId });
+export const processAssessmentResult = async (
+  attemptId: number,
+  assessmentId: number,
+  userId: number
+) => {
+  // Fetch responses + question domain data in one query
+  const rows = await db('assessment_responses as ar')
+  .join(
+    'assessment_questions as aq',
+    'aq.assessment_question_id',
+    'ar.assessment_question_id'
+  )
+  .where('ar.attempt_id', attemptId)
+  .andWhere('aq.assessment_id', assessmentId)
+  .select(
+    'ar.numeric_value',
+    'aq.domain'
+  );
 
-  // 2. fetch questions (with domain mapping)
-  const questions = await db('assessment_questions').where({ assessment_id: assessmentId });
+  const domainMap = new Map<
+    string,
+    { totalScore: number; questionCount: number }
+  >();
 
-  // 3. build lookup map (IMPORTANT optimization)
-  const questionMap = new Map(questions.map((q) => [q.id, q]));
-
-  // 4. domain accumulator
-  const domainMap = new Map<string, { score: number; max: number }>();
-
-  // 5. compute domain scores
-  for (const r of responses) {
-    const q = questionMap.get(r.assessment_question_id);
-    if (!q) continue;
-
-    const domain = q.domain || 'default';
+  // Aggregate domain scores
+  for (const row of rows) {
+    const domain = row.domain || 'default';
 
     if (!domainMap.has(domain)) {
-      domainMap.set(domain, { score: 0, max: 0 });
+      domainMap.set(domain, {
+        totalScore: 0,
+        questionCount: 0
+      });
     }
 
-    const d = domainMap.get(domain)!;
+    const current = domainMap.get(domain)!;
 
-    d.score += Number(r.numeric_value);
-    d.max += 5; // Likert max scale
+    current.totalScore += Number(row.numeric_value);
+    current.questionCount += 1;
   }
 
-  // 7. prepare domain score rows
-  const domainRows = Array.from(domainMap.entries()).map(([domain, val]) => {
-    const ratio = val.score / val.max;
+  // Prepare domain scoring results
+  const domainRows = Array.from(domainMap.entries()).map(
+    ([domain, values]) => {
+      const meanScore = values.totalScore / values.questionCount;
 
-    return {
-      attempt_id: attemptId,
-      assessment_id: assessmentId,
-      domain,
-      score: Number(val.score.toFixed(2)),
-      full_score: Number(val.max.toFixed(2)),
-      capability_level: calculateCapability(ratio)
-    };
-  });
+      let capability_level: string;
 
-  // 8. insert domain scores
-  if (domainRows.length > 0) {
+      if (meanScore >= 4.0) {
+        capability_level = 'Strength';
+      } else if (meanScore >= 3.0) {
+        capability_level = 'Growth';
+      } else {
+        capability_level = 'Support';
+      }
+
+      return {
+        attempt_id: attemptId,
+        assessment_id: assessmentId,
+        domain,
+        score: Number(meanScore.toFixed(2)),
+        full_score: 5,
+        capability_level
+      };
+    }
+  );
+
+  // Insert domain scores
+  if (domainRows.length) {
     await db('domain_scores').insert(domainRows);
   }
 
-  // 9. determine pass/fail
-  const passed = domainRows.every((d) => d.capability_level !== 'Support');
-
-  // 10. generate certificate if passed
-  if (passed) {
-    await generateCertificate(attemptId, assessmentId);
-  }
+  // Top capability areas
+  const topCapabilityAreas = domainRows
+    .filter((domain) => domain.score >= 4.0)
+    .map((domain) => domain.domain);
 
   return {
     success: true,
-    domains: domainRows,
-    passed
+    completed_domains: domainRows.length,
+    top_capability_areas: topCapabilityAreas,
+    domains: domainRows
   };
 };
