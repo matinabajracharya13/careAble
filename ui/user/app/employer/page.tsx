@@ -141,26 +141,7 @@ export default function EmployerPage() {
           ))}
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <Input
-            placeholder="Search by name, title, or skill…"
-            icon={<Search className="h-4 w-4" />}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="max-w-sm"
-          />
-          <button
-            onClick={() => setAvailableOnly(!availableOnly)}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all",
-              availableOnly ? "border-primary bg-primary/10 text-primary" : "border-border hover:border-muted-foreground/40"
-            )}
-          >
-            <Filter className="h-4 w-4" />
-            Available only
-          </button>
-        </div>
+       
 
         {/* Candidate grid */}
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">

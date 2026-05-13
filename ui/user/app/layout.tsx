@@ -30,7 +30,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin='anonymous'
         />
       </head>
-      <body className='min-h-screen bg-background font-sans antialiased'>
+      <body
+        suppressHydrationWarning
+        className='min-h-screen bg-background font-sans antialiased'
+      >
         <QueryProvider>
           <AuthProvider>
             <ThemeConfigProvider>

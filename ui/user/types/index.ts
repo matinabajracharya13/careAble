@@ -82,14 +82,12 @@ export interface AssessmentQuestion {
   id: string;
   text: string;
 
-  type?: 'slider'; // for now only slider (future-proof)
-
-  // slider config (flexible for reuse)
-  scale?: {
-    min: number; // 1
-    max: number; // 5
-    labels: Record<number, string>;
-  };
+  type: 'slider'; // for now only slider (future-proof)
+  options: {
+    id: number;
+    label: string;
+    value: number;
+  }[];
 }
 
 export interface AssessmentResult {
@@ -101,23 +99,6 @@ export interface AssessmentResult {
   completedAt: string;
   timeSpent: number; // seconds
   certificateId?: string;
-}
-
-// ── Certificate ──────────────────────────────────────────────────────────────
-
-export interface Certificate {
-  id: string;
-  userId: string;
-  userName: string;
-  assessmentId: string;
-  assessmentTitle: string;
-  category: string;
-  level: string;
-  score: number;
-  issuedAt: string;
-  expiresAt?: string;
-  verificationCode: string;
-  issuerName: string;
 }
 
 // ── Contact Form ─────────────────────────────────────────────────────────────
@@ -194,4 +175,32 @@ export interface SignupPayload {
   role: string;
   accepted_terms: boolean;
   research_consent: boolean;
+}
+
+export interface AssessmentAttempt {
+  assessment_id: number;
+  attempt_id: number;
+  user_id: number;
+  started_at: string;
+  submitted: string | null;
+  status: 'in_progress' | 'completed' | 'not_started';
+}
+
+export interface Certificate {
+  certificate_id: number;
+  certificate_code: string;
+  attempt_id: number;
+  issued_at: string; // depends on backend (timestamp or ISO)
+  pdf_url: string | null;
+  validity_status: 'valid' | 'expired' | string;
+  validity_date: string | null;
+  title: string;
+  description: string;
+}
+
+export interface AssessmentSubmissionData {
+  attemptId: number;
+  assessmentId: number;
+  passed: boolean;
+  certificate: Certificate | null;
 }

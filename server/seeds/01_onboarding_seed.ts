@@ -67,7 +67,6 @@ export const seed = async (knex: Knex): Promise<void> => {
     updated_at: new Date().toISOString()
   });
 
-
   // ─── Onboarding Questions ────────────────────────────────────────────────
 
   await knex('question_options').del();
@@ -105,9 +104,7 @@ export const seed = async (knex: Knex): Promise<void> => {
     ])
     .returning(['category_id', 'title']);
 
-  const categories = insertedCategories.map((row) =>
-    typeof row === 'object' ? row : null
-  );
+  const categories = insertedCategories.map((row) => (typeof row === 'object' ? row : null));
 
   const categoryMap = {
     employment: categories.find((c) => c?.title === 'Hidden Worker Status')?.category_id,
@@ -252,18 +249,7 @@ export const seed = async (knex: Knex): Promise<void> => {
     },
     {
       question: 'Which language do you speak?',
-      values: [
-        'Mandarin',
-        'Arabic',
-        'Vietnamese',
-        'Cantonese',
-        'German',
-        'Italian',
-        'Hindi',
-        'Greek',
-        'Spanish',
-        'Nepali'
-      ]
+      values: ['Mandarin', 'Arabic', 'Vietnamese', 'Cantonese', 'German', 'Italian', 'Hindi', 'Greek', 'Spanish', 'Nepali']
     },
     {
       question: 'How did you hear about this app?',
@@ -312,14 +298,7 @@ export const seed = async (knex: Knex): Promise<void> => {
     },
     {
       question: 'How long have you cared for this person?',
-      values: [
-        'Less than 1 year',
-        '1–3 years',
-        '3–5 years',
-        '5–7 years',
-        '7–10 years',
-        'Over 10 years'
-      ]
+      values: ['Less than 1 year', '1–3 years', '3–5 years', '5–7 years', '7–10 years', 'Over 10 years']
     }
   ];
 
@@ -332,6 +311,4 @@ export const seed = async (knex: Knex): Promise<void> => {
   );
 
   await knex('question_options').insert(optionRows);
-
-
 };

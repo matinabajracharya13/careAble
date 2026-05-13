@@ -3,16 +3,19 @@ import { AppError } from '@/middleware/errorHandler';
 import { ApiResponse } from '@/types';
 
 import {
+  createAssessmentAttempt,
   findAllAssessments,
   findAssessmentById,
   findOptionsByQuestionIds,
   findQuestionsByTopicIds,
   findTopicsByAssessment,
-  getAllProgress,
+  getAllAttempt,
   getProgressByID,
+  processAssessmentResult,
   saveAssessmentResponses,
   saveProgress
 } from '@/repositories/assessmentRepository';
+import { getCertificateByAttemptId } from '@/repositories/certificateRepository';
 
 // GET ALL
 export const getAssessments = async (_req: Request, res: Response, next: NextFunction) => {
@@ -85,13 +88,12 @@ export const getAssessmentById = async (req: Request, res: Response, next: NextF
 export const saveAssessmentProgress = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const assessmentId = Number(req.params.id);
-
-    // ⚠️ Replace with authenticated user later
-    const userId = 1;
+    const attemptId = Number(req.params.attemptId);
+    const userId = (req as any).user?.user_id;
 
     const { answers, currentTopicIndex, currentPage } = req.body;
 
-    await saveProgress(userId, assessmentId, {
+    await saveProgress(userId, assessmentId, attemptId, {
       answers,
       currentTopicIndex,
       currentPage
@@ -104,16 +106,17 @@ export const saveAssessmentProgress = async (req: Request, res: Response, next: 
 
     res.status(200).json(response);
   } catch (err) {
+    console.log(err);
     next(new AppError('Failed to save progress', 500));
   }
 };
 
-export const getUserAssessmentProgress = async (req: Request, res: Response, next: NextFunction) => {
+export const getUserAssessmentAttempt = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // replace later with req.user.userId
-    const userId = 1;
+    const userId = (req as any).user?.user_id;
 
-    const progress = await getAllProgress(userId);
+    const progress = await getAllAttempt(userId);
 
     const response: ApiResponse = {
       success: true,
@@ -123,78 +126,99 @@ export const getUserAssessmentProgress = async (req: Request, res: Response, nex
 
     res.status(200).json(response);
   } catch (err) {
+    console.log(err);
     next(new AppError('Failed to fetch assessment progress', 500));
   }
 };
 
-export const getUserAssessmentProgressByID = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    // replace later with req.user.userId
-    const userId = 1;
-    const progressId = Number(req.params.id);
-
-    const progress = await getProgressByID(userId, progressId);
-
-    const response: ApiResponse = {
-      success: true,
-      message: 'Assessment progress fetched successfully',
-      data: progress
-    };
-
-    res.status(200).json(response);
-  } catch (err) {
-    next(new AppError('Failed to fetch assessment progress', 500));
-  }
-};
-
-export const submitAssessmentResponses = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getUserAssessmentAttemptID = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.user_id;
-    const { attempt_id, responses } = req.body;
+    const attemptId = Number(req.params.attemptId);
+    const assessmentId = Number(req.params.id);
+
+    const progress = await getProgressByID(userId, assessmentId, attemptId);
+    if (!progress) {
+      return res.status(200).json({
+        success: true,
+        message: 'No progress found',
+        data: null
+      });
+    }
+    const response: ApiResponse = {
+      success: true,
+      message: 'Assessment progress fetched successfully',
+      data: progress
+    };
+
+    res.status(200).json(response);
+  } catch (err) {
+    next(new AppError('Failed to fetch assessment progress', 500));
+  }
+};
+
+export const submitAssessmentResponses = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = (req as any).user?.user_id;
+    const attemptId = Number(req.params.attemptId);
+    const assessmentId = Number(req.params.id);
+
+    const { answers } = req.body;
 
     if (!userId) {
       return next(new AppError('Unauthorized', 401));
     }
-    console.log(req.body)
-    res.status(400).json({})
 
-    if ( !responses || !Array.isArray(responses)) {
-      return next(
-        new AppError('Attempt ID and assessment responses are required', 400)
-      );
+    if (!answers || typeof answers !== 'object') {
+      return next(new AppError('Invalid payload', 400));
     }
 
+    const formattedResponses = Object.entries(answers).map(([questionId, answer]: any) => ({
+      question_id: Number(questionId),
+      selected_option_id: answer.optionId,
+      numeric_value: answer.value
+    }));
 
-    /*
-      Expected format:
-      {
-        attempt_id: 1,
-        responses: {
-          "1": 3,
-          "2": 4,
-          "3": 2
-        }
-      }
-    */
+    await saveAssessmentResponses(attemptId, userId, assessmentId, formattedResponses);
+    const result = await processAssessmentResult(attemptId, assessmentId,userId);
 
-    const formattedResponses = Object.entries(responses).map(
-      ([questionId, answer]) => ({
-        question_id: Number(questionId),
-        answer: Number(answer)
-      })
-    );
+    // 4. fetch certificate (if generated)
+    const certificate = await getCertificateByAttemptId(attemptId);
 
-    await saveAssessmentResponses(attempt_id, formattedResponses);
-
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      message: 'Assessment responses submitted successfully'
+      message: 'Assessment submitted successfully',
+      data: {
+        attemptId,
+        assessmentId,
+        certificate: certificate || null
+      }
     });
   } catch (error) {
+    console.log(error)
     next(error);
+  }
+};
+
+export const startAssessment = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const assessmentId = Number(req.params.id);
+    const assessment = await findAssessmentById(assessmentId);
+    if (!assessment) return next(new AppError('Assessment not found', 404));
+
+    const userId = (req as any).user?.user_id;
+
+    const attempt = await createAssessmentAttempt(assessmentId, userId);
+
+    const response: ApiResponse = {
+      success: true,
+      message: 'Assessment started successfully',
+      data: attempt
+    };
+
+    res.status(200).json(response);
+  } catch (err) {
+    console.log(err);
+    next(new AppError('Failed to start assessment', 500));
   }
 };

@@ -6,6 +6,7 @@ Express.js + TypeScript REST API backend.
 
 ```bash
 # Install dependencies
+cd server
 npm install
 
 # Copy env file and configure
@@ -13,6 +14,10 @@ cp .env.example .env
 
 # Start dev server (hot reload)
 npm run dev
+
+# Run migration and seed
+npm run migrate:latest
+npm run seed
 
 # Build for production
 npm run build

@@ -3,15 +3,17 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge, Card, CardContent } from '@/components/ui/ui-components';
+import { ASSESSMENT_IN_PROGRESS_KEY } from '@/constants/app';
 import { assessmentApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, ChevronRight, Loader2, Search } from 'lucide-react';
-import Link from 'next/link';
+import { BookOpen, ChevronRight, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 export default function AssessmentListPage() {
   const [search, setSearch] = useState('');
+  const router = useRouter();
 
   // 1. fetch assessments
   const { data: assessments, isLoading } = useQuery({
@@ -24,6 +26,20 @@ export default function AssessmentListPage() {
     queryKey: ['assessment-progress'],
     queryFn: assessmentApi.getUserAssessmentProgress
   });
+
+  const handleStartAssessment = async (assessmentId: number, status?: string, attemtpId?: string) => {
+    try {
+      if (status === ASSESSMENT_IN_PROGRESS_KEY && attemtpId) {
+        router.push(`/assessment/${assessmentId}/${attemtpId}`);
+        return;
+      }
+      const response = await assessmentApi.startAssessment(assessmentId);
+
+      router.push(`/assessment/${assessmentId}/${response.attempt_id}`);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   // 3. map progress by assessment_id
   const progressMap = useMemo(() => {
@@ -64,7 +80,7 @@ export default function AssessmentListPage() {
               .map((assessment) => {
                 const progress = progressMap.get(assessment.assessment_id);
 
-                const isStarted = !!progress;
+                const status = progress?.status;
 
                 return (
                   <Card
@@ -82,7 +98,7 @@ export default function AssessmentListPage() {
                         </div>
 
                         {/* Resume badge */}
-                        {isStarted && <Badge variant='outline'>In Progress</Badge>}
+                        {status === ASSESSMENT_IN_PROGRESS_KEY && <Badge variant='outline'>In Progress</Badge>}
                       </div>
 
                       {/* Title */}
@@ -105,13 +121,13 @@ export default function AssessmentListPage() {
 
                         <Button
                           size='sm'
-                          asChild
+                          onClick={() => handleStartAssessment(assessment.assessment_id, status, progress?.attempt_id)}
                         >
-                          <Link href={`/assessment/${assessment.assessment_id}`}>
-                            {isStarted ? 'Resume assessment' : 'Start assessment'}
+                          <>
+                            {status === ASSESSMENT_IN_PROGRESS_KEY ? 'Resume assessment' : 'Start assessment'}
 
                             <ChevronRight className='h-4 w-4' />
-                          </Link>
+                          </>
                         </Button>
                       </div>
                     </CardContent>
