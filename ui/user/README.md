@@ -17,7 +17,11 @@
 ## Quick Start
 
 ```bash
-npm install
+cd ui/user
+npm install 
+or
+npm install --force # if it doesnt work
+cp .env.example .env
 npm run dev
 ```
 
@@ -25,12 +29,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## Demo Accounts
 
-| Role | Email | Password |
-|------|-------|----------|
-| Career seeker | `career@demo.com` | `demo123` |
-| Employer | `employer@demo.com` | `demo123` |
 
 Or sign up with any email — role is chosen during registration.
 
@@ -46,7 +45,7 @@ Or sign up with any email — role is chosen during registration.
 | `/onboarding` | Multi-step questionnaire loaded from API per role |
 | `/dashboard` | Role-aware dashboard (Career or Employer view) |
 | `/assessment` | Assessment listing with search & filter |
-| `/assessment/[id]` | Assessment taking with timer + results |
+| `/assessment/[id]/[attemptid]` | Assessment taking with timer + results |
 | `/certificate/[id]` | Printable certificate with verification |
 | `/employer` | Talent pool (Employer only) |
 
