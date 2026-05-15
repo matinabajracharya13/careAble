@@ -14,7 +14,7 @@ import type {
 } from '@/types';
 
 // ── Base API (swap this URL for your real backend) ────────────────────────────
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.CareAble.dev';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.careable.dev';
 
 async function fetchWithAuth<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('CareAble_token') : null;
