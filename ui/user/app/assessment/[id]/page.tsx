@@ -8,7 +8,7 @@ import { toast } from '@/components/ui/toast';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { assessmentApi } from '@/lib/api';
 import { Assessment, AssessmentTopic } from '@/types';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 const QUESTIONS_PER_PAGE = 5;
 
@@ -33,6 +33,8 @@ export default function TopicStepperAssessment() {
     queryKey: ['assessment-progress', id],
     queryFn: () => assessmentApi.getProgress(id)
   });
+
+  const router = useRouter();
 
   const saveMutation = useMutation({
     mutationFn: () =>
@@ -127,12 +129,18 @@ export default function TopicStepperAssessment() {
 
   const isLastStep = currentTopicIndex === (assessment as Assessment)?.topics?.length - 1 && currentPage === totalPages - 1;
 
-  const handleSubmit = () => {
-    toast({
-      title: 'Assessment submitted',
-      description: 'Your responses have been saved.'
-    });
-  };
+  const submitMutation = useMutation({
+    mutationFn: () => assessmentApi.submitAssessment(id, answers),
+    onSuccess: (result) => {
+      toast({ title: 'Assessment submitted!', description: 'Your certificate is ready.' });
+      router.push(`/certificate/${result.certificateId}`);
+    },
+    onError: () => {
+      toast({ variant: 'destructive', title: 'Submission failed', description: 'Please try again.' });
+    }
+  });
+
+  const handleSubmit = () => submitMutation.mutate();
   if (!assessment || !answers) return <Loader />;
 
   return (
@@ -216,9 +224,9 @@ export default function TopicStepperAssessment() {
               <ChevronRight className='h-4 w-4' />
             </Button>
           ) : (
-            <Button onClick={handleSubmit}>
+            <Button onClick={handleSubmit} disabled={submitMutation.isPending}>
               <Send className='h-4 w-4' />
-              Submit
+              {submitMutation.isPending ? 'Submitting…' : 'Submit'}
             </Button>
           )}
 

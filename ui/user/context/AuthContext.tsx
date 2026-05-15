@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import type { User, UserRole } from "@/types";
+import type { User } from "@/types";
 
 interface AuthContextType {
   user: User | null;
@@ -46,8 +46,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedToken = localStorage.getItem("CareAble_token");
     const storedUser = localStorage.getItem("CareAble_user");
     if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      try {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      } catch {
+        localStorage.removeItem("CareAble_token");
+        localStorage.removeItem("CareAble_user");
+      }
     }
     setIsLoading(false);
   }, []);

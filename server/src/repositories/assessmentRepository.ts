@@ -107,3 +107,53 @@ export const getProgressByID = (userId: number, progressId: number) => {
     })
     .first();
 };
+
+// ─────────────────────────────────────────────
+// SUBMISSION
+// ─────────────────────────────────────────────
+
+export const createAttempt = async (userId: number, assessmentId: number) => {
+  const [id] = await db('assessment_attempts')
+    .insert({ user_id: userId, assessment_id: assessmentId, status: 'in_progress', started_at: db.fn.now() });
+  return id as number;
+};
+
+export const saveResponses = async (
+  attemptId: number,
+  answers: { questionId: number; numericValue: number }[]
+) => {
+  const rows = await Promise.all(
+    answers.map(async ({ questionId, numericValue }) => {
+      const option = await db('assessment_question_options')
+        .where({ assessment_question_id: questionId, numeric_value: numericValue })
+        .first();
+      return {
+        attempt_id: attemptId,
+        assessment_question_id: questionId,
+        selected_option_id: option.assessment_question_options_id,
+        numeric_value: numericValue
+      };
+    })
+  );
+  return db('assessment_responses').insert(rows);
+};
+
+export const saveDomainScores = (
+  scores: { attemptId: number; assessmentId: number; topicId: number; score: number; capabilityLevel: string }[]
+) => {
+  return db('domain_scores').insert(
+    scores.map((s) => ({
+      attempt_id: s.attemptId,
+      assessment_id: s.assessmentId,
+      topic_id: s.topicId,
+      score: s.score,
+      capability_level: s.capabilityLevel
+    }))
+  );
+};
+
+export const completeAttempt = (attemptId: number) => {
+  return db('assessment_attempts')
+    .where({ attempt_id: attemptId })
+    .update({ status: 'completed', submitted_at: db.fn.now() });
+};

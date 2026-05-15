@@ -105,19 +105,23 @@ export interface AssessmentResult {
 
 // ── Certificate ──────────────────────────────────────────────────────────────
 
+export interface CertificateDomain {
+  name: string;
+  score: number;
+  capabilityLevel: 'Strength area' | 'Growth area' | 'Support area';
+}
+
 export interface Certificate {
   id: string;
-  userId: string;
   userName: string;
-  assessmentId: string;
+  email: string;
   assessmentTitle: string;
   category: string;
-  level: string;
-  score: number;
   issuedAt: string;
-  expiresAt?: string;
   verificationCode: string;
   issuerName: string;
+  domains: CertificateDomain[];
+  topAreas: { name: string; score: number }[];
 }
 
 // ── Contact Form ─────────────────────────────────────────────────────────────

@@ -286,7 +286,7 @@ export const onboardingApi = {
     return role === 'employer' ? employerCategories : careerCategories;
   },
 
-  submitResponses: async (responses: Record<string, unknown>) => {
+  submitResponses: async (_responses: Record<string, unknown>) => {
     await delay(800);
     return { success: true };
   }
@@ -348,34 +348,20 @@ export const assessmentApi = {
   },
 
   submitAssessment: async (assessmentId: string, answers: Record<string, string>): Promise<AssessmentResult> => {
-    await delay(1200);
-    // const assessment = MOCK_ASSESSMENTS;
-    // if (!assessment) throw new Error('Assessment not found');
-
-    // // Calculate score
-    const score = 100;
-    // // const answerDetails: AssessmentResult["answers"] = assessment.topics.map((q) => {
-    // //   const selected = answers[q.id] ?? "";
-    // //   const isCorrect = selected === q.correctAnswer;
-    // //   if (isCorrect) correct++;
-    // //   return { questionId: q.id, selectedAnswer: selected, correct: isCorrect };
-    // // });
-
-    // // const score = Math.round((correct / assessment.questions.length) * 100);
-    // // const passed = score >= assessment.passingScore;
-    const passed = true;
-    const result: AssessmentResult = {
+    const res = await fetchWithAuth<{ success: boolean; message: string; data: { certificateId: number; certificateCode: string } }>(
+      `/assessments/${assessmentId}/submit`,
+      { method: 'POST', body: JSON.stringify({ answers }) }
+    );
+    return {
       assessmentId,
-      userId: 'current-user',
-      score,
-      passed,
+      userId: '',
+      score: 0,
+      passed: true,
       answers: [],
       completedAt: new Date().toISOString(),
-      timeSpent: 1200,
-      certificateId: passed ? `cert-${Date.now()}` : undefined
+      timeSpent: 0,
+      certificateId: String(res.data.certificateId)
     };
-
-    return result;
   }
 };
 
@@ -383,27 +369,17 @@ export const assessmentApi = {
 
 export const certificateApi = {
   getCertificate: async (id: string): Promise<Certificate> => {
-    await delay(400);
-    return {
-      id,
-      userId: 'u2',
-      userName: 'James Okonkwo',
-      assessmentId: 'assess1',
-      assessmentTitle: 'JavaScript Fundamentals',
-      category: 'Technology',
-      level: 'Intermediate',
-      score: 87,
-      issuedAt: new Date().toISOString(),
-      verificationCode: `SB-${id.slice(0, 8).toUpperCase()}`,
-      issuerName: 'CareAble Academy'
-    };
+    const res = await fetchWithAuth<{ success: boolean; message: string; data: Certificate }>(
+      `/certificates/${id}`
+    );
+    return res.data;
   }
 };
 
 // ── Contact API ───────────────────────────────────────────────────────────────
 
 export const contactApi = {
-  submit: async (data: ContactFormData) => {
+  submit: async (_data: ContactFormData) => {
     await delay(1000);
     return { success: true, message: "Message sent! We'll get back to you within 24 hours." };
   }

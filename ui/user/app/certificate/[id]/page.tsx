@@ -5,8 +5,8 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import {
-  Award, Download, Share2, Shield, CheckCircle, Calendar,
-  Star, Loader2, ArrowLeft, ExternalLink, QrCode,
+  Award, Download, Share2, Shield, CheckCircle,
+  Star, Loader2, ArrowLeft, ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, Badge, Separator } from "@/components/ui/ui-components";
@@ -57,36 +57,67 @@ function CertificateCard({ cert }: { cert: any }) {
         {/* Assessment title */}
         <div className="bg-primary/5 border border-primary/20 rounded-xl px-8 py-4">
           <h3 className="text-2xl font-display font-bold text-primary">{cert.assessmentTitle}</h3>
-          <div className="flex items-center justify-center gap-4 mt-2">
-            <span className="text-xs text-muted-foreground">{cert.category}</span>
-            <span className="text-muted-foreground/40">·</span>
-            <span className="text-xs font-semibold capitalize text-foreground">{cert.level} Level</span>
-            <span className="text-muted-foreground/40">·</span>
-            <span className="text-xs text-success font-semibold">{cert.score}% score</span>
-          </div>
+          <p className="text-xs text-muted-foreground mt-1">{cert.category}</p>
         </div>
 
-        {/* Stars */}
-        <div className="flex justify-center gap-1">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} className={cn("h-5 w-5", i < Math.round(cert.score / 20) ? "fill-warning text-warning" : "text-muted-foreground/20")} />
-          ))}
-        </div>
+        {/* Top capability areas */}
+        {cert.topAreas?.length > 0 && (
+          <div className="w-full text-left space-y-1">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest text-center">Top Capability Areas</p>
+            <div className="grid grid-cols-1 gap-1">
+              {cert.topAreas.map((area: { name: string; score: number }) => (
+                <div key={area.name} className="flex items-center justify-between bg-success/5 border border-success/20 rounded-lg px-4 py-2">
+                  <span className="text-sm font-medium flex items-center gap-2">
+                    <Star className="h-3.5 w-3.5 text-success fill-success" />
+                    {area.name}
+                  </span>
+                  <span className="text-xs font-bold text-success">{area.score.toFixed(1)} / 5</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* All domains */}
+        {cert.domains?.length > 0 && (
+          <div className="w-full text-left space-y-1">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest text-center">Domains Completed</p>
+            <div className="grid grid-cols-1 gap-1">
+              {cert.domains.map((d: { name: string; score: number; capabilityLevel: string }) => (
+                <div key={d.name} className="flex items-center justify-between bg-secondary/50 rounded-lg px-4 py-2">
+                  <span className="text-xs font-medium">{d.name}</span>
+                  <span className={cn(
+                    "text-xs font-semibold px-2 py-0.5 rounded-full",
+                    d.capabilityLevel === 'Strength area' ? "bg-success/10 text-success" :
+                    d.capabilityLevel === 'Growth area' ? "bg-warning/10 text-warning" :
+                    "bg-destructive/10 text-destructive"
+                  )}>{d.capabilityLevel} · {d.score.toFixed(1)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <Separator />
 
         {/* Footer meta */}
-        <div className="grid grid-cols-3 gap-4 text-center">
+        <div className="grid grid-cols-2 gap-4 text-center w-full">
+          <div>
+            <p className="text-xs text-muted-foreground">Email</p>
+            <p className="text-sm font-semibold">{cert.email}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Completion date</p>
+            <p className="text-sm font-semibold">{formatDate(cert.issuedAt)}</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4 text-center w-full">
           <div>
             <p className="text-xs text-muted-foreground">Issued by</p>
             <p className="text-sm font-semibold">{cert.issuerName}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Issue date</p>
-            <p className="text-sm font-semibold">{formatDate(cert.issuedAt)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Verification</p>
+            <p className="text-xs text-muted-foreground">Verification code</p>
             <p className="text-xs font-mono font-semibold text-primary">{cert.verificationCode}</p>
           </div>
         </div>
