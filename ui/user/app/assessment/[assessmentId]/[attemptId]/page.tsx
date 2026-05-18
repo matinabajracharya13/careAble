@@ -8,7 +8,7 @@ import { toast } from '@/components/ui/toast';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { assessmentApi } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
-import { AssessmentSubmissionData } from '@/types';
+import { AssessmentSubmissionData, AssessmentTopic } from '@/types';
 
 const QUESTIONS_PER_PAGE = 5;
 
@@ -30,7 +30,7 @@ export default function TopicStepperAssessment() {
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
 
-  const [answers, setAnswers] = useState<Record<string, { value: number; optionId: number }>>({});
+  const [answers, setAnswers] = useState<Record<string, { topicId: number; value: number; optionId: number }>>({});
 
   const saveMutation = useMutation({
     mutationFn: () =>
@@ -68,7 +68,7 @@ export default function TopicStepperAssessment() {
     }
   });
 
-  const currentTopic = assessment?.topics[currentTopicIndex];
+  const currentTopic = assessment?.topics[currentTopicIndex] as AssessmentTopic;
 
   const totalPages = Math.ceil((currentTopic?.questions?.length ?? 0) / QUESTIONS_PER_PAGE);
 
@@ -77,7 +77,7 @@ export default function TopicStepperAssessment() {
   useEffect(() => {
     if (!assessment) return;
 
-    let savedAnswers: Record<string, { value: number; optionId: number }> = {};
+    let savedAnswers: Record<string, { topicId: number; value: number; optionId: number }> = {};
 
     if (progress?.answers) {
       try {
@@ -180,6 +180,7 @@ export default function TopicStepperAssessment() {
                       setAnswers((prev) => ({
                         ...prev,
                         [q.id]: {
+                          topicId: currentTopic?.id as unknown as number,
                           value: option.value,
                           optionId: option.id
                         }
