@@ -7,19 +7,12 @@ import { NextFunction, Request, Response } from 'express';
 export const getCertificates = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.user_id;
-    console.log(userId);
     const certificates = await findCertificatesByUserId(userId);
-    // if (!certificates) {
-    //   return res.status(200).json({
-    //     success: true,
-    //     message: 'No certificates found',
-    //     data: []
-    //   });
-    // }
+
     const response: ApiResponse<Certificate[]> = {
       success: true,
       message: 'Certificate fetched successfully',
-      data: certificates
+      data: certificates || []
     };
     res.json(response);
   } catch (err) {
@@ -37,8 +30,9 @@ export const getCertificateByCode = async (req: Request, res: Response, next: Ne
     const response: ApiResponse<Certificate> = {
       success: true,
       message: 'Certificate fetched successfully',
-      data: certificates
+      data: certificates || null
     };
+    console.log(certificates);
     res.json(response);
   } catch (err) {
     console.error('Error fetching certificates:', err);

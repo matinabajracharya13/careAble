@@ -225,11 +225,7 @@ export default function LandingPage() {
 
           {/* Hero cards floating visual */}
           <div className='mt-20 grid grid-cols-3 gap-4 max-w-2xl mx-auto'>
-            {[
-              { icon: GraduationCap, label: 'For Carers', desc: 'Prove your skills, earn certificates, land jobs' },
-              { icon: Briefcase, label: 'For Carer Seekers', desc: 'Hire with confidence using verified assessments' },
-              { icon: Award, label: 'Recognised Skilled Categories', desc: '85+ assessments across tech, management & more' }
-            ].map((card, i) => (
+            {SITE_CONFIG.roles.map((card, i) => (
               <div
                 key={card.label}
                 className={cn(
@@ -486,11 +482,7 @@ export default function LandingPage() {
                 <div>
                   <h3 className='font-display font-semibold text-lg mb-4'>Contact information</h3>
                   <div className='space-y-4 text-sm text-muted-foreground'>
-                    {[
-                      { icon: Mail, text: 'hello@CareAble.dev' },
-                      { icon: Phone, text: '+61 2 0000 0000' },
-                      { icon: MapPin, text: 'Sydney, NSW, Australia' }
-                    ].map(({ icon: Icon, text }) => (
+                    {SITE_CONFIG.contactUS.map(({ icon: Icon, text }) => (
                       <div
                         key={text}
                         className='flex items-center gap-3'
@@ -504,15 +496,6 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <Separator />
-                <div>
-                  <p className='text-sm font-semibold mb-3'>Demo credentials</p>
-                  <div className='space-y-2 text-xs font-mono bg-card border border-border rounded-lg p-3'>
-                    <p className='text-muted-foreground'>Career account:</p>
-                    <p>career@demo.com / demo123</p>
-                    <p className='text-muted-foreground mt-2'>Employer account:</p>
-                    <p>employer@demo.com / demo123</p>
-                  </div>
-                </div>
               </div>
 
               {/* Form */}

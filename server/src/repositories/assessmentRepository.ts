@@ -165,87 +165,31 @@ export const createAssessmentAttempt = async (assessmentID: number, userID: numb
   return attempt;
 };
 
-export const processAssessmentResult = async (
-  attemptId: number,
-  assessmentId: number,
-  userId: number
-) => {
-  // Fetch responses + question domain data in one query
-  const rows = await db('assessment_responses as ar')
-  .join(
-    'assessment_questions as aq',
-    'aq.assessment_question_id',
-    'ar.assessment_question_id'
-  )
-  .where('ar.attempt_id', attemptId)
-  .andWhere('aq.assessment_id', assessmentId)
-  .select(
-    'ar.numeric_value',
-    'aq.domain'
-  );
+export const getQuestionTopicMap = async (assessmentId: number) => {
+  try {
+    const rows = await db('assessment_questions')
+      .select('assessment_question_id', 'assessment_topic_id')
+      .where({ assessment_id: assessmentId });
 
-  const domainMap = new Map<
-    string,
-    { totalScore: number; questionCount: number }
-  >();
-
-  // Aggregate domain scores
-  for (const row of rows) {
-    const domain = row.domain || 'default';
-
-    if (!domainMap.has(domain)) {
-      domainMap.set(domain, {
-        totalScore: 0,
-        questionCount: 0
-      });
-    }
-
-    const current = domainMap.get(domain)!;
-
-    current.totalScore += Number(row.numeric_value);
-    current.questionCount += 1;
+    return rows.reduce(
+      (acc, row) => {
+        acc[row.assessment_question_id] = row.assessment_topic_id;
+        return acc;
+      },
+      {} as Record<number, number>
+    );
+  } catch (error) {
+    console.error('Error fetching question-topic map:', error);
+    throw error;
   }
+};
 
-  // Prepare domain scoring results
-  const domainRows = Array.from(domainMap.entries()).map(
-    ([domain, values]) => {
-      const meanScore = values.totalScore / values.questionCount;
-
-      let capability_level: string;
-
-      if (meanScore >= 4.0) {
-        capability_level = 'Strength';
-      } else if (meanScore >= 3.0) {
-        capability_level = 'Growth';
-      } else {
-        capability_level = 'Support';
-      }
-
-      return {
-        attempt_id: attemptId,
-        assessment_id: assessmentId,
-        domain,
-        score: Number(meanScore.toFixed(2)),
-        full_score: 5,
-        capability_level
-      };
-    }
-  );
-
-  // Insert domain scores
-  if (domainRows.length) {
-    await db('domain_scores').insert(domainRows);
-  }
-
-  // Top capability areas
-  const topCapabilityAreas = domainRows
-    .filter((domain) => domain.score >= 4.0)
-    .map((domain) => domain.domain);
-
-  return {
-    success: true,
-    completed_domains: domainRows.length,
-    top_capability_areas: topCapabilityAreas,
-    domains: domainRows
-  };
+export const deleteAssessmentProgress = async (userId: number, assessmentId: number, attemptId: number) => {
+  return db('assessment_progress')
+    .where({
+      user_id: userId,
+      assessment_id: assessmentId,
+      attempt_id: attemptId
+    })
+    .del();
 };

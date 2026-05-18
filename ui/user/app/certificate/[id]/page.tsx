@@ -1,17 +1,17 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { useParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
-import { Award, Download, Share2, Shield, CheckCircle, Calendar, Star, Loader2, ArrowLeft, ExternalLink, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, Badge, Separator } from '@/components/ui/ui-components';
-import { certificateApi } from '@/lib/api';
 import { toast } from '@/components/ui/toast';
-import { cn, formatDate } from '@/lib/utils';
+import { Badge, Card, CardContent, Separator } from '@/components/ui/ui-components';
 import { SITE_CONFIG } from '@/config/site';
 import { APP_SHORT_NAME } from '@/constants/app';
+import { certificateApi } from '@/lib/api';
+import { cn, formatDate } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, Award, CheckCircle, Download, ExternalLink, Loader2, Share2, Shield, Star, StarHalf } from 'lucide-react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useRef } from 'react';
 
 // ── Certificate visual ────────────────────────────────────────────────────────
 function CertificateCard({ cert }: { cert: any }) {
@@ -69,12 +69,34 @@ function CertificateCard({ cert }: { cert: any }) {
 
         {/* Stars */}
         <div className='flex justify-center gap-1'>
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star
-              key={i}
-              className={cn('h-5 w-5', i < Math.round(cert.score / 20) ? 'fill-warning text-warning' : 'text-muted-foreground/20')}
-            />
-          ))}
+          {Array.from({ length: 5 }).map((_, i) => {
+            const score = cert.overall_mean_score;
+
+            if (score >= i + 1) {
+              return (
+                <Star
+                  key={i}
+                  className='h-5 w-5 fill-warning text-warning'
+                />
+              );
+            }
+
+            if (score >= i + 0.5) {
+              return (
+                <StarHalf
+                  key={i}
+                  className='h-5 w-5 fill-warning text-warning'
+                />
+              );
+            }
+
+            return (
+              <Star
+                key={i}
+                className='h-5 w-5 text-muted-foreground/20'
+              />
+            );
+          })}
         </div>
 
         <Separator />

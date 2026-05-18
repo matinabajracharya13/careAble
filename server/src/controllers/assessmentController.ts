@@ -1,9 +1,10 @@
-import { NextFunction, Request, Response } from 'express';
 import { AppError } from '@/middleware/errorHandler';
 import { ApiResponse } from '@/types';
+import { NextFunction, Request, Response } from 'express';
 
 import {
   createAssessmentAttempt,
+  deleteAssessmentProgress,
   findAllAssessments,
   findAssessmentById,
   findOptionsByQuestionIds,
@@ -11,11 +12,13 @@ import {
   findTopicsByAssessment,
   getAllAttempt,
   getProgressByID,
-  processAssessmentResult,
   saveAssessmentResponses,
   saveProgress
 } from '@/repositories/assessmentRepository';
-import { getCertificateByAttemptId } from '@/repositories/certificateRepository';
+import { generateCertificate } from '@/repositories/certificateRepository';
+import { addDomainScore } from '@/repositories/domainRepository';
+import { generateDomainScores } from '@/services/domain';
+import { calculateOverallMean } from '@/utils/capability';
 
 // GET ALL
 export const getAssessments = async (_req: Request, res: Response, next: NextFunction) => {
@@ -48,7 +51,7 @@ export const getAssessmentById = async (req: Request, res: Response, next: NextF
     const options = await findOptionsByQuestionIds(questions.map((q) => q.assessment_question_id));
 
     const formattedTopics = topics.map((topic) => ({
-      id: topic.code,
+      id: topic.assessment_topic_id,
       title: topic.title,
       questions: questions
         .filter((q) => q.assessment_topic_id === topic.assessment_topic_id)
@@ -176,14 +179,29 @@ export const submitAssessmentResponses = async (req: Request, res: Response, nex
     const formattedResponses = Object.entries(answers).map(([questionId, answer]: any) => ({
       question_id: Number(questionId),
       selected_option_id: answer.optionId,
-      numeric_value: answer.value
+      numeric_value: answer.value,
+      topic_id: Number(answer.topicId)
     }));
 
+    // 1. save responses
     await saveAssessmentResponses(attemptId, userId, assessmentId, formattedResponses);
-    const result = await processAssessmentResult(attemptId, assessmentId,userId);
 
-    // 4. fetch certificate (if generated)
-    const certificate = await getCertificateByAttemptId(attemptId);
+    // 3. get question -> topic mapping
+    const questionTopicMap: Record<number, number> = {};
+    Object.entries(answers).forEach(([questionId, answer]: [string, any]) => {
+      questionTopicMap[Number(questionId)] = Number(answer.topicId);
+    });
+    // 4. generate domain scores
+    const domainScores = generateDomainScores(answers, questionTopicMap);
+    await addDomainScore(attemptId, domainScores);
+
+    // 6. certificate
+    const overAllScore = calculateOverallMean(domainScores);
+    const certificate = await generateCertificate(attemptId, assessmentId, userId);
+    certificate.overall_mean_score = overAllScore;
+
+    // //cleanup assessment_progress data
+    await deleteAssessmentProgress(userId, assessmentId, attemptId);
 
     return res.status(201).json({
       success: true,
@@ -195,7 +213,7 @@ export const submitAssessmentResponses = async (req: Request, res: Response, nex
       }
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     next(error);
   }
 };
