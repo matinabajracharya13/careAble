@@ -1,5 +1,4 @@
 import db from '@/db';
-import { generateCertificate } from './certificateRepository';
 
 // ─────────────────────────────────────────────
 // BASIC CRUD
@@ -107,6 +106,7 @@ export const getAllAttempt = (userId: number) => {
 };
 
 export const getProgressByID = (userId: number, assessmentId: number, attemptId: number) => {
+  console.log('Fetching progress for user:', userId, 'assessment:', assessmentId, 'attempt:', attemptId);
   return db('assessment_progress')
     .where({
       user_id: userId,

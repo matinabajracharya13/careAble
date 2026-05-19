@@ -204,3 +204,10 @@ export interface AssessmentSubmissionData {
   passed: boolean;
   certificate: Certificate | null;
 }
+
+export interface DashboardStats {
+  assessmentsTaken: number;
+  certificatesEarned: number;
+  averageScore: number; // percentage
+  heatMapData: any[]; // Preloaded heatmap data for dashboard (optional optimization)
+}
