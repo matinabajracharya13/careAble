@@ -1,10 +1,11 @@
 'use client';
 
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/toast';
 import { Badge, Card, CardContent, Separator, Textarea } from '@/components/ui/ui-components';
+import { SITE_CONFIG } from '@/config/site';
+import { useAuth } from '@/context/AuthContext';
 import { contactApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { ContactFormData } from '@/types';
@@ -18,9 +19,6 @@ import {
   ChevronRight,
   Globe,
   GraduationCap,
-  Mail,
-  MapPin,
-  Phone,
   Send,
   Shield,
   Star,
@@ -29,11 +27,11 @@ import {
   Users,
   Zap
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { SITE_CONFIG } from '@/config/site';
 
 // ── Validation ────────────────────────────────────────────────────────────────
 const contactSchema = z.object({
@@ -150,7 +148,7 @@ function StatCard({ stat }: { stat: (typeof STATS)[0] }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const [contactLoading, setContactLoading] = useState(false);
-
+  const { isAuthenticated } = useAuth();
   const {
     register,
     handleSubmit,
@@ -200,16 +198,22 @@ export default function LandingPage() {
 
             <p className='text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed'>{SITE_CONFIG.description}</p>
 
-            <div className='flex flex-col sm:flex-row gap-4 justify-center pt-4'>
+            {isAuthenticated ? (
               <Button
+                asChild
+                size='xl'
+              >
+                <Link href='/dashboard'>Go to Dashboard</Link>
+              </Button>
+            ) : (
+              <Button
+                asChild
                 size='xl'
                 variant='outline'
-                asChild
               >
                 <Link href='/login'>Login to your account</Link>
               </Button>
-            </div>
-
+            )}
             <div className='flex items-center justify-center gap-6 pt-4 text-sm text-muted-foreground'>
               {['No credit card', 'Free assessments', 'Instant results'].map((item) => (
                 <div
