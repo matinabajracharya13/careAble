@@ -1,16 +1,16 @@
 import type {
-  User,
-  OnboardingCategory,
+  ApiResponse,
   Assessment,
-  AssessmentResult,
+  AssessmentAttempt,
+  AssessmentProgress,
+  AssessmentSubmissionData,
   Certificate,
   ContactFormData,
-  AssessmentProgress,
+  DashboardStats,
+  OnboardingCategory,
   Roles,
   SignupPayload,
-  ApiResponse,
-  AssessmentAttempt,
-  AssessmentSubmissionData
+  User
 } from '@/types';
 
 // ── Base API (swap this URL for your real backend) ────────────────────────────
@@ -228,6 +228,17 @@ Public Routes (no auth required)
 export const roleApi = {
   getRoles: async (): Promise<Roles[]> => {
     const res = await fetchWithAuthNoJson('/roles');
+    return res.data;
+  }
+};
+
+export const statsApi = {
+  getStats: async (): Promise<DashboardStats> => {
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: DashboardStats;
+    }>('/stats');
     return res.data;
   }
 };

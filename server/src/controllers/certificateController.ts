@@ -32,7 +32,6 @@ export const getCertificateByCode = async (req: Request, res: Response, next: Ne
       message: 'Certificate fetched successfully',
       data: certificates || null
     };
-    console.log(certificates);
     res.json(response);
   } catch (err) {
     console.error('Error fetching certificates:', err);
