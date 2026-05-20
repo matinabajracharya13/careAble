@@ -9,12 +9,15 @@ const baseAuthUserQuery = () => {
       'u.first_name',
       'u.last_name',
       'u.phone',
+      'u.email',
       'u.date_of_birth',
       'u.postcode',
       'u.onboarding_completed',
       'u.email_verified',
       'u.password_hash',
-      'r.role_name as role'
+      'r.role_name as role',
+      'r.is_public_signup',
+      'u.created_at'
     );
 };
 
@@ -22,17 +25,12 @@ export const findUserByEmail = async (email: string) => {
   return db('users').where({ email }).first();
 };
 
-
 export const findAuthUserByEmail = async (email: string) => {
-  return baseAuthUserQuery()
-    .where('u.email', email)
-    .first();
+  return baseAuthUserQuery().where('u.email', email).first();
 };
 
 export const findAuthUserById = async (userId: number) => {
-  return baseAuthUserQuery()
-    .where('u.user_id', userId)
-    .first();
+  return baseAuthUserQuery().where('u.user_id', userId).first();
 };
 
 export const createUser = async (data: any) => {
@@ -61,10 +59,8 @@ export const deleteVerificationToken = async (token: string) => {
 };
 
 export const markOnboardingCompleted = async (userId: number) => {
-  return db('users')
-    .where({ user_id: userId })
-    .update({
-      onboarding_completed: true,
-      updated_at: db.fn.now(),
-    });
+  return db('users').where({ user_id: userId }).update({
+    onboarding_completed: true,
+    updated_at: db.fn.now()
+  });
 };

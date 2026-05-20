@@ -1,13 +1,13 @@
-import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
-import { useAuthStore } from "@/store/auth-store";
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import { useAuthStore } from '@/store/auth-store';
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://api.example.com/v1",
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.example.com/v1',
   timeout: 15_000,
   headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  },
+    'Content-Type': 'application/json',
+    Accept: 'application/json'
+  }
 });
 
 // Request interceptor – attach Bearer token
@@ -28,7 +28,7 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();
-      window.location.href = "/login";
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }

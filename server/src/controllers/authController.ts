@@ -22,11 +22,14 @@ import { ApiResponse } from '@/types';
 import { AppError } from '@/middleware/errorHandler';
 import { findRoleByName } from '@/repositories/roleRepository';
 import { assignUserRole } from '@/repositories/userRoleRepository';
+import { baseLogin } from '@/services/auth';
+import { loginRules } from '@/utils/authRules';
+import userResponse from '@/services/response';
 
 // SIGNUP
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password, role, first_name, last_name, phone, dob, postcode, research_consent, accepted_terms } = req.body;
+    const { email, password, role, first_name, last_name, phone, date_of_birth, postcode, research_consent, accepted_terms } = req.body;
 
     console.log(req.body);
 
@@ -50,7 +53,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
       first_name,
       last_name,
       phone,
-      date_of_birth: dob,
+      date_of_birth: date_of_birth,
       postcode,
       accepted_terms,
       research_consent,
@@ -86,7 +89,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
           name: `${first_name} ${last_name}`,
           email,
           phone,
-          dob,
+          date_of_birth,
           postcode,
           role: selectedRole.role_name,
           onboarding_completed: false,
@@ -144,48 +147,14 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
   try {
     const { email, password } = req.body;
 
-    const user = await findAuthUserByEmail(email);
-
-    if (!user) {
-      return next(new AppError('Invalid credentials', 401));
-    }
-
-    const isValid = await comparePassword(password, user.password_hash);
-
-    if (!isValid) {
-      return next(new AppError('Invalid credentials', 401));
-    }
-
-    if (!user.email_verified) {
-      return next(new AppError('Please verify your email first', 403));
-    }
-
-    const token = generateJwtToken({
-      user_id: user.user_id,
-      email,
-      role: user.role
-    });
-
-    const { user_id, first_name, last_name, phone, dob, postcode, role, onboarding_completed, email_verified } = user;
-
+    const { user, token } = await baseLogin(email, password, loginRules.user);
+    console.log(user);
     const response: ApiResponse = {
       success: true,
       message: 'Login successful',
       data: {
         token,
-        user: {
-          user_id,
-          first_name,
-          last_name,
-          name: `${first_name} ${last_name}`,
-          email,
-          phone,
-          dob,
-          postcode,
-          role,
-          onboarding_completed: Boolean(onboarding_completed),
-          email_verified: Boolean(email_verified)
-        }
+        user: userResponse(user)
       }
     };
 
@@ -201,24 +170,11 @@ export const getCurrentUser = async (req: Request, res: Response, next: NextFunc
     if (!user) {
       return next(new AppError('User not found', 404));
     }
-    const { user_id, email, first_name, last_name, phone, dob, postcode, role, onboarding_completed, email_verified } = user;
     const response: ApiResponse = {
       success: true,
       message: 'Current user retrieved successfully',
       data: {
-        user: {
-          user_id,
-          first_name,
-          last_name,
-          name: `${first_name} ${last_name}`,
-          email,
-          phone,
-          dob,
-          postcode,
-          role,
-          onboarding_completed: Boolean(onboarding_completed),
-          email_verified: Boolean(email_verified)
-        }
+        user: userResponse(user)
       }
     };
 

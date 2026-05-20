@@ -10,7 +10,7 @@ export interface User {
   skills?: string[];
   company?: string; // employer only
   jobTitle?: string; // career only
-  createdAt: string;
+  created_at: string;
 }
 
 export interface AuthState {
