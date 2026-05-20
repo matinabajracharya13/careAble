@@ -52,12 +52,22 @@ export default function TopicStepperAssessment() {
       assessmentApi.submitAssessment(id, attemptID, {
         answers
       }),
-    onSuccess: (data: AssessmentSubmissionData) => {
+    // onSuccess: (data: AssessmentSubmissionData) => {
+    //   toast({
+    //     title: 'Assessment submitted',
+    //     description: 'Your responses have been saved.'
+    //   });
+    //   router.push(`/certificate/${data.certificate?.certificate_code}`);
+    // },
+    onSuccess: () => {
       toast({
         title: 'Assessment submitted',
-        description: 'Your responses have been saved.'
+        description: 'Your competency profile has been updated.'
       });
-      router.push(`/certificate/${data.certificate?.certificate_code}`);
+
+      // Redirect user back to dashboard
+      // Dashboard will load latest heatmap data
+      router.push('/dashboard');
     },
     onError: () => {
       toast({
