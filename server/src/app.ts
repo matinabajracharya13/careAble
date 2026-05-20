@@ -3,20 +3,28 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
-import { requestLoggerAll } from './middleware/requestLogger';
-import { errorHandler, notFound } from './middleware/errorHandler';
-import healthRoutes from './routes/healthRoutes';
-import userRoutes from './routes/userRoutes';
-import assessmentRoutes from './routes/assessmentRoutes';
-import authRoutes from './routes/authRoutes';
-import roleRoutes from './routes/roleRoutes';
-import certificateRoutes from './routes/certificateRoutes';
+import { requestLoggerAll } from '@/middleware/requestLogger';
+import { errorHandler, notFound } from '@/middleware/errorHandler';
+import healthRoutes from '@/routes/healthRoutes';
+import userRoutes from '@/routes/userRoutes';
+import assessmentRoutes from '@/routes/assessmentRoutes';
+import authRoutes from '@/routes/authRoutes';
+import roleRoutes from '@/routes/roleRoutes';
+import onboardingRoutes from '@/routes/onboardingRoutes';
+import certificateRoutes from '@/routes/certificateRoutes';
+import statRoutes from '@/routes/statRoutes';
 
 const app: Application = express();
-const allowedOrigins = ['http://localhost:3000', 'http://localhost:5173', process.env.CLIENT_URL];
+const allowedOrigins = [
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  process.env.CLIENT_URL
+];
 // ─── Security ─────────────────────────────────────────────
 app.use(helmet());
-
+app.disable('etag');
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -52,7 +60,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/assessments', assessmentRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/roles', roleRoutes);
+app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/certificates', certificateRoutes);
+app.use('/api/stats', statRoutes);
 
 // ─── Error handling ────────────────────────────────────────
 app.use(notFound);

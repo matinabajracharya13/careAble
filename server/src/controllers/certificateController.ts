@@ -1,45 +1,40 @@
-import { Request, Response, NextFunction } from 'express';
-import { AppError } from '../middleware/errorHandler';
-import { ApiResponse } from '../types';
-import { findCertificateById } from '../repositories/certificateRepository';
+import { AppError } from '@/middleware/errorHandler';
+import { findCertificateByCode, findCertificatesByUserId } from '@/repositories/certificateRepository';
+import { ApiResponse } from '@/types';
+import { Certificate } from '@/types';
+import { NextFunction, Request, Response } from 'express';
 
-export const getCertificate = async (req: Request, res: Response, next: NextFunction) => {
+export const getCertificates = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const certId = Number(req.params.id);
+    const userId = (req as any).user?.user_id;
+    const certificates = await findCertificatesByUserId(userId);
 
-    if (isNaN(certId)) return next(new AppError('Invalid certificate ID', 400));
-
-    const cert = await findCertificateById(certId);
-
-    if (!cert) return next(new AppError('Certificate not found', 404));
-
-    const topAreas = cert.domainScores
-      .filter((d: any) => d.score >= 4.0)
-      .map((d: any) => ({ name: d.domain_name, score: d.score }));
-
-    const response: ApiResponse = {
+    const response: ApiResponse<Certificate[]> = {
       success: true,
       message: 'Certificate fetched successfully',
-      data: {
-        id: cert.certificate_id,
-        verificationCode: cert.certificate_code,
-        issuedAt: cert.issued_at,
-        userName: cert.full_name,
-        email: cert.email,
-        assessmentTitle: cert.assessment_title,
-        category: cert.domain,
-        issuerName: 'CareAble Academy',
-        domains: cert.domainScores.map((d: any) => ({
-          name: d.domain_name,
-          score: d.score,
-          capabilityLevel: d.capability_level
-        })),
-        topAreas
-      }
+      data: certificates || []
     };
-
-    res.status(200).json(response);
+    res.json(response);
   } catch (err) {
-    next(new AppError('Failed to fetch certificate', 500));
+    console.error('Error fetching certificates:', err);
+    next(new AppError('Failed to fetch certificates', 500));
+  }
+};
+
+export const getCertificateByCode = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = (req as any).user?.user_id;
+    const code = req.params.code as string;
+    const certificates = await findCertificateByCode(code, userId);
+
+    const response: ApiResponse<Certificate> = {
+      success: true,
+      message: 'Certificate fetched successfully',
+      data: certificates || null
+    };
+    res.json(response);
+  } catch (err) {
+    console.error('Error fetching certificates:', err);
+    next(new AppError('Failed to fetch certificates', 500));
   }
 };

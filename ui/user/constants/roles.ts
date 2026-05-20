@@ -1,0 +1,1 @@
+export const DEFAULT_SIGNUP_ROLE = 'carer'

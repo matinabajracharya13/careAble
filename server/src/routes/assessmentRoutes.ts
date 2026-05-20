@@ -3,18 +3,21 @@ import {
   getAssessments,
   getAssessmentById,
   saveAssessmentProgress,
-  getUserAssessmentProgress,
-  getUserAssessmentProgressByID,
-  submitAssessment
-} from '../controllers/assessmentController';
+  getUserAssessmentAttempt,
+  submitAssessmentResponses,
+  startAssessment,
+  getUserAssessmentAttemptID
+} from '@/controllers/assessmentController';
+import { authenticate } from '@/middleware/authenticate';
 
 const router = Router();
-
+router.use(authenticate);
 router.get('/', getAssessments);
-router.get('/progress', getUserAssessmentProgress);
+router.get('/attempts', getUserAssessmentAttempt);
 router.get('/:id', getAssessmentById);
-router.post('/:id/save-progress', saveAssessmentProgress);
-router.get('/:id/progress', getUserAssessmentProgressByID);
-router.post('/:id/submit', submitAssessment);
+router.post('/:id/attempts/:attemptId/save-progress', saveAssessmentProgress);
+router.get('/:id/attempts/:attemptId/progress', getUserAssessmentAttemptID);
+router.post('/:id/attempts/:attemptId/submit', submitAssessmentResponses);
+router.post('/:id/start', startAssessment);
 
 export default router;

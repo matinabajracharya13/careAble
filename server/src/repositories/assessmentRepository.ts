@@ -1,4 +1,4 @@
-import db from '../db';
+import db from '@/db';
 
 // ─────────────────────────────────────────────
 // BASIC CRUD
@@ -50,11 +50,12 @@ export const findOptionsByQuestionIds = (questionIds: number[]) => {
   return db('assessment_question_options').whereIn('assessment_question_id', questionIds);
 };
 
-export const findProgress = (userId: number, assessmentId: number) => {
+export const findProgress = (userId: number, assessmentId: number, attemptId: number) => {
   return db('assessment_progress')
     .where({
       user_id: userId,
-      assessment_id: assessmentId
+      assessment_id: assessmentId,
+      attempt_id: attemptId
     })
     .first();
 };
@@ -62,19 +63,21 @@ export const findProgress = (userId: number, assessmentId: number) => {
 export const saveProgress = async (
   userId: number,
   assessmentId: number,
+  attemptId: number,
   data: {
     answers: Record<string, string>;
     currentTopicIndex: number;
     currentPage: number;
   }
 ) => {
-  const existing = await findProgress(userId, assessmentId);
+  const existing = await findProgress(userId, assessmentId, attemptId);
 
   if (existing) {
     return db('assessment_progress')
       .where({
         user_id: userId,
-        assessment_id: assessmentId
+        assessment_id: assessmentId,
+        attempt_id: attemptId
       })
       .update({
         answers: JSON.stringify(data.answers),
@@ -89,71 +92,104 @@ export const saveProgress = async (
     assessment_id: assessmentId,
     answers: JSON.stringify(data.answers),
     current_topic_index: data.currentTopicIndex,
-    current_page: data.currentPage
+    current_page: data.currentPage,
+    attempt_id: attemptId
   });
 };
 
-export const getAllProgress = (userId: number) => {
-  return db('assessment_progress').where({
-    user_id: userId
-  });
+export const getAllAttempt = (userId: number) => {
+  return db('assessment_attempts')
+    .where({
+      user_id: userId
+    })
+    .select('assessment_id', 'attempt_id', 'status');
 };
 
-export const getProgressByID = (userId: number, progressId: number) => {
+export const getProgressByID = (userId: number, assessmentId: number, attemptId: number) => {
+  console.log('Fetching progress for user:', userId, 'assessment:', assessmentId, 'attempt:', attemptId);
   return db('assessment_progress')
     .where({
       user_id: userId,
-      progress_id: progressId
+      assessment_id: assessmentId,
+      attempt_id: attemptId
     })
     .first();
 };
 
-// ─────────────────────────────────────────────
-// SUBMISSION
-// ─────────────────────────────────────────────
-
-export const createAttempt = async (userId: number, assessmentId: number) => {
-  const [id] = await db('assessment_attempts')
-    .insert({ user_id: userId, assessment_id: assessmentId, status: 'in_progress', started_at: db.fn.now() });
-  return id as number;
-};
-
-export const saveResponses = async (
+export const saveAssessmentResponses = async (
   attemptId: number,
-  answers: { questionId: number; numericValue: number }[]
+  userId: number,
+  assessmentId: number,
+  responses: { question_id: number; selected_option_id: number; numeric_value: number }[]
 ) => {
-  const rows = await Promise.all(
-    answers.map(async ({ questionId, numericValue }) => {
-      const option = await db('assessment_question_options')
-        .where({ assessment_question_id: questionId, numeric_value: numericValue })
-        .first();
-      return {
+  const trx = await db.transaction();
+  try {
+    const rows = responses.map((item) => ({
+      attempt_id: attemptId,
+      assessment_question_id: item.question_id,
+      selected_option_id: item.selected_option_id,
+      numeric_value: item.numeric_value
+    }));
+
+    await trx('assessment_responses').insert(rows);
+    await trx('assessment_attempts')
+      .where({
         attempt_id: attemptId,
-        assessment_question_id: questionId,
-        selected_option_id: option.assessment_question_options_id,
-        numeric_value: numericValue
-      };
+        user_id: userId,
+        assessment_id: assessmentId
+      })
+      .update({
+        status: 'completed',
+        submitted_at: trx.fn.now()
+      });
+    await trx.commit();
+  } catch (err) {
+    await trx.rollback();
+
+    throw err;
+  }
+};
+
+export const createAssessmentAttempt = async (assessmentID: number, userID: number) => {
+  const rows = {
+    assessment_id: assessmentID,
+    user_id: userID,
+    started_at: db.fn.now(),
+    status: 'in_progress'
+  };
+
+  const [attempt] = await db('assessment_attempts')
+    .insert(rows)
+    .returning(['attempt_id', 'assessment_id', 'user_id', 'started_at', 'status']);
+
+  return attempt;
+};
+
+export const getQuestionTopicMap = async (assessmentId: number) => {
+  try {
+    const rows = await db('assessment_questions')
+      .select('assessment_question_id', 'assessment_topic_id')
+      .where({ assessment_id: assessmentId });
+
+    return rows.reduce(
+      (acc, row) => {
+        acc[row.assessment_question_id] = row.assessment_topic_id;
+        return acc;
+      },
+      {} as Record<number, number>
+    );
+  } catch (error) {
+    console.error('Error fetching question-topic map:', error);
+    throw error;
+  }
+};
+
+export const deleteAssessmentProgress = async (userId: number, assessmentId: number, attemptId: number) => {
+  return db('assessment_progress')
+    .where({
+      user_id: userId,
+      assessment_id: assessmentId,
+      attempt_id: attemptId
     })
-  );
-  return db('assessment_responses').insert(rows);
-};
-
-export const saveDomainScores = (
-  scores: { attemptId: number; assessmentId: number; topicId: number; score: number; capabilityLevel: string }[]
-) => {
-  return db('domain_scores').insert(
-    scores.map((s) => ({
-      attempt_id: s.attemptId,
-      assessment_id: s.assessmentId,
-      topic_id: s.topicId,
-      score: s.score,
-      capability_level: s.capabilityLevel
-    }))
-  );
-};
-
-export const completeAttempt = (attemptId: number) => {
-  return db('assessment_attempts')
-    .where({ attempt_id: attemptId })
-    .update({ status: 'completed', submitted_at: db.fn.now() });
+    .del();
 };

@@ -1,8 +1,11 @@
+import { getCertificateByCode, getCertificates } from '@/controllers/certificateController';
+import { authenticate } from '@/middleware/authenticate';
 import { Router } from 'express';
-import { getCertificate } from '../controllers/certificateController';
 
 const router = Router();
+router.use(authenticate);
 
-router.get('/:id', getCertificate);
+router.get('/', getCertificates);
+router.get('/:code', getCertificateByCode);
 
 export default router;

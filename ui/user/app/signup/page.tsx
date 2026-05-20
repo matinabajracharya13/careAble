@@ -6,25 +6,85 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Eye, EyeOff, UserPlus, ArrowLeft, Briefcase, GraduationCap, CheckCircle } from 'lucide-react';
+
+import {
+  Eye,
+  EyeOff,
+  UserPlus,
+  ArrowLeft,
+  CheckCircle
+} from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Separator } from '@/components/ui/ui-components';
+
+import {
+  Card,
+  CardContent,
+  Badge
+} from '@/components/ui/ui-components';
+
 import { toast } from '@/components/ui/toast';
+
 import { authApi, roleApi } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+
 import { cn } from '@/lib/utils';
+
 import { useQuery } from '@tanstack/react-query';
+
 import { ICON_MAP } from '@/lib/icon-map';
+
+import { APP_PERKS } from '@/config/site';
+import { DEFAULT_SIGNUP_ROLE } from '@/constants/roles';
+import { MESSAGES } from '@/constants/messages';
+import { APP_SHORT_NAME } from '@/constants/app';
+import { SignupPayload } from '@/types';
 
 const schema = z
   .object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.string().email('Invalid email'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
+    first_name: z
+      .string()
+      .min(2, 'First name must be at least 2 characters'),
+
+    last_name: z
+      .string()
+      .min(2, 'Last name must be at least 2 characters'),
+
+    email: z
+      .string()
+      .email('Invalid email'),
+
+    phone: z
+      .string()
+      .min(8, 'Phone number is required')
+      .max(20, 'Phone number too long'),
+
+    date_of_birth: z
+      .string()
+      .min(1, 'Date of birth is required'),
+
+    postcode: z
+      .string()
+      .min(3, 'Postcode is required'),
+
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters'),
+
     confirmPassword: z.string(),
-    role: z.string()
+
+    role: z.string(),
+
+    accepted_terms: z
+      .boolean()
+      .refine((v) => v === true, {
+        message: 'You must accept terms and conditions'
+      }),
+
+    research_consent: z.boolean()
   })
+
   .refine((d) => d.password === d.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword']
@@ -32,16 +92,21 @@ const schema = z
 
 type FormData = z.infer<typeof schema>;
 
-const PERKS = ['Free skill assessments', 'Verified certificates', 'Trusted by 340+ companies', 'No credit card required'];
-
 export default function SignupPage() {
   const router = useRouter();
-  const { login } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<string>('carer');
 
-  const { data: roles, isLoading } = useQuery({
+  const { login } = useAuth();
+
+  const [showPassword, setShowPassword] =
+    useState(false);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [selectedRole, setSelectedRole] =
+    useState<string>(DEFAULT_SIGNUP_ROLE);
+
+  const { data: roles } = useQuery({
     queryKey: ['roles'],
     queryFn: roleApi.getRoles
   });
@@ -53,7 +118,12 @@ export default function SignupPage() {
     formState: { errors }
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { role: 'carer' }
+
+    defaultValues: {
+      role: DEFAULT_SIGNUP_ROLE,
+      accepted_terms: false,
+      research_consent: false
+    }
   });
 
   const selectRole = (role: string) => {
@@ -63,14 +133,30 @@ export default function SignupPage() {
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
+
     try {
-      const { token, user } = await authApi.signup(data);
-      console.log(token, user);
-      login(token, user);
-      toast({ variant: 'success', title: `Welcome to CareAble, ${user.name}!` });
-      router.push('/onboarding');
+      const response = await authApi.signup(data as SignupPayload);
+
+      login(response.token, response.user);
+
+      toast({
+        variant: 'success',
+        title: MESSAGES.auth.signupSuccess(
+          response.user.name
+        )
+      });
+
+      if (!response.user.onboarding_completed) {
+        router.push('/onboarding');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
-      toast({ variant: 'destructive', title: 'Signup failed', description: err.message });
+      toast({
+        variant: 'destructive',
+        title: 'Signup failed',
+        description: err.message
+      });
     } finally {
       setLoading(false);
     }
@@ -79,9 +165,11 @@ export default function SignupPage() {
   return (
     <div className='min-h-screen flex items-center justify-center bg-background relative overflow-hidden pt-16 py-10'>
       <div className='absolute inset-0 bg-mesh-gradient pointer-events-none' />
+
       <div className='absolute top-1/4 right-0 h-96 w-96 rounded-full bg-accent/5 blur-3xl' />
 
-      <div className='w-full max-w-4xl px-4 relative z-10 animate-fade-in'>
+      <div className='w-full max-w-5xl px-4 relative z-10 animate-fade-in'>
+        {/* BACK */}
         <div className='mb-6'>
           <Link
             href='/'
@@ -93,17 +181,31 @@ export default function SignupPage() {
         </div>
 
         <div className='grid md:grid-cols-5 gap-8'>
-          {/* Left panel */}
+          {/* LEFT */}
           <div className='md:col-span-2 space-y-8 pt-4'>
             <div>
               <div className='h-10 w-10 rounded-xl bg-primary flex items-center justify-center mb-4 shadow-md shadow-primary/20'>
-                <span className='text-primary-foreground font-display font-bold text-sm'>SB</span>
+                <span className='text-primary-foreground font-display font-bold text-sm'>
+                  {APP_SHORT_NAME}
+                </span>
               </div>
-              <h1 className='text-3xl font-display font-bold mb-2'>Create your account</h1>
-              <p className='text-muted-foreground text-sm'>Join thousands of professionals and companies on CareAble.</p>
+
+              <Badge className='mb-3'>
+                Join CareAble
+              </Badge>
+
+              <h1 className='text-3xl font-display font-bold mb-2'>
+                Create your account
+              </h1>
+
+              <p className='text-muted-foreground text-sm'>
+                Join thousands of professionals and
+                companies on CareAble.
+              </p>
             </div>
+
             <ul className='space-y-3'>
-              {PERKS.map((p) => (
+              {APP_PERKS.map((p) => (
                 <li
                   key={p}
                   className='flex items-center gap-3 text-sm'
@@ -113,6 +215,7 @@ export default function SignupPage() {
                 </li>
               ))}
             </ul>
+
             <p className='text-xs text-muted-foreground'>
               Already have an account?{' '}
               <Link
@@ -124,39 +227,59 @@ export default function SignupPage() {
             </p>
           </div>
 
-          {/* Form */}
-          <Card
-            variant='elevated'
-            className='md:col-span-3'
-          >
-            <CardContent className='p-8 space-y-5'>
-              {/* Role selector */}
-              <div className='space-y-2'>
-                <label className='text-sm font-medium'>I am a…</label>
+          {/* FORM */}
+          <Card className='md:col-span-3 border-border/60 shadow-xl'>
+            <CardContent className='p-8 space-y-6'>
+              {/* ROLE */}
+              <div className='space-y-3'>
+                <label className='text-sm font-medium'>
+                  I am a…
+                </label>
+
                 <div className='grid grid-cols-2 gap-3'>
-                  {roles?.map((opt) => {
-                    const Icon = ICON_MAP[opt.icon_key];
+                  {roles?.map((opt: any) => {
+                    const Icon =
+                      ICON_MAP[opt.icon_key];
+
                     return (
                       <button
                         key={opt.role_name}
                         type='button'
-                        onClick={() => selectRole(opt.role_name)}
+                        onClick={() =>
+                          selectRole(opt.role_name)
+                        }
                         className={cn(
-                          'flex flex-col items-start gap-2 p-4 rounded-xl border-2 text-left transition-all',
-                          selectedRole === opt.role_name ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/30'
+                          'flex flex-col items-start gap-3 p-4 rounded-xl border-2 text-left transition-all',
+
+                          selectedRole ===
+                            opt.role_name
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-muted-foreground/30'
                         )}
                       >
                         <div
                           className={cn(
-                            'h-8 w-8 rounded-lg flex items-center justify-center',
-                            selectedRole === opt.role_name ? 'bg-primary text-primary-foreground' : 'bg-secondary'
+                            'h-9 w-9 rounded-lg flex items-center justify-center',
+
+                            selectedRole ===
+                              opt.role_name
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-secondary'
                           )}
                         >
-                          {Icon && <Icon className='h-4 w-4' />}
+                          {Icon && (
+                            <Icon className='h-4 w-4' />
+                          )}
                         </div>
+
                         <div>
-                          <p className='text-sm font-semibold'>{opt.label}</p>
-                          <p className='text-xs text-muted-foreground'>{opt.description}</p>
+                          <p className='text-sm font-semibold'>
+                            {opt.label}
+                          </p>
+
+                          <p className='text-xs text-muted-foreground'>
+                            {opt.description}
+                          </p>
                         </div>
                       </button>
                     );
@@ -169,58 +292,211 @@ export default function SignupPage() {
                 {...register('role')}
               />
 
+              {/* FORM */}
               <form
                 onSubmit={handleSubmit(onSubmit)}
-                className='space-y-4'
+                className='space-y-5'
               >
-                <div className='space-y-1.5'>
-                  <label className='text-sm font-medium'>Full name</label>
-                  <Input
-                    placeholder='Jane Smith'
-                    {...register('name')}
-                    error={errors.name?.message}
-                  />
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <div className='space-y-1.5'>
+                    <label className='text-sm font-medium'>
+                      First name
+                    </label>
+
+                    <Input
+                      placeholder='Jane'
+                      {...register('first_name')}
+                      error={
+                        errors.first_name?.message
+                      }
+                    />
+                  </div>
+
+                  <div className='space-y-1.5'>
+                    <label className='text-sm font-medium'>
+                      Last name
+                    </label>
+
+                    <Input
+                      placeholder='Smith'
+                      {...register('last_name')}
+                      error={
+                        errors.last_name?.message
+                      }
+                    />
+                  </div>
                 </div>
 
+                {/* EMAIL */}
                 <div className='space-y-1.5'>
-                  <label className='text-sm font-medium'>Email address</label>
+                  <label className='text-sm font-medium'>
+                    Email address
+                  </label>
+
                   <Input
                     type='email'
-                    placeholder='jane@company.com'
+                    placeholder='jane@example.com'
                     {...register('email')}
                     error={errors.email?.message}
                   />
                 </div>
 
-                <div className='grid grid-cols-2 gap-3'>
+                {/* PHONE + DOB */}
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                   <div className='space-y-1.5'>
-                    <label className='text-sm font-medium'>Password</label>
+                    <label className='text-sm font-medium'>
+                      Phone number
+                    </label>
+
                     <Input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder='8+ characters'
-                      suffix={
-                        <button
-                          type='button'
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <EyeOff className='h-4 w-4' /> : <Eye className='h-4 w-4' />}
-                        </button>
-                      }
-                      {...register('password')}
-                      error={errors.password?.message}
+                      placeholder='+61 400 000 000'
+                      {...register('phone')}
+                      error={errors.phone?.message}
                     />
                   </div>
+
                   <div className='space-y-1.5'>
-                    <label className='text-sm font-medium'>Confirm password</label>
+                    <label className='text-sm font-medium'>
+                      Date of birth
+                    </label>
+
                     <Input
-                      type='password'
-                      placeholder='Repeat password'
-                      {...register('confirmPassword')}
-                      error={errors.confirmPassword?.message}
+                      type='date'
+                      {...register('date_of_birth')}
+                      error={errors.date_of_birth?.message}
                     />
                   </div>
                 </div>
 
+                {/* POSTCODE */}
+                <div className='space-y-1.5'>
+                  <label className='text-sm font-medium'>
+                    Postal code
+                  </label>
+
+                  <Input
+                    placeholder='3073'
+                    {...register('postcode')}
+                    error={
+                      errors.postcode?.message
+                    }
+                  />
+                </div>
+
+                {/* PASSWORDS */}
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <div className='space-y-1.5'>
+                    <label className='text-sm font-medium'>
+                      Password
+                    </label>
+
+                    <Input
+                      type={
+                        showPassword
+                          ? 'text'
+                          : 'password'
+                      }
+                      placeholder='8+ characters'
+                      suffix={
+                        <button
+                          type='button'
+                          onClick={() =>
+                            setShowPassword(
+                              !showPassword
+                            )
+                          }
+                        >
+                          {showPassword ? (
+                            <EyeOff className='h-4 w-4' />
+                          ) : (
+                            <Eye className='h-4 w-4' />
+                          )}
+                        </button>
+                      }
+                      {...register('password')}
+                      error={
+                        errors.password?.message
+                      }
+                    />
+                  </div>
+
+                  <div className='space-y-1.5'>
+                    <label className='text-sm font-medium'>
+                      Confirm password
+                    </label>
+
+                    <Input
+                      type='password'
+                      placeholder='Repeat password'
+                      {...register(
+                        'confirmPassword'
+                      )}
+                      error={
+                        errors.confirmPassword
+                          ?.message
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* CONSENTS */}
+                <div className='space-y-3 rounded-xl border p-4 bg-muted/20'>
+                  <label className='flex items-start gap-3 cursor-pointer'>
+                    <input
+                      type='checkbox'
+                      className='mt-1'
+                      {...register(
+                        'accepted_terms'
+                      )}
+                    />
+
+                    <div>
+                      <p className='text-sm font-medium'>
+                        I agree to the Terms &
+                        Privacy Policy
+                      </p>
+
+                      <p className='text-xs text-muted-foreground'>
+                        Required to create your
+                        account.
+                      </p>
+                    </div>
+                  </label>
+
+                  {errors.accepted_terms && (
+                    <p className='text-xs text-destructive'>
+                      {
+                        errors.accepted_terms
+                          .message
+                      }
+                    </p>
+                  )}
+
+                  <label className='flex items-start gap-3 cursor-pointer'>
+                    <input
+                      type='checkbox'
+                      className='mt-1'
+                      {...register(
+                        'research_consent'
+                      )}
+                    />
+
+                    <div>
+                      <p className='text-sm font-medium'>
+                        I consent to research
+                        participation
+                      </p>
+
+                      <p className='text-xs text-muted-foreground'>
+                        Optional. Helps improve
+                        support services and
+                        platform insights.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                {/* SUBMIT */}
                 <Button
                   type='submit'
                   className='w-full'
@@ -230,24 +506,6 @@ export default function SignupPage() {
                   <UserPlus className='h-4 w-4' />
                   Create account
                 </Button>
-
-                <p className='text-center text-xs text-muted-foreground'>
-                  By signing up you agree to our{' '}
-                  <a
-                    href='#'
-                    className='text-primary hover:underline'
-                  >
-                    Terms of Service
-                  </a>{' '}
-                  and{' '}
-                  <a
-                    href='#'
-                    className='text-primary hover:underline'
-                  >
-                    Privacy Policy
-                  </a>
-                  .
-                </p>
               </form>
             </CardContent>
           </Card>

@@ -1,22 +1,24 @@
+import { AppError } from '@/middleware/errorHandler';
+import { ApiResponse } from '@/types';
 import { NextFunction, Request, Response } from 'express';
-import { AppError } from '../middleware/errorHandler';
-import { ApiResponse } from '../types';
 
 import {
+  createAssessmentAttempt,
+  deleteAssessmentProgress,
   findAllAssessments,
   findAssessmentById,
   findOptionsByQuestionIds,
   findQuestionsByTopicIds,
   findTopicsByAssessment,
-  getAllProgress,
+  getAllAttempt,
   getProgressByID,
-  saveProgress,
-  createAttempt,
-  saveResponses,
-  saveDomainScores,
-  completeAttempt
-} from '../repositories/assessmentRepository';
-import { createCertificate } from '../repositories/certificateRepository';
+  saveAssessmentResponses,
+  saveProgress
+} from '@/repositories/assessmentRepository';
+import { generateCertificate } from '@/repositories/certificateRepository';
+import { addDomainScore } from '@/repositories/domainRepository';
+import { generateDomainScores } from '@/services/domain';
+import { calculateOverallMean } from '@/utils/capability';
 
 // GET ALL
 export const getAssessments = async (_req: Request, res: Response, next: NextFunction) => {
@@ -49,7 +51,7 @@ export const getAssessmentById = async (req: Request, res: Response, next: NextF
     const options = await findOptionsByQuestionIds(questions.map((q) => q.assessment_question_id));
 
     const formattedTopics = topics.map((topic) => ({
-      id: topic.code,
+      id: topic.assessment_topic_id,
       title: topic.title,
       questions: questions
         .filter((q) => q.assessment_topic_id === topic.assessment_topic_id)
@@ -89,13 +91,12 @@ export const getAssessmentById = async (req: Request, res: Response, next: NextF
 export const saveAssessmentProgress = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const assessmentId = Number(req.params.id);
-
-    // ⚠️ Replace with authenticated user later
-    const userId = 1;
+    const attemptId = Number(req.params.attemptId);
+    const userId = (req as any).user?.user_id;
 
     const { answers, currentTopicIndex, currentPage } = req.body;
 
-    await saveProgress(userId, assessmentId, {
+    await saveProgress(userId, assessmentId, attemptId, {
       answers,
       currentTopicIndex,
       currentPage
@@ -108,16 +109,17 @@ export const saveAssessmentProgress = async (req: Request, res: Response, next: 
 
     res.status(200).json(response);
   } catch (err) {
+    console.log(err);
     next(new AppError('Failed to save progress', 500));
   }
 };
 
-export const getUserAssessmentProgress = async (req: Request, res: Response, next: NextFunction) => {
+export const getUserAssessmentAttempt = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // replace later with req.user.userId
-    const userId = 1;
+    const userId = (req as any).user?.user_id;
 
-    const progress = await getAllProgress(userId);
+    const progress = await getAllAttempt(userId);
 
     const response: ApiResponse = {
       success: true,
@@ -127,90 +129,114 @@ export const getUserAssessmentProgress = async (req: Request, res: Response, nex
 
     res.status(200).json(response);
   } catch (err) {
+    console.log(err);
     next(new AppError('Failed to fetch assessment progress', 500));
   }
 };
 
-export const getUserAssessmentProgressByID = async (req: Request, res: Response, next: NextFunction) => {
+export const getUserAssessmentAttemptID = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // replace later with req.user.userId
-    const userId = 1;
-    const progressId = Number(req.params.id);
-
-    const progress = await getProgressByID(userId, progressId);
-
-    const response: ApiResponse = {
-      success: true,
-      message: 'Assessment progress fetched successfully',
-      data: progress
-    };
-
-    res.status(200).json(response);
-  } catch (err) {
-    next(new AppError('Failed to fetch assessment progress', 500));
-  }
-};
-
-// SUBMIT ASSESSMENT
-export const submitAssessment = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+    const userId = (req as any).user?.user_id;
+    const attemptId = Number(req.params.attemptId);
     const assessmentId = Number(req.params.id);
 
-    // ⚠️ Replace with authenticated user later
-    const userId = 1;
+    const progress = await getProgressByID(userId, assessmentId, attemptId);
+    if (!progress) {
+      return res.status(200).json({
+        success: true,
+        message: 'No progress found',
+        data: null
+      });
+    }
+    const response: ApiResponse = {
+      success: true,
+      message: 'Assessment progress fetched successfully',
+      data: progress
+    };
 
-    const { answers } = req.body as { answers: Record<string, string> };
+    res.status(200).json(response);
+  } catch (err) {
+    next(new AppError('Failed to fetch assessment progress', 500));
+  }
+};
 
-    if (!answers || typeof answers !== 'object') {
-      return next(new AppError('Answers are required', 400));
+export const submitAssessmentResponses = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = (req as any).user?.user_id;
+    const attemptId = Number(req.params.attemptId);
+    const assessmentId = Number(req.params.id);
+
+    const { answers } = req.body;
+
+    if (!userId) {
+      return next(new AppError('Unauthorized', 401));
     }
 
-    // 1. Create attempt
-    const attemptId = await createAttempt(userId, assessmentId);
+    if (!answers || typeof answers !== 'object') {
+      return next(new AppError('Invalid payload', 400));
+    }
 
-    // 2. Save raw responses
-    const responsePayload = Object.entries(answers).map(([questionId, value]) => ({
-      questionId: Number(questionId),
-      numericValue: Number(value)
+    const formattedResponses = Object.entries(answers).map(([questionId, answer]: any) => ({
+      question_id: Number(questionId),
+      selected_option_id: answer.optionId,
+      numeric_value: answer.value,
+      topic_id: Number(answer.topicId)
     }));
-    await saveResponses(attemptId, responsePayload);
 
-    // 3. Calculate domain scores
-    const topics = await findTopicsByAssessment(assessmentId);
-    const questions = await findQuestionsByTopicIds(topics.map((t) => t.assessment_topic_id));
+    // 1. save responses
+    await saveAssessmentResponses(attemptId, userId, assessmentId, formattedResponses);
 
-    const domainScores = topics.map((topic) => {
-      const topicQuestions = questions.filter(
-        (q) => q.assessment_topic_id === topic.assessment_topic_id
-      );
-      const values = topicQuestions.map((q) => Number(answers[q.assessment_question_id]) || 3);
-      const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
-      const rounded = Math.round(mean * 10) / 10;
-
-      let capabilityLevel: string;
-      if (rounded >= 4.0) capabilityLevel = 'Strength area';
-      else if (rounded >= 3.0) capabilityLevel = 'Growth area';
-      else capabilityLevel = 'Support area';
-
-      return { attemptId, assessmentId, topicId: topic.assessment_topic_id, score: rounded, capabilityLevel };
+    // 3. get question -> topic mapping
+    const questionTopicMap: Record<number, number> = {};
+    Object.entries(answers).forEach(([questionId, answer]: [string, any]) => {
+      questionTopicMap[Number(questionId)] = Number(answer.topicId);
     });
+    // 4. generate domain scores
+    const domainScores = generateDomainScores(answers, questionTopicMap);
+    await addDomainScore(attemptId, domainScores);
 
-    await saveDomainScores(domainScores);
+    // 6. certificate
+    const overAllScore = calculateOverallMean(domainScores);
+    const certificate = await generateCertificate(attemptId, assessmentId, userId);
+    certificate.overall_mean_score = overAllScore;
 
-    // 4. Mark attempt complete
-    await completeAttempt(attemptId);
+    // //cleanup assessment_progress data
+    await deleteAssessmentProgress(userId, assessmentId, attemptId);
 
-    // 5. Generate certificate
-    const { certificate_id, certificate_code } = await createCertificate(attemptId);
+    return res.status(201).json({
+      success: true,
+      message: 'Assessment submitted successfully',
+      data: {
+        attemptId,
+        assessmentId,
+        certificate: certificate || null
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const startAssessment = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const assessmentId = Number(req.params.id);
+    const assessment = await findAssessmentById(assessmentId);
+    if (!assessment) return next(new AppError('Assessment not found', 404));
+
+    const userId = (req as any).user?.user_id;
+
+    const attempt = await createAssessmentAttempt(assessmentId, userId);
 
     const response: ApiResponse = {
       success: true,
-      message: 'Assessment submitted successfully',
-      data: { certificateId: certificate_id, certificateCode: certificate_code }
+      message: 'Assessment started successfully',
+      data: attempt
     };
 
-    res.status(201).json(response);
+    res.status(200).json(response);
   } catch (err) {
-    next(new AppError('Failed to submit assessment', 500));
+    console.log(err);
+    next(new AppError('Failed to start assessment', 500));
   }
 };

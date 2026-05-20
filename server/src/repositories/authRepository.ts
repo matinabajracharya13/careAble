@@ -1,7 +1,38 @@
-import db from '../db';
+import db from '@/db';
+
+const baseAuthUserQuery = () => {
+  return db('users as u')
+    .leftJoin('user_roles as ur', 'u.user_id', 'ur.user_id')
+    .leftJoin('roles as r', 'ur.role_id', 'r.role_id')
+    .select(
+      'u.user_id',
+      'u.first_name',
+      'u.last_name',
+      'u.phone',
+      'u.date_of_birth',
+      'u.postcode',
+      'u.onboarding_completed',
+      'u.email_verified',
+      'u.password_hash',
+      'r.role_name as role'
+    );
+};
 
 export const findUserByEmail = async (email: string) => {
   return db('users').where({ email }).first();
+};
+
+
+export const findAuthUserByEmail = async (email: string) => {
+  return baseAuthUserQuery()
+    .where('u.email', email)
+    .first();
+};
+
+export const findAuthUserById = async (userId: number) => {
+  return baseAuthUserQuery()
+    .where('u.user_id', userId)
+    .first();
 };
 
 export const createUser = async (data: any) => {
@@ -27,4 +58,13 @@ export const verifyUserEmail = async (userId: number) => {
 
 export const deleteVerificationToken = async (token: string) => {
   return db('email_verification_tokens').where({ token }).del();
+};
+
+export const markOnboardingCompleted = async (userId: number) => {
+  return db('users')
+    .where({ user_id: userId })
+    .update({
+      onboarding_completed: true,
+      updated_at: db.fn.now(),
+    });
 };

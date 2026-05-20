@@ -6,7 +6,7 @@ export interface User {
   name: string;
   role: string;
   avatar?: string;
-  onboardingCompleted: boolean;
+  onboarding_completed: boolean;
   skills?: string[];
   company?: string; // employer only
   jobTitle?: string; // career only
@@ -82,14 +82,12 @@ export interface AssessmentQuestion {
   id: string;
   text: string;
 
-  type?: 'slider'; // for now only slider (future-proof)
-
-  // slider config (flexible for reuse)
-  scale?: {
-    min: number; // 1
-    max: number; // 5
-    labels: Record<number, string>;
-  };
+  type: 'slider'; // for now only slider (future-proof)
+  options: {
+    id: number;
+    label: string;
+    value: number;
+  }[];
 }
 
 export interface AssessmentResult {
@@ -101,27 +99,6 @@ export interface AssessmentResult {
   completedAt: string;
   timeSpent: number; // seconds
   certificateId?: string;
-}
-
-// ── Certificate ──────────────────────────────────────────────────────────────
-
-export interface CertificateDomain {
-  name: string;
-  score: number;
-  capabilityLevel: 'Strength area' | 'Growth area' | 'Support area';
-}
-
-export interface Certificate {
-  id: string;
-  userName: string;
-  email: string;
-  assessmentTitle: string;
-  category: string;
-  issuedAt: string;
-  verificationCode: string;
-  issuerName: string;
-  domains: CertificateDomain[];
-  topAreas: { name: string; score: number }[];
 }
 
 // ── Contact Form ─────────────────────────────────────────────────────────────
@@ -185,4 +162,52 @@ export interface Roles {
   description: string;
   label: string;
   icon_key: string;
+}
+
+export interface SignupPayload {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  date_of_birth: string;
+  postcode: string;
+  password: string;
+  role: string;
+  accepted_terms: boolean;
+  research_consent: boolean;
+}
+
+export interface AssessmentAttempt {
+  assessment_id: number;
+  attempt_id: number;
+  user_id: number;
+  started_at: string;
+  submitted: string | null;
+  status: 'in_progress' | 'completed' | 'not_started';
+}
+
+export interface Certificate {
+  certificate_id: number;
+  certificate_code: string;
+  attempt_id: number;
+  issued_at: string; // depends on backend (timestamp or ISO)
+  pdf_url: string | null;
+  validity_status: 'valid' | 'expired' | string;
+  validity_date: string | null;
+  title: string;
+  description: string;
+}
+
+export interface AssessmentSubmissionData {
+  attemptId: number;
+  assessmentId: number;
+  passed: boolean;
+  certificate: Certificate | null;
+}
+
+export interface DashboardStats {
+  assessmentsTaken: number;
+  certificatesEarned: number;
+  averageScore: number; // percentage
+  heatMapData: any[]; // Preloaded heatmap data for dashboard (optional optimization)
 }

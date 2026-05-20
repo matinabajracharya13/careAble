@@ -6,37 +6,38 @@ import {
   createVerificationToken,
   findVerificationToken,
   verifyUserEmail,
-  deleteVerificationToken
-} from '../repositories/authRepository';
+  deleteVerificationToken,
+  findAuthUserByEmail,
+  findAuthUserById
+} from '@/repositories/authRepository';
 
-import { hashPassword, comparePassword } from '../utils/hash';
+import { hashPassword, comparePassword } from '@/utils/hash';
 
-import { generateRandomToken } from '../utils/token';
+import { generateRandomToken } from '@/utils/token';
 
-import { generateJwtToken } from '../utils/jwt';
+import { generateJwtToken } from '@/utils/jwt';
 
-import { ApiResponse } from '../types';
+import { ApiResponse } from '@/types';
 
-import { AppError } from '../middleware/errorHandler';
-import { findRoleByName } from '../repositories/roleRepository';
-import { assignUserRole } from '../repositories/userRoleRepository';
+import { AppError } from '@/middleware/errorHandler';
+import { findRoleByName } from '@/repositories/roleRepository';
+import { assignUserRole } from '@/repositories/userRoleRepository';
 
 // SIGNUP
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password, role, name } = req.body;
+    const { email, password, role, first_name, last_name, phone, dob, postcode, research_consent, accepted_terms } = req.body;
+
     console.log(req.body);
 
-    if (!email || !password || !role) {
-      return next(new AppError('Email and password required', 400));
-    }
-
     const selectedRole = await findRoleByName(role);
+
     if (!selectedRole) {
       return next(new AppError('Invalid role', 400));
     }
-    const existingUser = await findUserByEmail(email);
 
+    const existingUser = await findUserByEmail(email);
+    console.log(existingUser);
     if (existingUser) {
       return next(new AppError('Email already exists', 409));
     }
@@ -46,7 +47,15 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     const userId = await createUser({
       email,
       password_hash: passwordHash,
-      full_name: name
+      first_name,
+      last_name,
+      phone,
+      date_of_birth: dob,
+      postcode,
+      accepted_terms,
+      research_consent,
+      onboarding_completed: false,
+      email_verified: true
     });
 
     await assignUserRole(userId, selectedRole.role_id);
@@ -56,10 +65,9 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     await createVerificationToken({
       user_id: userId,
       token: verificationToken,
-      expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24) // 24h
+      expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24)
     });
 
-    // TODO: send email here
     const token = generateJwtToken({
       user_id: userId,
       email,
@@ -73,11 +81,17 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
         token,
         user: {
           user_id: userId,
-          name: name,
+          first_name,
+          last_name,
+          name: `${first_name} ${last_name}`,
           email,
+          phone,
+          dob,
+          postcode,
           role: selectedRole.role_name,
           onboarding_completed: false,
-          email_verified: false
+          // For testing purposes, we set email_verified to true. In production, this should be false until the user verifies their email.
+          email_verified: true
         }
       }
     };
@@ -130,7 +144,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
   try {
     const { email, password } = req.body;
 
-    const user = await findUserByEmail(email);
+    const user = await findAuthUserByEmail(email);
 
     if (!user) {
       return next(new AppError('Invalid credentials', 401));
@@ -147,14 +161,64 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     const token = generateJwtToken({
-      user_id: user.user_id
+      user_id: user.user_id,
+      email,
+      role: user.role
     });
+
+    const { user_id, first_name, last_name, phone, dob, postcode, role, onboarding_completed, email_verified } = user;
 
     const response: ApiResponse = {
       success: true,
       message: 'Login successful',
       data: {
-        token
+        token,
+        user: {
+          user_id,
+          first_name,
+          last_name,
+          name: `${first_name} ${last_name}`,
+          email,
+          phone,
+          dob,
+          postcode,
+          role,
+          onboarding_completed: Boolean(onboarding_completed),
+          email_verified: Boolean(email_verified)
+        }
+      }
+    };
+
+    res.status(200).json(response);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getCurrentUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = await findAuthUserById((req as any).user?.user_id);
+    if (!user) {
+      return next(new AppError('User not found', 404));
+    }
+    const { user_id, email, first_name, last_name, phone, dob, postcode, role, onboarding_completed, email_verified } = user;
+    const response: ApiResponse = {
+      success: true,
+      message: 'Current user retrieved successfully',
+      data: {
+        user: {
+          user_id,
+          first_name,
+          last_name,
+          name: `${first_name} ${last_name}`,
+          email,
+          phone,
+          dob,
+          postcode,
+          role,
+          onboarding_completed: Boolean(onboarding_completed),
+          email_verified: Boolean(email_verified)
+        }
       }
     };
 

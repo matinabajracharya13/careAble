@@ -1,10 +1,11 @@
 'use client';
 
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/toast';
 import { Badge, Card, CardContent, Separator, Textarea } from '@/components/ui/ui-components';
+import { SITE_CONFIG } from '@/config/site';
+import { useAuth } from '@/context/AuthContext';
 import { contactApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { ContactFormData } from '@/types';
@@ -18,9 +19,6 @@ import {
   ChevronRight,
   Globe,
   GraduationCap,
-  Mail,
-  MapPin,
-  Phone,
   Send,
   Shield,
   Star,
@@ -29,11 +27,11 @@ import {
   Users,
   Zap
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { SITE_CONFIG } from '@/config/site';
 
 // ── Validation ────────────────────────────────────────────────────────────────
 const contactSchema = z.object({
@@ -129,7 +127,7 @@ const TESTIMONIALS = [
     role: 'Data Analyst',
     company: 'DataFlow',
     text: "I used CareAble to identify my skill gaps and then prove I'd filled them. My salary increased 22% after certification.",
-    rating: 5
+    rating: 4
   }
 ];
 
@@ -150,7 +148,7 @@ function StatCard({ stat }: { stat: (typeof STATS)[0] }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const [contactLoading, setContactLoading] = useState(false);
-
+  const { isAuthenticated } = useAuth();
   const {
     register,
     handleSubmit,
@@ -200,16 +198,22 @@ export default function LandingPage() {
 
             <p className='text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed'>{SITE_CONFIG.description}</p>
 
-            <div className='flex flex-col sm:flex-row gap-4 justify-center pt-4'>
+            {isAuthenticated ? (
               <Button
+                asChild
+                size='xl'
+              >
+                <Link href='/dashboard'>Go to Dashboard</Link>
+              </Button>
+            ) : (
+              <Button
+                asChild
                 size='xl'
                 variant='outline'
-                asChild
               >
                 <Link href='/login'>Login to your account</Link>
               </Button>
-            </div>
-
+            )}
             <div className='flex items-center justify-center gap-6 pt-4 text-sm text-muted-foreground'>
               {['No credit card', 'Free assessments', 'Instant results'].map((item) => (
                 <div
@@ -225,11 +229,7 @@ export default function LandingPage() {
 
           {/* Hero cards floating visual */}
           <div className='mt-20 grid grid-cols-3 gap-4 max-w-2xl mx-auto'>
-            {[
-              { icon: GraduationCap, label: 'For Carers', desc: 'Prove your skills, earn certificates, land jobs' },
-              { icon: Briefcase, label: 'For Carer Seekers', desc: 'Hire with confidence using verified assessments' },
-              { icon: Award, label: 'Recognised Skilled Categories', desc: '85+ assessments across tech, management & more' }
-            ].map((card, i) => (
+            {SITE_CONFIG.roles.map((card, i) => (
               <div
                 key={card.label}
                 className={cn(
@@ -486,11 +486,7 @@ export default function LandingPage() {
                 <div>
                   <h3 className='font-display font-semibold text-lg mb-4'>Contact information</h3>
                   <div className='space-y-4 text-sm text-muted-foreground'>
-                    {[
-                      { icon: Mail, text: 'hello@CareAble.dev' },
-                      { icon: Phone, text: '+61 2 0000 0000' },
-                      { icon: MapPin, text: 'Sydney, NSW, Australia' }
-                    ].map(({ icon: Icon, text }) => (
+                    {SITE_CONFIG.contactUS.map(({ icon: Icon, text }) => (
                       <div
                         key={text}
                         className='flex items-center gap-3'
@@ -504,15 +500,6 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <Separator />
-                <div>
-                  <p className='text-sm font-semibold mb-3'>Demo credentials</p>
-                  <div className='space-y-2 text-xs font-mono bg-card border border-border rounded-lg p-3'>
-                    <p className='text-muted-foreground'>Career account:</p>
-                    <p>career@demo.com / demo123</p>
-                    <p className='text-muted-foreground mt-2'>Employer account:</p>
-                    <p>employer@demo.com / demo123</p>
-                  </div>
-                </div>
               </div>
 
               {/* Form */}

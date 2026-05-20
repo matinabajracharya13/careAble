@@ -1,45 +1,67 @@
-import db from '../db';
+import db from '@/db';
 
-const generateCertificateCode = () => {
-  const part = () => Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `CA-${part()}-${part()}`;
-};
-
-export const createCertificate = async (attemptId: number) => {
-  const code = generateCertificateCode();
-  const [id] = await db('certificates').insert({
-    attempt_id: attemptId,
-    certificate_code: code,
-    issued_at: db.fn.now(),
-    validity_status: 'valid'
-  });
-  return { certificate_id: id as number, certificate_code: code };
-};
-
-export const findCertificateById = async (certificateId: number) => {
-  const cert = await db('certificates as c')
-    .join('assessment_attempts as a', 'c.attempt_id', 'a.attempt_id')
-    .join('users as u', 'a.user_id', 'u.user_id')
-    .join('assessments as as', 'a.assessment_id', 'as.assessment_id')
-    .where('c.certificate_id', certificateId)
+const baseQuery = () => {
+  return db('certificates as c')
+    .join('assessment_attempts as aa', 'aa.attempt_id', 'c.attempt_id')
+    .join('assessments as a', 'a.assessment_id', 'aa.assessment_id')
+    .join('users as u', 'u.user_id', 'aa.user_id')
+    .leftJoin('domain_scores as ds', 'ds.attempt_id', 'c.attempt_id')
+    .groupBy('c.certificate_id', 'a.assessment_id', 'u.user_id')
     .select(
       'c.certificate_id',
       'c.certificate_code',
+      'c.attempt_id',
       'c.issued_at',
-      'u.full_name',
+      'c.pdf_url',
+      'c.validity_status',
+      'c.validity_date',
+
+      'a.title as assessment_title',
+      'a.description as assessment_description',
+
+      'u.user_id',
+      'u.first_name',
+      'u.last_name',
       'u.email',
-      'as.title as assessment_title',
-      'as.domain',
-      'a.attempt_id'
-    )
+
+      db.raw("u.first_name || ' ' || u.last_name as full_name"),
+
+      // 👇 overall mean score
+      db.raw('ROUND(AVG(ds.score), 2) as overall_mean_score')
+    );
+};
+
+export const findCertificatesByUserId = async (userId: number) => {
+  return baseQuery().where('c.user_id', userId);
+};
+
+export const findCertificateByCode = async (code: string, userId: number) => {
+  return baseQuery()
+    .where({
+      'c.certificate_code': code,
+      'c.user_id': userId
+    })
     .first();
+};
 
-  if (!cert) return null;
+export const generateCertificate = async (attemptId: number, assessmentId: number, userId: number) => {
+  const code = `CERT-${Date.now()}-${attemptId}`;
 
-  const domainScores = await db('domain_scores as ds')
-    .join('assessment_topics as t', 'ds.topic_id', 't.assessment_topic_id')
-    .where('ds.attempt_id', cert.attempt_id)
-    .select('t.title as domain_name', 'ds.score', 'ds.capability_level');
+  const [certificate] = await db('certificates')
+    .insert({
+      certificate_code: code,
+      attempt_id: attemptId,
+      issued_at: new Date(),
+      validity_status: 'valid',
+      validity_date: null,
+      pdf_url: null,
+      user_id: userId
+    })
+    .returning('*');
 
-  return { ...cert, domainScores };
+  return certificate;
+};
+
+export const getCertificateByAttemptId = async (attemptId: number) => {
+  return baseQuery().where('c.attempt_id', attemptId).first();
 };
