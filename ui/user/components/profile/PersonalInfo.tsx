@@ -149,35 +149,6 @@ export function PersonalInfo({ user, updateUser }: { user: any; updateUser: (u: 
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className='text-base'>About you</CardTitle>
-          <CardDescription>A short bio shown on your public profile.</CardDescription>
-        </CardHeader>
-        <CardContent className='space-y-4'>
-          <div className='space-y-1.5'>
-            <div className='flex justify-between'>
-              <label className='text-sm font-medium'>Bio</label>
-              <span className={cn('text-xs', bio.length > 280 ? 'text-destructive' : 'text-muted-foreground')}>{bio.length}/300</span>
-            </div>
-            <Textarea
-              placeholder="Tell employers about yourself, your experience, and what you're looking for..."
-              rows={4}
-              {...register('bio')}
-              error={errors.bio?.message}
-            />
-          </div>
-          <div className='space-y-1.5'>
-            <label className='text-sm font-medium'>Skills</label>
-            <Input
-              placeholder='JavaScript, React, Python, SQL, ...'
-              {...register('skills')}
-            />
-            <p className='text-xs text-muted-foreground'>Separate skills with commas.</p>
-          </div>
-        </CardContent>
-      </Card>
-
       <div className='flex justify-end'>
         <Button
           type='submit'

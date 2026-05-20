@@ -24,7 +24,8 @@ export default function TopicStepperAssessment() {
 
   const { data: progress } = useQuery({
     queryKey: ['assessment-progress', attemptID],
-    queryFn: () => assessmentApi.getProgress(id, attemptID)
+    queryFn: () => assessmentApi.getProgress(id, attemptID),
+    refetchOnMount: true
   });
 
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
