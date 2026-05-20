@@ -44,6 +44,7 @@ export function UsersPage() {
 
   // TanStack Query – swap placeholderData for real API
   const { data, isLoading } = useUsers({ search, limit: 20 });
+  console.log(data);
   const createUser = useCreateUser();
   const deleteUser = useDeleteUser();
 

@@ -37,7 +37,7 @@ async function fetchWithAuth<T>(endpoint: string, options: RequestInit = {}): Pr
   return res.json();
 }
 
-async function fetchWithAuthNoJson(endpoint: string, options: RequestInit = {}) {
+async function fetchWithAuthNoJson<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     ...options,
     headers: {
@@ -78,7 +78,7 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify(data)
     });
-    return res.data;
+    return res?.data;
   }
 };
 
@@ -229,8 +229,14 @@ export const certificateApi = {
 
 export const contactApi = {
   submit: async (data: ContactFormData) => {
-    await delay(1000);
-    return { success: true, message: "Message sent! We'll get back to you within 24 hours." };
+    const res = await fetchWithAuthNoJson<{
+      success: boolean;
+      message: string;
+    }>(`/contacts`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+    return res;
   }
 };
 
@@ -241,7 +247,7 @@ Public Routes (no auth required)
 export const roleApi = {
   getRoles: async (): Promise<Roles[]> => {
     const res = await fetchWithAuthNoJson('/roles');
-    return res.data;
+    return res?.data;
   }
 };
 

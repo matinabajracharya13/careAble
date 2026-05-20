@@ -18,7 +18,7 @@ const CAREER_NAV = [
 
 const EMPLOYER_NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/employer', label: 'Talent Pool', icon: Users },
+  { href: '/employer', label: 'Talent Pool', icon: Users }
 ];
 
 export function Navbar() {
@@ -45,7 +45,6 @@ export function Navbar() {
     router.push('/');
   };
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
-  console.log(user);
 
   return (
     <header

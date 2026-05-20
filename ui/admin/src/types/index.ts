@@ -92,3 +92,12 @@ export interface ActivityItem {
 // ─── Theme ──────────────────────────────────────────────────────────────
 export type ColorTheme = 'indigo' | 'rose' | 'emerald' | 'amber' | 'cyan';
 export type Mode = 'light' | 'dark' | 'system';
+
+export interface Message {
+  id: string;
+  full_name: string;
+  email: string;
+  subject: string;
+  message: string;
+  created_at: string;
+}
