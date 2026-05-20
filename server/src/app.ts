@@ -14,6 +14,7 @@ import onboardingRoutes from '@/routes/onboardingRoutes';
 import certificateRoutes from '@/routes/certificateRoutes';
 import statRoutes from '@/routes/statRoutes';
 import adminRoutes from '@/routes/adminRoutes';
+import contactRoutes from './routes/contactRoutes';
 
 const app: Application = express();
 const allowedOrigins = [
@@ -65,6 +66,7 @@ app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/stats', statRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/contacts', contactRoutes);
 
 // ─── Error handling ────────────────────────────────────────
 app.use(notFound);

@@ -10,6 +10,7 @@ import { contactApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { ContactFormData } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
 import {
   Award,
   BarChart3,
@@ -147,7 +148,6 @@ function StatCard({ stat }: { stat: (typeof STATS)[0] }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function LandingPage() {
-  const [contactLoading, setContactLoading] = useState(false);
   const { isAuthenticated } = useAuth();
   const {
     register,
@@ -156,17 +156,19 @@ export default function LandingPage() {
     formState: { errors }
   } = useForm<ContactFormData>({ resolver: zodResolver(contactSchema) });
 
-  const onContactSubmit = async (data: ContactFormData) => {
-    setContactLoading(true);
-    try {
-      await contactApi.submit(data);
+  const { mutate, isPending: contactLoading } = useMutation({
+    mutationFn: (data: ContactFormData) => contactApi.submit(data),
+    onSuccess: () => {
       toast({ variant: 'success', title: 'Message sent!', description: "We'll get back to you within 24 hours." });
       reset();
-    } catch {
+    },
+    onError: () => {
       toast({ variant: 'destructive', title: 'Failed to send', description: 'Please try again.' });
-    } finally {
-      setContactLoading(false);
     }
+  });
+
+  const onContactSubmit = async (data: ContactFormData) => {
+    mutate(data);
   };
 
   return (
