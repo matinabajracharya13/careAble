@@ -2,6 +2,7 @@ import type {
   ApiResponse,
   Assessment,
   AssessmentAttempt,
+  AssessmentListItem,
   AssessmentProgress,
   AssessmentSubmissionData,
   Certificate,
@@ -103,6 +104,18 @@ export const onboardingApi = {
   }
 };
 
+// --- user assessment api---
+export const userAssessmentApi = {
+  get: async (): Promise<AssessmentListItem[]> => {
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: AssessmentListItem[];
+    }>('/auth/me/assessments');
+
+    return res.data;
+  }
+};
 // ── Assessment API ────────────────────────────────────────────────────────────
 
 export const assessmentApi = {

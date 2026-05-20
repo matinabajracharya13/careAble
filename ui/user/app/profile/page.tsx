@@ -4,9 +4,9 @@ import { ActivityTab, AssessmentsTab, AvatarUploader, CertificateTab, OverviewTa
 import { PersonalInfo } from '@/components/profile/PersonalInfo';
 import { Badge } from '@/components/ui/ui-components';
 import { useAuth } from '@/context/AuthContext';
-import { certificateApi } from '@/lib/api';
+import { certificateApi, userAssessmentApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { Certificate } from '@/types';
+import { AssessmentListItem, Certificate } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import { Award, BookOpen, Clock, Loader2, Lock, Pencil, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -19,8 +19,7 @@ const TABS = [
   { id: 'info', label: 'Personal Info', icon: Pencil },
   { id: 'password', label: 'Password', icon: Lock },
   { id: 'certificates', label: 'Certificates', icon: Award },
-  { id: 'assessments', label: 'Assessments', icon: BookOpen },
-  { id: 'activity', label: 'Activity', icon: Clock }
+  { id: 'assessments', label: 'Assessments', icon: BookOpen }
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
@@ -33,6 +32,11 @@ export default function ProfilePage() {
   const { data: certificates, isLoading: certsLoading } = useQuery({
     queryKey: ['all-certificates'],
     queryFn: certificateApi.getCertificate
+  });
+
+  const { data: assessments, isLoading: assesmentsLoading } = useQuery({
+    queryKey: ['user-assesments', user?.id],
+    queryFn: userAssessmentApi.get
   });
 
   React.useEffect(() => {
@@ -119,8 +123,12 @@ export default function ProfilePage() {
                 loading={certsLoading}
               />
             )}
-            {activeTab === 'assessments' && <AssessmentsTab />}
-            {activeTab === 'activity' && <ActivityTab />}
+            {activeTab === 'assessments' && (
+              <AssessmentsTab
+                loading={assesmentsLoading}
+                assessments={assessments as AssessmentListItem[]}
+              />
+            )}
           </div>
         </div>
       </div>
