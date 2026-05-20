@@ -67,9 +67,8 @@ export default function ProfilePage() {
             <div className='absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-success border-2 border-background' />
           </div>
           <h1 className='text-2xl font-display font-bold'>{user.name}</h1>
-          <p className='text-muted-foreground mt-1'>{user.jobTitle ?? 'Career seeker'}</p>
+          <p className='text-muted-foreground mt-1'>{user.role?.toUpperCase()}</p>
           <div className='flex items-center justify-center gap-2 mt-2 flex-wrap'>
-            <Badge className='bg-primary/10 text-primary border-primary/20 text-[10px] capitalize'>{user.role}</Badge>
             <Badge className='bg-success/10 text-success border-success/20 text-[10px]'>● Active</Badge>
           </div>
         </div>

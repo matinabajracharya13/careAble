@@ -8,14 +8,9 @@ interface JwtPayload {
   role: string;
 }
 
-export const authenticate: RequestHandler = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const authenticate: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
-
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return next(new AppError('Authentication token missing', 401));
     }
@@ -26,16 +21,12 @@ export const authenticate: RequestHandler = (
       return next(new AppError('Authentication token missing', 401));
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
-    ) as JwtPayload;
-
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
     const { user_id, email, role } = decoded;
     if (!user_id || !email || !role) {
       return next(new AppError('Invalid token payload', 401));
     }
-   
+
     (req as any).user = {
       user_id,
       email,
