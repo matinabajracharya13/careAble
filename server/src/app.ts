@@ -15,6 +15,7 @@ import certificateRoutes from '@/routes/certificateRoutes';
 import statRoutes from '@/routes/statRoutes';
 import adminRoutes from '@/routes/adminRoutes';
 import contactRoutes from './routes/contactRoutes';
+import candidateRoutes from './routes/candidateRoutes';
 
 const app: Application = express();
 const allowedOrigins = [
@@ -67,6 +68,7 @@ app.use('/api/certificates', certificateRoutes);
 app.use('/api/stats', statRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/contacts', contactRoutes);
+app.use('/api/candidates', candidateRoutes);
 
 // ─── Error handling ────────────────────────────────────────
 app.use(notFound);
