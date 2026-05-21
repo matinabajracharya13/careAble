@@ -4,10 +4,9 @@ import { verifyCertificateRoleRequired } from '@/middleware/verify-certificate';
 import { Router } from 'express';
 
 const router = Router();
-router.use(authenticate);
 
-router.get('/', getCertificates);
-router.get('/:code', getCertificateByCode);
-router.get('/verify/:code', verifyCertificateRoleRequired, checkCertificate);
+router.get('/', authenticate, getCertificates);
+router.get('/:code', authenticate, getCertificateByCode);
+router.get('/verify/:code', checkCertificate);
 
 export default router;

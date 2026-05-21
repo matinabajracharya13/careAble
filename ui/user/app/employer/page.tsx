@@ -1,101 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Users, Search, Filter, Star, Award, BookOpen, ChevronRight, Mail, ExternalLink, TrendingUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, Badge, Progress } from '@/components/ui/ui-components';
-import { cn, getLevelBadgeClass } from '@/lib/utils';
-import { toast } from '@/components/ui/toast';
 import { RoleGuard } from '@/components/auth/RouteGuard';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/toast';
+import { Badge, Card, CardContent } from '@/components/ui/ui-components';
 import { UserRole } from '@/config/role';
-
-// ── Mock talent data ──────────────────────────────────────────────────────────
-const CANDIDATES = [
-  {
-    id: 'c1',
-    name: 'Alex Johnson',
-    title: 'Frontend Developer',
-    location: 'Sydney, NSW',
-    score: 92,
-    certs: ['JavaScript Fundamentals', 'React Advanced'],
-    skills: ['JavaScript', 'React', 'TypeScript', 'CSS'],
-    available: true,
-    experience: '4 years'
-  },
-  {
-    id: 'c2',
-    name: 'Maria Santos',
-    title: 'Data Analyst',
-    location: 'Melbourne, VIC',
-    score: 88,
-    certs: ['Data Analysis', 'Python Fundamentals'],
-    skills: ['Python', 'SQL', 'Tableau', 'Excel'],
-    available: true,
-    experience: '3 years'
-  },
-  {
-    id: 'c3',
-    name: 'David Kim',
-    title: 'Product Manager',
-    location: 'Brisbane, QLD',
-    score: 76,
-    certs: ['Project Management Essentials'],
-    skills: ['Agile', 'Scrum', 'Product Strategy', 'Roadmapping'],
-    available: false,
-    experience: '6 years'
-  },
-  {
-    id: 'c4',
-    name: 'Sophie Williams',
-    title: 'UX Designer',
-    location: 'Perth, WA',
-    score: 95,
-    certs: ['UX Foundations', 'Figma Advanced'],
-    skills: ['Figma', 'User Research', 'Prototyping', 'Accessibility'],
-    available: true,
-    experience: '5 years'
-  },
-  {
-    id: 'c5',
-    name: 'James Okonkwo',
-    title: 'Backend Engineer',
-    location: 'Adelaide, SA',
-    score: 84,
-    certs: ['Python Fundamentals', 'Cloud Infrastructure'],
-    skills: ['Python', 'Django', 'AWS', 'PostgreSQL'],
-    available: true,
-    experience: '3 years'
-  },
-  {
-    id: 'c6',
-    name: 'Anika Patel',
-    title: 'Marketing Specialist',
-    location: 'Sydney, NSW',
-    score: 79,
-    certs: ['Digital Marketing'],
-    skills: ['SEO', 'Content Strategy', 'Google Ads', 'Analytics'],
-    available: false,
-    experience: '2 years'
-  }
-];
+import { candidatesApi } from '@/lib/api';
+import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { Award, ChevronRight, Mail, TrendingUp, Users } from 'lucide-react';
+import { useState } from 'react';
 
 function ScoreRing({ score }: { score: number }) {
   const color = score >= 90 ? 'text-success' : score >= 75 ? 'text-warning' : 'text-destructive';
-  return <div className={cn('text-2xl font-display font-bold', color)}>{score}%</div>;
+  return <div className={cn('text-2xl font-display font-bold', color)}>{score}</div>;
 }
 
 export default function EmployerPage() {
-  const [search, setSearch] = useState('');
-  const [availableOnly, setAvailableOnly] = useState(false);
-
-  const filtered = CANDIDATES.filter((c) => {
-    const matchSearch =
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.title.toLowerCase().includes(search.toLowerCase()) ||
-      c.skills.some((s) => s.toLowerCase().includes(search.toLowerCase()));
-    const matchAvail = !availableOnly || c.available;
-    return matchSearch && matchAvail;
+  const { data: candidates, isLoading } = useQuery({
+    queryKey: ['candidates'],
+    queryFn: () => candidatesApi.getAllCandidates()
   });
 
   const handleContact = (name: string) => {
@@ -125,13 +49,13 @@ export default function EmployerPage() {
           {/* Stats bar */}
           <div className='grid grid-cols-3 gap-4 mb-8'>
             {[
-              { label: 'Active candidates', value: CANDIDATES.filter((c) => c.available).length, icon: Users },
+              { label: 'Active candidates', value: candidates?.filter((c) => c.available).length, icon: Users },
               {
                 label: 'Avg. skill score',
-                value: `${Math.round(CANDIDATES.reduce((a, c) => a + c.score, 0) / CANDIDATES.length)}%`,
+                value: `${Math.round((candidates?.reduce((a, c) => a + c.score, 0) || 0) / (candidates?.length || 1))}`,
                 icon: TrendingUp
               },
-              { label: 'Certificates held', value: CANDIDATES.reduce((a, c) => a + c.certs.length, 0), icon: Award }
+              { label: 'Certificates held', value: candidates?.reduce((a, c) => a + c.certs.length, 0), icon: Award }
             ].map((s) => (
               <Card key={s.label}>
                 <CardContent className='p-4 flex items-center gap-3'>
@@ -149,7 +73,7 @@ export default function EmployerPage() {
 
           {/* Candidate grid */}
           <div className='grid md:grid-cols-2 xl:grid-cols-3 gap-5'>
-            {filtered.map((candidate, i) => (
+            {candidates?.map((candidate, i) => (
               <Card
                 key={candidate.id}
                 className={cn('card-hover animate-fade-in')}
@@ -208,21 +132,6 @@ export default function EmployerPage() {
                     </div>
                   </div>
 
-                  {/* Skills */}
-                  <div>
-                    <p className='text-xs font-semibold text-muted-foreground mb-1.5'>Skills</p>
-                    <div className='flex flex-wrap gap-1.5'>
-                      {candidate.skills.map((skill) => (
-                        <span
-                          key={skill}
-                          className='text-[10px] bg-secondary text-foreground rounded-full px-2 py-0.5'
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
                   {/* Actions */}
                   <div className='flex gap-2 pt-1 border-t border-border'>
                     <Button
@@ -247,7 +156,7 @@ export default function EmployerPage() {
             ))}
           </div>
 
-          {filtered.length === 0 && (
+          {candidates?.length === 0 && (
             <div className='text-center py-20 text-muted-foreground'>
               <Users className='h-12 w-12 mx-auto mb-3 opacity-20' />
               <p className='font-semibold'>No candidates found</p>

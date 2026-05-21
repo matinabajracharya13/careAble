@@ -221,3 +221,20 @@ export interface AssessmentListItem {
   attemptId: number;
   status: 'completed' | 'available' | 'in_progress';
 }
+
+export interface Candidate {
+  id: string | number;
+
+  name: string;
+  title: string;
+
+  location: string;
+
+  score: number;
+
+  certs: string[];
+
+  available: boolean;
+
+  experience: string;
+}

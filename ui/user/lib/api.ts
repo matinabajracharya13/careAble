@@ -5,6 +5,7 @@ import type {
   AssessmentListItem,
   AssessmentProgress,
   AssessmentSubmissionData,
+  Candidate,
   Certificate,
   ContactFormData,
   DashboardStats,
@@ -204,6 +205,18 @@ export const assessmentApi = {
   }
 };
 
+// -- Candidates API ---
+
+export const candidatesApi = {
+  getAllCandidates: async (): Promise<Candidate[]> => {
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: Candidate[];
+    }>(`/candidates`);
+    return res.data;
+  }
+};
 // ── Certificate API ───────────────────────────────────────────────────────────
 
 export const certificateApi = {
