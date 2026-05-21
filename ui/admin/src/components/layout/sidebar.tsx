@@ -1,5 +1,17 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, BarChart3, Settings, Bell, ChevronLeft, ChevronRight, LogOut, Shield, MessageCircle } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Users,
+  BarChart3,
+  Settings,
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  Shield,
+  MessageCircle,
+  Badge
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -13,6 +25,7 @@ const NAV_ITEMS = [
   { href: '/users', icon: Users, label: 'Users' },
   { href: '/messages', icon: MessageCircle, label: 'Messages' },
   { href: '/analytics', icon: BarChart3, label: 'Analytics' },
+  { href: '/verify-certificate', icon: Badge, label: 'Verify Certificate' },
   { href: '/notifications', icon: Bell, label: 'Notifications' },
   { href: '/settings', icon: Settings, label: 'Settings' }
 ];

@@ -101,3 +101,17 @@ export interface Message {
   message: string;
   created_at: string;
 }
+
+export interface CertificateData {
+  valid: boolean;
+  certificate_code: string;
+  issued_at: number; // timestamp
+  assessment_title: string;
+  user_name: string;
+}
+
+export interface CertificateResponse {
+  success: boolean;
+  message: string;
+  data: CertificateData;
+}

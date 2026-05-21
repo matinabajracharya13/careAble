@@ -12,6 +12,7 @@ import { SettingsPage } from '@/pages/settings';
 import { NotificationsPage } from '@/pages/notifications';
 import { LoginPage } from '@/pages/login';
 import { MessagesPage } from './pages/messages';
+import { VerifyCertificatePage } from './pages/verify-certificate';
 
 export default function App() {
   return (
@@ -39,7 +40,10 @@ export default function App() {
                 path='/messages'
                 element={<MessagesPage />}
               />
-
+              <Route
+                path='/verify-certificate'
+                element={<VerifyCertificatePage />}
+              />
               <Route
                 path='/analytics'
                 element={<AnalyticsPage />}

@@ -222,6 +222,14 @@ export const certificateApi = {
       data: Certificate;
     }>(`/certificates/${code}`);
     return res.data;
+  },
+  verifyCertificate: async (code: string): Promise<Certificate> => {
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: Certificate;
+    }>(`/certificates/verify/${code}`);
+    return res.data;
   }
 };
 
