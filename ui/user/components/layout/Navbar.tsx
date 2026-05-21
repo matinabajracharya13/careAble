@@ -12,13 +12,13 @@ import { useEffect, useState } from 'react';
 const CAREER_NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/assessment', label: 'Assessments', icon: BookOpen },
-  // { href: '/certificate', label: 'Certificates', icon: Award },
   { href: '/profile', label: 'Profile', icon: User }
 ];
 
 const EMPLOYER_NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/employer', label: 'Talent Pool', icon: Users }
+  { href: '/employer', label: 'Talent Pool', icon: Users },
+  { href: '/verify-certificate', label: 'Verify Certificates', icon: Award }
 ];
 
 export function Navbar() {

@@ -1,16 +1,10 @@
-import { Request, Response, NextFunction, RequestHandler } from 'express';
+import { Response, NextFunction, RequestHandler } from 'express';
 import { AppError } from '@/middleware/errorHandler';
+import { UserRole } from '@/enums/user-role';
+import { AuthRequest } from '@/types/auth';
 
-export const requireAdmin: RequestHandler = (req: Request, _res: Response, next: NextFunction) => {
-  const user = (req as any).user;
+export const requireAdmin: RequestHandler = (req: AuthRequest, _res: Response, next: NextFunction) => {
+  const isAdmin = req.user?.role === UserRole.ADMIN;
 
-  if (!user) {
-    return next(new AppError('Unauthorized', 401));
-  }
-
-  if (user.role !== 'admin') {
-    return next(new AppError('Forbidden: Admins only', 403));
-  }
-
-  next();
+  return next(isAdmin ? undefined : new AppError('Forbidden: Admins only', 403));
 };
