@@ -59,10 +59,10 @@ const RadarHeatmap = ({ data }: { data: HeatmapData[] }) => {
       const name = dataPoint?.payload.displayName;
 
       // Determine color based on score
-      let themeColor = "text-blue-600 border-blue-100 bg-blue-50";
-      if (score >= 4.0) themeColor = "text-green-600 border-green-100 bg-green-50";
-      else if (score >= 3.0) themeColor = "text-yellow-600 border-yellow-100 bg-yellow-50";
-      else themeColor = "text-red-600 border-red-100 bg-red-50";
+      let themeColor = "text-primary border-border bg-card";
+      if (score >= 4.0) themeColor = "text-green-400 border-green-500/30 bg-green-500/10";
+      else if (score >= 3.0) themeColor = "text-yellow-400 border-yellow-500/30 bg-yellow-500/10";
+      else themeColor = "text-red-400 border-red-500/30 bg-red-500/10";
 
       return (
         <div className={`p-3 rounded-xl border-2 backdrop-blur-sm ${themeColor}`}>
@@ -79,14 +79,14 @@ const RadarHeatmap = ({ data }: { data: HeatmapData[] }) => {
 
   return (
     /* MAIN CONTAINER*/
-    <div className="bg-white p-4 md:p-8 rounded-2xl border border-gray-100 shadow-sm flex flex-col h-full min-h-fit overflow-hidden">
+    <div className="bg-card text-card-foreground p-4 md:p-8 rounded-2xl border border-border shadow-sm flex flex-col h-full min-h-fit overflow-hidden">
 
       {/* HEADER SECTION */}
       <div className="mb-6">
-        <h3 className="text-xl font-bold text-slate-800 leading-tight">
+        <h3 className="text-xl font-bold text-foreground leading-tight">
           Your Competency Profile
         </h3>
-        <p className="text-sm text-slate-500 italic">
+        <p className="text-sm text-muted-foreground italic">
           Visual breakdown of your skills across domains
         </p>
       </div>
@@ -150,7 +150,7 @@ const RadarHeatmap = ({ data }: { data: HeatmapData[] }) => {
       {/* TOP 3 CARDS */}
       <div className="grid md:grid-cols-3 gap-4 mt-8">
 
-        <div className="bg-green-50 p-4 rounded-xl">
+        <div className="bg-green-500/10 border border-green-500/20 p-4 rounded-xl">
           <h4 className="font-bold text-green-700 mb-2">Top 3 Strengths</h4>
           {strengths.map(item => (
             <p key={item.id} className="text-sm">
@@ -160,7 +160,7 @@ const RadarHeatmap = ({ data }: { data: HeatmapData[] }) => {
           ))}
         </div>
 
-        <div className="bg-yellow-50 p-4 rounded-xl">
+        <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-xl">
           <h4 className="font-bold text-yellow-700 mb-2">Growth Areas</h4>
           {growth.map(item => (
             <p key={item.id} className="text-sm">
@@ -170,7 +170,7 @@ const RadarHeatmap = ({ data }: { data: HeatmapData[] }) => {
           ))}
         </div>
 
-        <div className="bg-red-50 p-4 rounded-xl">
+        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl">
           <h4 className="font-bold text-red-700 mb-2">Needs Support</h4>
           {support.map(item => (
             <p key={item.id} className="text-sm">
