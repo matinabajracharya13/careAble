@@ -1,18 +1,24 @@
 'use client';
 
-import { ActivityTab, AssessmentsTab, AvatarUploader, CertificateTab, OverviewTab, PasswordTab } from '@/components/profile';
+import { AssessmentsTab, AvatarUploader, CertificateTab, OverviewTab, PasswordTab } from '@/components/profile';
 import { PersonalInfo } from '@/components/profile/PersonalInfo';
 import { Badge } from '@/components/ui/ui-components';
+import { UserRole } from '@/config/role';
 import { useAuth } from '@/context/AuthContext';
 import { certificateApi, userAssessmentApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { AssessmentListItem, Certificate } from '@/types';
 import { useQuery } from '@tanstack/react-query';
-import { Award, BookOpen, Clock, Loader2, Lock, Pencil, User } from 'lucide-react';
+import { Award, BookOpen, Loader2, Lock, Pencil, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import type { User as UserType } from '@/types';
 
 // ── Tab list ──────────────────────────────────────────────────────────────────
+const ROLE_TAB_ACCESS: Record<string, TabId[]> = {
+  [UserRole.CARER]: ['overview', 'info', 'password', 'certificates', 'assessments'],
+  [UserRole.EMPLOYER]: ['overview', 'info', 'password'] // ❌ hide these
+};
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: User },
@@ -38,10 +44,18 @@ export default function ProfilePage() {
     queryKey: ['user-assesments', user?.id],
     queryFn: userAssessmentApi.get
   });
+  const allowedTabs = ROLE_TAB_ACCESS[(user as UserType)?.role] || [];
+
+  const visibleTabs = TABS.filter((tab) => allowedTabs.includes(tab.id));
 
   React.useEffect(() => {
     if (!isLoading && !isAuthenticated) router.push('/login');
   }, [isLoading, isAuthenticated, router]);
+  React.useEffect(() => {
+    if (!allowedTabs.includes(activeTab)) {
+      setActiveTab('overview');
+    }
+  }, [user?.role]);
 
   if (isLoading || !user) {
     return (
@@ -82,7 +96,7 @@ export default function ProfilePage() {
           {/* Sidebar tabs */}
           <aside className='lg:w-52 shrink-0'>
             <nav className='flex lg:flex-col gap-1 overflow-x-auto pb-2 lg:pb-0'>
-              {TABS.map(({ id, label, icon: Icon }) => (
+              {visibleTabs.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   onClick={() => setActiveTab(id)}
