@@ -1,32 +1,20 @@
-import { Link, useLocation } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  Users,
-  BarChart3,
-  Settings,
-  Bell,
-  ChevronLeft,
-  ChevronRight,
-  LogOut,
-  Shield,
-  MessageCircle,
-  Badge
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { useThemeStore } from '@/store/theme-store';
+import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth-store';
+import { useThemeStore } from '@/store/theme-store';
+import { Award, ChevronLeft, ChevronRight, LayoutDashboard, LogOut, MessageCircle, Settings, Shield, Users } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 const NAV_ITEMS = [
   { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/users', icon: Users, label: 'Users' },
   { href: '/messages', icon: MessageCircle, label: 'Messages' },
-  { href: '/analytics', icon: BarChart3, label: 'Analytics' },
-  { href: '/verify-certificate', icon: Badge, label: 'Verify Certificate' },
-  { href: '/notifications', icon: Bell, label: 'Notifications' },
+  // { href: '/analytics', icon: BarChart3, label: 'Analytics' },
+  { href: '/verify-certificate', icon: Award, label: 'Verify Certificate' },
+  // { href: '/notifications', icon: Bell, label: 'Notifications' },
   { href: '/settings', icon: Settings, label: 'Settings' }
 ];
 
