@@ -73,31 +73,58 @@ function CertificateCard({ cert }: { cert: any }) {
             const score = cert.overall_mean_score;
 
             if (score >= i + 1) {
-              return (
-                <Star
-                  key={i}
-                  className='h-5 w-5 fill-warning text-warning'
-                />
-              );
+              return <Star key={i} className='h-5 w-5 fill-warning text-warning' />;
             }
 
             if (score >= i + 0.5) {
-              return (
-                <StarHalf
-                  key={i}
-                  className='h-5 w-5 fill-warning text-warning'
-                />
-              );
+              return <StarHalf key={i} className='h-5 w-5 fill-warning text-warning' />;
             }
 
-            return (
-              <Star
-                key={i}
-                className='h-5 w-5 text-muted-foreground/20'
-              />
-            );
+            return <Star key={i} className='h-5 w-5 text-muted-foreground/20' />;
           })}
         </div>
+
+        {/* Top capability areas */}
+        {cert.domainScores?.filter((d: any) => d.score >= 4.0).length > 0 && (
+          <div className='w-full text-left space-y-1'>
+            <p className='text-xs font-semibold text-muted-foreground uppercase tracking-widest text-center'>Top Capability Areas</p>
+            <div className='grid grid-cols-1 gap-1'>
+              {cert.domainScores
+                .filter((d: any) => d.score >= 4.0)
+                .map((area: any) => (
+                  <div key={area.domain_name} className='flex items-center justify-between bg-success/5 border border-success/20 rounded-lg px-4 py-2'>
+                    <span className='text-sm font-medium flex items-center gap-2'>
+                      <Star className='h-3.5 w-3.5 text-success fill-success' />
+                      {area.domain_name}
+                    </span>
+                    <span className='text-xs font-bold text-success'>{Number(area.score).toFixed(1)} / 5</span>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* All domains */}
+        {cert.domainScores?.length > 0 && (
+          <div className='w-full text-left space-y-1'>
+            <p className='text-xs font-semibold text-muted-foreground uppercase tracking-widest text-center'>Domains Completed</p>
+            <div className='grid grid-cols-1 gap-1'>
+              {cert.domainScores.map((d: any) => (
+                <div key={d.domain_name} className='flex items-center justify-between bg-secondary/50 rounded-lg px-4 py-2'>
+                  <span className='text-xs font-medium'>{d.domain_name}</span>
+                  <span className={cn(
+                    'text-xs font-semibold px-2 py-0.5 rounded-full',
+                    d.capability_level === 'Strength area' ? 'bg-success/10 text-success' :
+                    d.capability_level === 'Growth area' ? 'bg-warning/10 text-warning' :
+                    'bg-destructive/10 text-destructive'
+                  )}>
+                    {d.capability_level} · {Number(d.score).toFixed(1)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <Separator />
 
@@ -113,7 +140,7 @@ function CertificateCard({ cert }: { cert: any }) {
           </div>
           <div>
             <p className='text-xs text-muted-foreground'>Verification</p>
-            <p className='text-xs font-mono font-semibold text-primary'>{cert.issued_at}</p>
+            <p className='text-xs font-mono font-semibold text-primary'>{cert.certificate_code}</p>
           </div>
         </div>
 
@@ -191,26 +218,17 @@ export default function CertificatePage() {
         </div>
 
         {/* Certificate */}
-        <div
-          ref={printRef}
-          className='animate-scale-in'
-        >
+        <div ref={printRef} className='animate-scale-in'>
           <CertificateCard cert={cert} />
         </div>
 
         {/* Actions - hidden in print */}
         <div className='mt-6 flex flex-wrap gap-3 justify-center print:hidden'>
-          <Button
-            variant='outline'
-            onClick={handlePrint}
-          >
+          <Button variant='outline' onClick={handlePrint}>
             <Download className='h-4 w-4' />
             Download / Print
           </Button>
-          <Button
-            variant='outline'
-            onClick={handleShare}
-          >
+          <Button variant='outline' onClick={handleShare}>
             <Share2 className='h-4 w-4' />
             Share certificate
           </Button>
@@ -229,10 +247,7 @@ export default function CertificatePage() {
             <p className='text-sm text-muted-foreground'>
               Anyone can verify the authenticity of this certificate using the verification code{' '}
               <span className='font-mono font-semibold text-primary'>{cert.certificate_code}</span> at{' '}
-              <a
-                href='https://CareAble.dev/verify'
-                className='text-primary hover:underline inline-flex items-center gap-1'
-              >
+              <a href='https://CareAble.dev/verify' className='text-primary hover:underline inline-flex items-center gap-1'>
                 CareAble.dev/verify <ExternalLink className='h-3 w-3' />
               </a>
             </p>
