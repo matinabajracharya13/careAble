@@ -38,35 +38,6 @@ export const seed = async (knex: Knex): Promise<void> => {
     .onConflict('role_name')
     .merge();
 
-  // ─── Fake User ────────────────────────────────────────────────────────────
-  const [userId] = await knex('users')
-    .insert({
-      first_name: 'Jane',
-      last_name: 'Doe',
-      email: 'jane.doe@example.com',
-      password_hash: '$2b$10$fakehashedpasswordforseeding123456',
-      phone: '0412 345 678',
-      date_of_birth: '1985-06-15',
-      postcode: '3000',
-      accepted_terms: true,
-      research_consent: true,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    })
-    .returning('user_id');
-
-  // console.log(userId)
-  const carerRole = await knex('roles').where({ role_name: 'carer' }).first();
-
-  await knex('user_roles').insert({
-    user_id: userId.user_id ?? 1,
-    role_id: carerRole.role_id,
-    assigned_at: new Date().toISOString(),
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  });
-
   // ─── Onboarding Questions ────────────────────────────────────────────────
 
   await knex('question_options').del();
@@ -104,6 +75,18 @@ export const seed = async (knex: Knex): Promise<void> => {
     ])
     .returning(['category_id', 'title']);
 
+  const rolesFromDb = await knex('roles').whereIn('role_name', ['carer', 'employer']).select('role_id', 'role_name');
+  const mappings = insertedCategories.flatMap((cat: any) =>
+    rolesFromDb
+      .filter((role) => ['carer', 'employer'].includes(role.role_name)) // optional filter
+      .map((role) => ({
+        category_id: cat.category_id,
+        role_id: role.role_id
+      }))
+  );
+
+  await knex('onboarding_category_roles').insert(mappings).onConflict(['category_id', 'role_id']).ignore();
+
   const categories = insertedCategories.map((row) => (typeof row === 'object' ? row : null));
 
   const categoryMap = {
@@ -113,94 +96,138 @@ export const seed = async (knex: Knex): Promise<void> => {
   };
 
   const questions = [
+    // ─────────────────────────────────────────────
+    // Employment
+    // ─────────────────────────────────────────────
     {
       question_text: 'Are you working at the moment?',
       question_type: 'single_select',
       input_type: 'radio',
       category_id: categoryMap.employment,
-      is_required: true
+      is_required: true,
+      profile_section: 'employment',
+      profile_key: 'employment_status',
+      profile_label: 'Employment Status'
     },
     {
       question_text: 'Are you looking for work?',
       question_type: 'boolean',
       input_type: 'radio',
       category_id: categoryMap.employment,
-      is_required: true
+      is_required: true,
+      profile_section: 'employment',
+      profile_key: 'actively_looking',
+      profile_label: 'Open to Work'
     },
     {
       question_text: 'Have you applied for any job within the last 4 weeks?',
       question_type: 'boolean',
       input_type: 'radio',
       category_id: categoryMap.employment,
-      is_required: true
+      is_required: true,
+      profile_section: 'employment',
+      profile_key: 'recent_job_search',
+      profile_label: 'Recent Job Search Activity'
     },
     {
       question_text: 'Which industry interests you?',
       question_type: 'multi_select',
       input_type: 'multiselect',
       category_id: categoryMap.employment,
-      is_required: false
+      is_required: false,
+      profile_section: 'employment',
+      profile_key: 'industries_of_interest',
+      profile_label: 'Industries of Interest'
     },
 
+    // ─────────────────────────────────────────────
+    // Background / CALD
+    // ─────────────────────────────────────────────
     {
       question_text: 'Do you speak a language other than English?',
       question_type: 'boolean',
       input_type: 'radio',
       category_id: categoryMap.cald,
-      is_required: true
+      is_required: true,
+      profile_section: 'background',
+      profile_key: 'multilingual',
+      profile_label: 'Speaks Other Languages'
     },
     {
       question_text: 'Which language do you speak?',
       question_type: 'single_select',
       input_type: 'select',
       category_id: categoryMap.cald,
-      is_required: false
+      is_required: false,
+      profile_section: 'background',
+      profile_key: 'languages_spoken',
+      profile_label: 'Languages Spoken'
     },
 
+    // ─────────────────────────────────────────────
+    // Caregiving
+    // ─────────────────────────────────────────────
     {
       question_text: 'How did you hear about this app?',
       question_type: 'single_select',
       input_type: 'select',
       category_id: categoryMap.caregiving,
-      is_required: false
+      is_required: false,
+      profile_section: 'about',
+      profile_key: 'referral_source',
+      profile_label: 'How They Found Us'
     },
     {
       question_text: 'What brings you here?',
       question_type: 'single_select',
       input_type: 'select',
       category_id: categoryMap.caregiving,
-      is_required: false
+      is_required: false,
+      profile_section: 'about',
+      profile_key: 'platform_goal',
+      profile_label: 'Goals & Interests'
     },
     {
       question_text: 'Who do you care for?',
       question_type: 'single_select',
       input_type: 'select',
       category_id: categoryMap.caregiving,
-      is_required: true
+      is_required: true,
+      profile_section: 'caregiving',
+      profile_key: 'care_recipient',
+      profile_label: 'Cares For'
     },
     {
       question_text: 'What is the age of the person you are caring for?',
       question_type: 'single_select',
       input_type: 'select',
       category_id: categoryMap.caregiving,
-      is_required: true
+      is_required: true,
+      profile_section: 'caregiving',
+      profile_key: 'care_recipient_age',
+      profile_label: 'Care Recipient Age'
     },
     {
       question_text: 'Which of the following apply to the person you care for?',
       question_type: 'multi_select',
       input_type: 'multiselect',
       category_id: categoryMap.caregiving,
-      is_required: false
+      is_required: false,
+      profile_section: 'caregiving',
+      profile_key: 'care_support_types',
+      profile_label: 'Support Experience'
     },
     {
       question_text: 'How long have you cared for this person?',
       question_type: 'single_select',
       input_type: 'select',
       category_id: categoryMap.caregiving,
-      is_required: true
+      is_required: true,
+      profile_section: 'caregiving',
+      profile_key: 'caregiving_experience',
+      profile_label: 'Caregiving Experience'
     }
   ];
-
   const insertedQuestions = await knex('onboarding_questions')
     .insert(
       questions.map((q) => ({

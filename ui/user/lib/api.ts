@@ -215,6 +215,14 @@ export const candidatesApi = {
       data: Candidate[];
     }>(`/candidates`);
     return res.data;
+  },
+  getCandidateById: async (id: string): Promise<Candidate> => {
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: Candidate;
+    }>(`/candidates/${id}`);
+    return res.data;
   }
 };
 // ── Certificate API ───────────────────────────────────────────────────────────

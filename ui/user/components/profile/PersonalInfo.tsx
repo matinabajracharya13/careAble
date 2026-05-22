@@ -113,6 +113,7 @@ export function PersonalInfo({ user, updateUser }: { user: any; updateUser: (u: 
                 icon={<Mail className='h-4 w-4' />}
                 {...register('email')}
                 error={errors.email?.message}
+                disabled
               />
             </div>
             <div className='space-y-1.5'>
@@ -122,6 +123,7 @@ export function PersonalInfo({ user, updateUser }: { user: any; updateUser: (u: 
                 placeholder='+61 4xx xxx xxx'
                 icon={<Phone className='h-4 w-4' />}
                 {...register('phone')}
+                disabled
               />
             </div>
           </div>

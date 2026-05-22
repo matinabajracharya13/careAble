@@ -21,6 +21,11 @@ export function RoleGuard({ children, allowedRoles }: Props) {
       return;
     }
 
+    if (!user?.onboarding_completed) {
+      router.replace('/onboarding');
+      return;
+    }
+
     if (!allowedRoles.includes(user.role)) {
       router.replace('/403');
     }

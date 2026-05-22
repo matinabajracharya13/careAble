@@ -49,3 +49,28 @@ export interface Certificate {
   title: string;
   description: string;
 }
+
+export interface CandidateProfile {
+  user_id: number;
+  name: string;
+  email: string;
+  postcode: string;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+
+  latest_attempt?: {
+    attempt_id: number;
+    assessment_id: number;
+    assessment_title: string;
+    submitted_at: string;
+    score: number;
+  };
+
+  certificates: {
+    certificate_code: string;
+    issued_at: string;
+  }[];
+
+  onboarding_answers: Record<string, any>;
+}

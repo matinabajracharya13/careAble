@@ -38,12 +38,7 @@ export function Overview({ user, certificates, assessments }: Props) {
           { label: 'Best score', value: '0%', icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
           {
             label: 'Member since',
-            value: user?.created_at
-              ? new Date(user.created_at).toLocaleDateString('en-US', {
-                  month: 'short',
-                  year: '2-digit'
-                })
-              : '',
+            value: formatDate(user?.created_at),
             icon: Calendar,
             color: 'text-warning',
             bg: 'bg-warning/10'
