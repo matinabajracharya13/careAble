@@ -2,44 +2,35 @@
 
 import { cn, getLevelBadgeClass, formatDate } from '@/lib/utils';
 import { Progress } from '@radix-ui/react-progress';
-import { Trophy, AlertTriangle, Link, Award, BarChart2, BookOpen, ChevronRight } from 'lucide-react';
+import { Trophy, AlertTriangle, Award, BarChart2, BookOpen, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/ui-components';
+import Link from 'next/link';
+import { AssessmentListItem } from '@/types';
+import { useRouter } from 'next/navigation';
+import { assessmentApi } from '@/lib/api';
 
-const MOCK_ASSESSMENTS = [
-  {
-    id: 'assess1',
-    title: 'JavaScript Fundamentals',
-    level: 'intermediate',
-    score: 87,
-    passed: true,
-    completedAt: '2026-03-28',
-    status: 'completed'
-  },
-  {
-    id: 'assess2',
-    title: 'Project Management Essentials',
-    level: 'beginner',
-    score: 62,
-    passed: false,
-    completedAt: '2026-03-15',
-    status: 'completed'
-  },
-  {
-    id: 'assess3',
-    title: 'Python Fundamentals',
-    level: 'beginner',
-    score: null,
-    passed: null,
-    completedAt: null,
-    status: 'available'
-  }
-];
+interface Props {
+  assessments: AssessmentListItem[];
+  loading: boolean;
+}
 
-export function Assessments() {
-  const completed = MOCK_ASSESSMENTS.filter((a) => a.status === 'completed');
-  const available = MOCK_ASSESSMENTS.filter((a) => a.status === 'available');
+export function Assessments({ assessments, loading }: Props) {
+  const router = useRouter();
+  const completed = assessments.filter((a) => a.status === 'completed');
+  const available = assessments.filter((a) => a.status === 'available' || a.status === 'in_progress');
 
+  const handleStartAssessment = async (assessmentId: string, attemptId: number, status: string) => {
+    // Navigate to the assessment page (replace with actual route)
+
+    if (status === 'in_progress') {
+      router.push(`/assessment/${assessmentId}/${attemptId}`);
+    } else {
+      const response = await assessmentApi.startAssessment(Number(assessmentId));
+
+      router.push(`/assessment/${assessmentId}/${response.attempt_id}`);
+    }
+  };
   return (
     <div className='space-y-6'>
       {/* Completed */}
@@ -52,78 +43,36 @@ export function Assessments() {
           {completed.map((a) => (
             <Card
               key={a.id}
-              className={cn('border-l-4', a.passed ? 'border-l-success' : 'border-l-destructive')}
+              className={cn('border-l-4', 'border-l-success')}
             >
               <CardContent className='p-5'>
                 <div className='flex items-center gap-4'>
-                  <div
-                    className={cn(
-                      'h-11 w-11 rounded-xl flex items-center justify-center shrink-0',
-                      a.passed ? 'bg-success/10' : 'bg-destructive/10'
-                    )}
-                  >
-                    {a.passed ? <Trophy className='h-5 w-5 text-success' /> : <AlertTriangle className='h-5 w-5 text-destructive' />}
+                  <div className={cn('h-11 w-11 rounded-xl flex items-center justify-center shrink-0', 'bg-success/10')}>
+                    <Trophy className='h-5 w-5 text-success' />
                   </div>
                   <div className='flex-1 min-w-0'>
                     <div className='flex items-center gap-2 flex-wrap'>
                       <p className='font-semibold text-sm'>{a.title}</p>
-                      <span
-                        className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full border capitalize', getLevelBadgeClass(a.level))}
-                      >
-                        {a.level}
-                      </span>
                     </div>
                     <p className='text-xs text-muted-foreground mt-0.5'>Completed {a.completedAt ? formatDate(a.completedAt) : '–'}</p>
                   </div>
                   <div className='text-right shrink-0'>
-                    <div className={cn('text-xl font-display font-bold', a.passed ? 'text-success' : 'text-destructive')}>{a.score}%</div>
-                    <div className={cn('text-[10px] font-semibold', a.passed ? 'text-success' : 'text-destructive')}>
-                      {a.passed ? 'PASSED' : 'FAILED'}
-                    </div>
+                    <div className={cn('text-xl font-display font-bold', 'text-success')}>{a.score}</div>
                   </div>
                 </div>
 
-                {/* Progress bar */}
-                <div className='mt-3 space-y-1'>
-                  <Progress
-                    value={a.score ?? 0}
-                    className={cn('h-1.5', !a.passed && '[&>div]:bg-destructive')}
-                  />
-                  <div className='flex justify-between text-[10px] text-muted-foreground'>
-                    <span>0%</span>
-                    <span>Pass: 70%</span>
-                    <span>100%</span>
-                  </div>
+                <div className='mt-3'>
+                  <Button
+                    size='sm'
+                    variant='outline'
+                    asChild
+                  >
+                    <Link href={`/certificate/${a.certificateCode}`}>
+                      <Award className='h-3.5 w-3.5' />
+                      View certificate
+                    </Link>
+                  </Button>
                 </div>
-
-                {a.passed && (
-                  <div className='mt-3'>
-                    <Button
-                      size='sm'
-                      variant='outline'
-                      asChild
-                    >
-                      <Link href={`/certificate/${a.id}`}>
-                        <Award className='h-3.5 w-3.5' />
-                        View certificate
-                      </Link>
-                    </Button>
-                  </div>
-                )}
-                {!a.passed && (
-                  <div className='mt-3'>
-                    <Button
-                      size='sm'
-                      variant='outline'
-                      asChild
-                    >
-                      <Link href={`/assessment/${a.id}`}>
-                        <BarChart2 className='h-3.5 w-3.5' />
-                        Retry assessment
-                      </Link>
-                    </Button>
-                  </div>
-                )}
               </CardContent>
             </Card>
           ))}
@@ -149,22 +98,18 @@ export function Assessments() {
                 <div className='flex-1 min-w-0'>
                   <div className='flex items-center gap-2 flex-wrap'>
                     <p className='font-semibold text-sm'>{a.title}</p>
-                    <span
-                      className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full border capitalize', getLevelBadgeClass(a.level))}
-                    >
-                      {a.level}
-                    </span>
                   </div>
                   <p className='text-xs text-muted-foreground mt-0.5'>Not started</p>
                 </div>
                 <Button
                   size='sm'
-                  asChild
                   className='shrink-0'
+                  onClick={() => handleStartAssessment(a.id, a.attemptId, a.status)}
                 >
-                  <Link href={`/assessment/${a.id}`}>
-                    Start <ChevronRight className='h-4 w-4' />
-                  </Link>
+                  <>
+                    {' '}
+                    {a.status === 'in_progress' ? 'Continue' : 'Start'} <ChevronRight className='h-4 w-4' />
+                  </>
                 </Button>
               </CardContent>
             </Card>

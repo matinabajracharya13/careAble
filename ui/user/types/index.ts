@@ -10,7 +10,7 @@ export interface User {
   skills?: string[];
   company?: string; // employer only
   jobTitle?: string; // career only
-  createdAt: string;
+  created_at: string;
 }
 
 export interface AuthState {
@@ -210,4 +210,31 @@ export interface DashboardStats {
   certificatesEarned: number;
   averageScore: number; // percentage
   heatMapData: any[]; // Preloaded heatmap data for dashboard (optional optimization)
+}
+
+export interface AssessmentListItem {
+  id: string;
+  title: string;
+  certificateCode: string | null;
+  score: number | null;
+  completedAt: string | null;
+  attemptId: number;
+  status: 'completed' | 'available' | 'in_progress';
+}
+
+export interface Candidate {
+  id: string | number;
+
+  name: string;
+  title: string;
+
+  location: string;
+
+  score: number;
+
+  certs: string[];
+
+  available: boolean;
+
+  experience: string;
 }

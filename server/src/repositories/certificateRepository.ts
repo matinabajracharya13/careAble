@@ -44,6 +44,16 @@ export const findCertificateByCode = async (code: string, userId: number) => {
     .first();
 };
 
+export const verifyCertificate = (code: string) => {
+  return db('certificates as c')
+    .join('assessment_attempts as aa', 'aa.attempt_id', 'c.attempt_id')
+    .join('assessments as a', 'a.assessment_id', 'aa.assessment_id')
+    .join('users as u', 'u.user_id', 'aa.user_id')
+    .select('c.certificate_code', 'c.issued_at', 'a.title as assessment_title', db.raw("u.first_name || ' ' || u.last_name as user_name"))
+    .where('c.certificate_code', code)
+    .first();
+};
+
 export const generateCertificate = async (attemptId: number, assessmentId: number, userId: number) => {
   const code = `CERT-${Date.now()}-${attemptId}`;
 

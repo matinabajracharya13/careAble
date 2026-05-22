@@ -2,8 +2,10 @@ import type {
   ApiResponse,
   Assessment,
   AssessmentAttempt,
+  AssessmentListItem,
   AssessmentProgress,
   AssessmentSubmissionData,
+  Candidate,
   Certificate,
   ContactFormData,
   DashboardStats,
@@ -36,7 +38,7 @@ async function fetchWithAuth<T>(endpoint: string, options: RequestInit = {}): Pr
   return res.json();
 }
 
-async function fetchWithAuthNoJson(endpoint: string, options: RequestInit = {}) {
+async function fetchWithAuthNoJson<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     ...options,
     headers: {
@@ -77,7 +79,7 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify(data)
     });
-    return res.data;
+    return res?.data;
   }
 };
 
@@ -103,6 +105,18 @@ export const onboardingApi = {
   }
 };
 
+// --- user assessment api---
+export const userAssessmentApi = {
+  get: async (): Promise<AssessmentListItem[]> => {
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: AssessmentListItem[];
+    }>('/auth/me/assessments');
+
+    return res.data;
+  }
+};
 // ── Assessment API ────────────────────────────────────────────────────────────
 
 export const assessmentApi = {
@@ -191,6 +205,18 @@ export const assessmentApi = {
   }
 };
 
+// -- Candidates API ---
+
+export const candidatesApi = {
+  getAllCandidates: async (): Promise<Candidate[]> => {
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: Candidate[];
+    }>(`/candidates`);
+    return res.data;
+  }
+};
 // ── Certificate API ───────────────────────────────────────────────────────────
 
 export const certificateApi = {
@@ -209,6 +235,14 @@ export const certificateApi = {
       data: Certificate;
     }>(`/certificates/${code}`);
     return res.data;
+  },
+  verifyCertificate: async (code: string): Promise<Certificate> => {
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: Certificate;
+    }>(`/certificates/verify/${code}`);
+    return res.data;
   }
 };
 
@@ -216,8 +250,14 @@ export const certificateApi = {
 
 export const contactApi = {
   submit: async (data: ContactFormData) => {
-    await delay(1000);
-    return { success: true, message: "Message sent! We'll get back to you within 24 hours." };
+    const res = await fetchWithAuthNoJson<{
+      success: boolean;
+      message: string;
+    }>(`/contacts`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+    return res;
   }
 };
 
@@ -228,7 +268,7 @@ Public Routes (no auth required)
 export const roleApi = {
   getRoles: async (): Promise<Roles[]> => {
     const res = await fetchWithAuthNoJson('/roles');
-    return res.data;
+    return res?.data;
   }
 };
 

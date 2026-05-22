@@ -21,16 +21,42 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           {/* Public */}
-          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path='/login'
+            element={<LoginPage />}
+          />
 
           {/* Protected */}
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/users" element={<UsersPage />} />
-              <Route path="/analytics" element={<AnalyticsPage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
+              <Route
+                path='/'
+                element={<DashboardPage />}
+              />
+              <Route
+                path='/users'
+                element={<UsersPage />}
+              />
+              <Route
+                path='/messages'
+                element={<MessagesPage />}
+              />
+              <Route
+                path='/verify-certificate'
+                element={<VerifyCertificatePage />}
+              />
+              <Route
+                path='/analytics'
+                element={<AnalyticsPage />}
+              />
+              <Route
+                path='/notifications'
+                element={<NotificationsPage />}
+              />
+              <Route
+                path='/settings'
+                element={<SettingsPage />}
+              />
             </Route>
           </Route>
 

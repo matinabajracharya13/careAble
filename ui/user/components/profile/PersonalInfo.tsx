@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Briefcase, MapPin, Phone, Globe, Save } from 'lucide-react';
+import { Mail, Briefcase, MapPin, Phone, Globe, Save, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '../ui/button';
@@ -12,12 +12,13 @@ import z from 'zod';
 import { Input } from '../ui/input';
 
 const infoSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email'),
-  jobTitle: z.string().optional(),
-  location: z.string().optional(),
+  first_name: z.string().min(2, 'First name must be at least 2 characters'),
+  last_name: z.string().min(2, 'Last name must be at least 2 characters'),
+  email: z.string().readonly(),
+  role: z.string().readonly(),
+  postcode: z.string().optional(),
   phone: z.string().optional(),
-  website: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  date_of_birth: z.string().min(1, 'Date of birth is required'),
   bio: z.string().max(300, 'Bio must be under 300 characters').optional(),
   skills: z.string().optional()
 });
@@ -35,13 +36,14 @@ export function PersonalInfo({ user, updateUser }: { user: any; updateUser: (u: 
   } = useForm<InfoFormData>({
     resolver: zodResolver(infoSchema),
     defaultValues: {
-      name: user.name,
+      first_name: user.first_name ?? '',
+      last_name: user.last_name ?? '',
       email: user.email,
-      jobTitle: user.jobTitle ?? '',
-      location: '',
-      phone: '',
-      website: '',
+      role: user.role ?? '',
+      postcode: user.postcode ?? '',
+      phone: user.phone,
       bio: '',
+      date_of_birth: user.date_of_birth ?? '',
       skills: (user.skills ?? []).join(', ')
     }
   });
@@ -52,9 +54,12 @@ export function PersonalInfo({ user, updateUser }: { user: any; updateUser: (u: 
     setLoading(true);
     await new Promise((r) => setTimeout(r, 800));
     updateUser({
-      name: data.name,
-      email: data.email,
-      jobTitle: data.jobTitle,
+      first_name: data.first_name,
+      last_name: data.last_name,
+      date_of_birth: data.date_of_birth,
+      postcode: data.postcode,
+      phone: data.phone,
+      bio: data.bio,
       skills: data.skills
         ?.split(',')
         .map((s) => s.trim())
@@ -78,14 +83,26 @@ export function PersonalInfo({ user, updateUser }: { user: any; updateUser: (u: 
           <div className='grid sm:grid-cols-2 gap-4'>
             <div className='space-y-1.5'>
               <label className='text-sm font-medium'>
-                Full name <span className='text-destructive'>*</span>
+                First name <span className='text-destructive'>*</span>
               </label>
               <Input
-                placeholder='Jane Smith'
-                {...register('name')}
-                error={errors.name?.message}
+                placeholder='Jane'
+                {...register('first_name')}
+                error={errors.first_name?.message}
               />
             </div>
+            <div className='space-y-1.5'>
+              <label className='text-sm font-medium'>
+                Last name <span className='text-destructive'>*</span>
+              </label>
+              <Input
+                placeholder='Smith'
+                {...register('last_name')}
+                error={errors.last_name?.message}
+              />
+            </div>
+          </div>
+          <div className='grid sm:grid-cols-2 gap-4'>
             <div className='space-y-1.5'>
               <label className='text-sm font-medium'>
                 Email address <span className='text-destructive'>*</span>
@@ -98,26 +115,6 @@ export function PersonalInfo({ user, updateUser }: { user: any; updateUser: (u: 
                 error={errors.email?.message}
               />
             </div>
-          </div>
-          <div className='grid sm:grid-cols-2 gap-4'>
-            <div className='space-y-1.5'>
-              <label className='text-sm font-medium'>Job title</label>
-              <Input
-                placeholder='e.g. Software Engineer'
-                icon={<Briefcase className='h-4 w-4' />}
-                {...register('jobTitle')}
-              />
-            </div>
-            <div className='space-y-1.5'>
-              <label className='text-sm font-medium'>Location</label>
-              <Input
-                placeholder='e.g. Sydney, NSW'
-                icon={<MapPin className='h-4 w-4' />}
-                {...register('location')}
-              />
-            </div>
-          </div>
-          <div className='grid sm:grid-cols-2 gap-4'>
             <div className='space-y-1.5'>
               <label className='text-sm font-medium'>Phone number</label>
               <Input
@@ -127,44 +124,27 @@ export function PersonalInfo({ user, updateUser }: { user: any; updateUser: (u: 
                 {...register('phone')}
               />
             </div>
+          </div>
+
+          <div className='grid sm:grid-cols-2 gap-4'>
             <div className='space-y-1.5'>
-              <label className='text-sm font-medium'>Website / LinkedIn</label>
+              <label className='text-sm font-medium'>Postal Code</label>
               <Input
-                placeholder='https://linkedin.com/in/...'
-                icon={<Globe className='h-4 w-4' />}
-                {...register('website')}
-                error={errors.website?.message}
+                placeholder='e.g. Sydney, NSW'
+                icon={<MapPin className='h-4 w-4' />}
+                {...register('postcode')}
               />
             </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className='text-base'>About you</CardTitle>
-          <CardDescription>A short bio shown on your public profile.</CardDescription>
-        </CardHeader>
-        <CardContent className='space-y-4'>
-          <div className='space-y-1.5'>
-            <div className='flex justify-between'>
-              <label className='text-sm font-medium'>Bio</label>
-              <span className={cn('text-xs', bio.length > 280 ? 'text-destructive' : 'text-muted-foreground')}>{bio.length}/300</span>
+            <div className='space-y-1.5'>
+              <label className='text-sm font-medium'>Date of Birth</label>
+              <Input
+                type='date'
+                placeholder='YYYY-MM-DD'
+                icon={<Calendar className='h-4 w-4' />}
+                {...register('date_of_birth')}
+              />
             </div>
-            <Textarea
-              placeholder="Tell employers about yourself, your experience, and what you're looking for..."
-              rows={4}
-              {...register('bio')}
-              error={errors.bio?.message}
-            />
-          </div>
-          <div className='space-y-1.5'>
-            <label className='text-sm font-medium'>Skills</label>
-            <Input
-              placeholder='JavaScript, React, Python, SQL, ...'
-              {...register('skills')}
-            />
-            <p className='text-xs text-muted-foreground'>Separate skills with commas.</p>
           </div>
         </CardContent>
       </Card>

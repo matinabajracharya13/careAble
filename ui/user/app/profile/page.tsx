@@ -1,26 +1,31 @@
 'use client';
 
-import { ActivityTab, AssessmentsTab, AvatarUploader, CertificateTab, OverviewTab, PasswordTab } from '@/components/profile';
+import { AssessmentsTab, AvatarUploader, CertificateTab, OverviewTab, PasswordTab } from '@/components/profile';
 import { PersonalInfo } from '@/components/profile/PersonalInfo';
 import { Badge } from '@/components/ui/ui-components';
+import { UserRole } from '@/config/role';
 import { useAuth } from '@/context/AuthContext';
-import { certificateApi } from '@/lib/api';
+import { certificateApi, userAssessmentApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { Certificate } from '@/types';
+import { AssessmentListItem, Certificate } from '@/types';
 import { useQuery } from '@tanstack/react-query';
-import { Award, BookOpen, Clock, Loader2, Lock, Pencil, User } from 'lucide-react';
+import { Award, BookOpen, Loader2, Lock, Pencil, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import type { User as UserType } from '@/types';
 
 // ── Tab list ──────────────────────────────────────────────────────────────────
+const ROLE_TAB_ACCESS: Record<string, TabId[]> = {
+  [UserRole.CARER]: ['overview', 'info', 'password', 'certificates', 'assessments'],
+  [UserRole.EMPLOYER]: ['overview', 'info', 'password'] // ❌ hide these
+};
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: User },
   { id: 'info', label: 'Personal Info', icon: Pencil },
   { id: 'password', label: 'Password', icon: Lock },
   { id: 'certificates', label: 'Certificates', icon: Award },
-  { id: 'assessments', label: 'Assessments', icon: BookOpen },
-  { id: 'activity', label: 'Activity', icon: Clock }
+  { id: 'assessments', label: 'Assessments', icon: BookOpen }
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
@@ -35,9 +40,22 @@ export default function ProfilePage() {
     queryFn: certificateApi.getCertificate
   });
 
+  const { data: assessments, isLoading: assesmentsLoading } = useQuery({
+    queryKey: ['user-assesments', user?.id],
+    queryFn: userAssessmentApi.get
+  });
+  const allowedTabs = ROLE_TAB_ACCESS[(user as UserType)?.role] || [];
+
+  const visibleTabs = TABS.filter((tab) => allowedTabs.includes(tab.id));
+
   React.useEffect(() => {
     if (!isLoading && !isAuthenticated) router.push('/login');
   }, [isLoading, isAuthenticated, router]);
+  React.useEffect(() => {
+    if (!allowedTabs.includes(activeTab)) {
+      setActiveTab('overview');
+    }
+  }, [user?.role]);
 
   if (isLoading || !user) {
     return (
@@ -67,9 +85,8 @@ export default function ProfilePage() {
             <div className='absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-success border-2 border-background' />
           </div>
           <h1 className='text-2xl font-display font-bold'>{user.name}</h1>
-          <p className='text-muted-foreground mt-1'>{user.jobTitle ?? 'Career seeker'}</p>
+          <p className='text-muted-foreground mt-1'>{user.role?.toUpperCase()}</p>
           <div className='flex items-center justify-center gap-2 mt-2 flex-wrap'>
-            <Badge className='bg-primary/10 text-primary border-primary/20 text-[10px] capitalize'>{user.role}</Badge>
             <Badge className='bg-success/10 text-success border-success/20 text-[10px]'>● Active</Badge>
           </div>
         </div>
@@ -79,7 +96,7 @@ export default function ProfilePage() {
           {/* Sidebar tabs */}
           <aside className='lg:w-52 shrink-0'>
             <nav className='flex lg:flex-col gap-1 overflow-x-auto pb-2 lg:pb-0'>
-              {TABS.map(({ id, label, icon: Icon }) => (
+              {visibleTabs.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   onClick={() => setActiveTab(id)}
@@ -120,8 +137,12 @@ export default function ProfilePage() {
                 loading={certsLoading}
               />
             )}
-            {activeTab === 'assessments' && <AssessmentsTab />}
-            {activeTab === 'activity' && <ActivityTab />}
+            {activeTab === 'assessments' && (
+              <AssessmentsTab
+                loading={assesmentsLoading}
+                assessments={assessments as AssessmentListItem[]}
+              />
+            )}
           </div>
         </div>
       </div>

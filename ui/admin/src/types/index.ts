@@ -3,7 +3,7 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "editor" | "viewer";
+  role: 'admin' | 'editor' | 'viewer';
   avatar?: string;
   createdAt: string;
 }
@@ -20,19 +20,18 @@ export interface AuthResponse {
 }
 
 // ─── Users ────────────────────────────────────────────────────────────────
-export type UserStatus = "active" | "inactive" | "pending";
-export type UserRole = "admin" | "editor" | "viewer";
+export type UserStatus = 'active' | 'inactive' | 'pending';
+export type UserRole = 'admin' | 'editor' | 'viewer';
 
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
-  status: UserStatus;
+  is_active: boolean;
   avatar?: string;
-  department?: string;
-  createdAt: string;
+  created_at: string;
   lastActiveAt?: string;
+  role_name?: UserRole; // For compatibility with backend response
 }
 
 export interface CreateUserInput {
@@ -62,7 +61,7 @@ export interface PaginationParams {
   limit?: number;
   search?: string;
   sortBy?: string;
-  sortOrder?: "asc" | "desc";
+  sortOrder?: 'asc' | 'desc';
 }
 
 // ─── Stats / Dashboard ───────────────────────────────────────────────────
@@ -84,12 +83,35 @@ export interface RevenueDataPoint {
 
 export interface ActivityItem {
   id: string;
-  user: Pick<User, "id" | "name" | "avatar">;
+  user: Pick<User, 'id' | 'name' | 'avatar'>;
   action: string;
   target: string;
   createdAt: string;
 }
 
 // ─── Theme ──────────────────────────────────────────────────────────────
-export type ColorTheme = "indigo" | "rose" | "emerald" | "amber" | "cyan";
-export type Mode = "light" | "dark" | "system";
+export type ColorTheme = 'indigo' | 'rose' | 'emerald' | 'amber' | 'cyan';
+export type Mode = 'light' | 'dark' | 'system';
+
+export interface Message {
+  id: string;
+  full_name: string;
+  email: string;
+  subject: string;
+  message: string;
+  created_at: string;
+}
+
+export interface CertificateData {
+  valid: boolean;
+  certificate_code: string;
+  issued_at: number; // timestamp
+  assessment_title: string;
+  user_name: string;
+}
+
+export interface CertificateResponse {
+  success: boolean;
+  message: string;
+  data: CertificateData;
+}

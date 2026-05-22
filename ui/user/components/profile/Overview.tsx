@@ -1,9 +1,10 @@
 import { cn, formatDate } from '@/lib/utils';
 import { Progress } from '@radix-ui/react-progress';
-import { Award, BookOpen, TrendingUp, Calendar, CheckCircle, Link, Trophy, ChevronRight, XCircle } from 'lucide-react';
+import { Award, BookOpen, TrendingUp, Calendar, CheckCircle, Trophy, ChevronRight, XCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/ui-components';
 import { Certificate } from '@/types';
+import Link from 'next/link';
 
 interface Props {
   user: any;
@@ -13,12 +14,11 @@ interface Props {
 
 export function Overview({ user, certificates, assessments }: Props) {
   const completionItems = [
-    { label: 'Profile photo', done: !!user.avatar },
-    { label: 'Personal info', done: true },
-    { label: 'Bio added', done: false },
+    // { label: 'Profile photo', done: !!user.avatar },
+    { label: 'Personal info', done: user?.onboarding_completed },
+    { label: 'Bio added', done: user?.onboarding_completed },
     { label: 'First assessment', done: true },
-    { label: 'Certificate earned', done: true },
-    { label: 'Skills listed', done: false }
+    { label: 'Certificate earned', done: true }
   ];
   const completion = Math.round((completionItems.filter((i) => i.done).length / completionItems.length) * 100);
 
@@ -35,8 +35,19 @@ export function Overview({ user, certificates, assessments }: Props) {
             color: 'text-accent',
             bg: 'bg-accent/10'
           },
-          { label: 'Best score', value: '87%', icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
-          { label: 'Member since', value: "Mar '26", icon: Calendar, color: 'text-warning', bg: 'bg-warning/10' }
+          { label: 'Best score', value: '0%', icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
+          {
+            label: 'Member since',
+            value: user?.created_at
+              ? new Date(user.created_at).toLocaleDateString('en-US', {
+                  month: 'short',
+                  year: '2-digit'
+                })
+              : '',
+            icon: Calendar,
+            color: 'text-warning',
+            bg: 'bg-warning/10'
+          }
         ].map((s) => (
           <Card key={s.label}>
             <CardContent className='p-4 flex items-center gap-3'>

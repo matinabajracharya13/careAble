@@ -1,8 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import type { User, UserRole } from '@/types';
 import { authApi } from '@/lib/api';
+import type { User } from '@/types';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
   user: User | null;
@@ -15,28 +15,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
-
-// ── Mock user for demo purposes ───────────────────────────────────────────────
-const MOCK_USERS: Record<string, User> = {
-  'employer@demo.com': {
-    id: 'u1',
-    email: 'employer@demo.com',
-    name: 'Sarah Chen',
-    role: 'employer',
-    company: 'TechCorp Inc.',
-    onboarding_completed: false,
-    createdAt: new Date().toISOString()
-  },
-  'career@demo.com': {
-    id: 'u2',
-    email: 'career@demo.com',
-    name: 'James Okonkwo',
-    role: 'career',
-    jobTitle: 'Software Engineer',
-    onboarding_completed: false,
-    createdAt: new Date().toISOString()
-  }
-};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -56,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const user = await authApi.me();
         setToken(storedToken);
         setUser(user?.user);
+        localStorage.setItem('CareAble_user', JSON.stringify(user?.user));
       } catch (err) {
         // token invalid or expired
         localStorage.removeItem('CareAble_token');
@@ -115,5 +94,3 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
-
-export { MOCK_USERS };

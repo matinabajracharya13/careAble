@@ -1,12 +1,12 @@
 import { cn, formatDate, getLevelBadgeClass } from '@/lib/utils';
-import { Progress } from '@radix-ui/react-progress';
+import { Certificate } from '@/types';
 import { Separator } from '@radix-ui/react-separator';
-import { Award, BookOpen, ChevronRight, Eye, Link, Plus, Trophy } from 'lucide-react';
+import { Award, Plus, Trophy } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import { toast } from '../ui/toast';
 import { Card, CardContent } from '../ui/ui-components';
-import { Certificate } from '@/types';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface Props {
   certificates: Certificate[];
@@ -126,45 +126,6 @@ export function Certificates({ certificates, loading }: Props) {
           ))}
         </div>
       )}
-
-      {/* RECOMMENDED */}
-      {/* <div>
-        <h4 className='text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3'>Recommended next</h4>
-
-        <div className='grid sm:grid-cols-2 gap-3'>
-          {[
-            { title: 'Python Fundamentals', level: 'beginner', category: 'Technology' },
-            { title: 'Data Analysis Essentials', level: 'intermediate', category: 'Analytics' }
-          ].map((r) => (
-            <div
-              key={r.title}
-              className='flex items-center gap-3 p-4 rounded-xl border border-dashed border-border hover:border-primary/40 transition-colors group'
-            >
-              <div className='h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors'>
-                <BookOpen className='h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors' />
-              </div>
-
-              <div className='flex-1 min-w-0'>
-                <p className='text-sm font-medium truncate'>{r.title}</p>
-                <p className='text-xs text-muted-foreground capitalize'>
-                  {r.level} · {r.category}
-                </p>
-              </div>
-
-              <Button
-                size='sm'
-                variant='ghost'
-                asChild
-                className='shrink-0'
-              >
-                <Link href='/assessment'>
-                  Start <ChevronRight className='h-3.5 w-3.5 ml-1' />
-                </Link>
-              </Button>
-            </div>
-          ))}
-        </div>
-      </div> */}
     </div>
   );
 }

@@ -9,6 +9,8 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { assessmentApi } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import { AssessmentSubmissionData, AssessmentTopic } from '@/types';
+import { RoleGuard } from '@/components/auth/RouteGuard';
+import { UserRole } from '@/config/role';
 
 const QUESTIONS_PER_PAGE = 5;
 
@@ -24,7 +26,8 @@ export default function TopicStepperAssessment() {
 
   const { data: progress } = useQuery({
     queryKey: ['assessment-progress', attemptID],
-    queryFn: () => assessmentApi.getProgress(id, attemptID)
+    queryFn: () => assessmentApi.getProgress(id, attemptID),
+    refetchOnMount: true
   });
 
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
@@ -52,12 +55,22 @@ export default function TopicStepperAssessment() {
       assessmentApi.submitAssessment(id, attemptID, {
         answers
       }),
-    onSuccess: (data: AssessmentSubmissionData) => {
+    // onSuccess: (data: AssessmentSubmissionData) => {
+    //   toast({
+    //     title: 'Assessment submitted',
+    //     description: 'Your responses have been saved.'
+    //   });
+    //   router.push(`/certificate/${data.certificate?.certificate_code}`);
+    // },
+    onSuccess: () => {
       toast({
         title: 'Assessment submitted',
-        description: 'Your responses have been saved.'
+        description: 'Your competency profile has been updated.'
       });
-      router.push(`/certificate/${data.certificate?.certificate_code}`);
+
+      // Redirect user back to dashboard
+      // Dashboard will load latest heatmap data
+      router.push('/dashboard');
     },
     onError: () => {
       toast({
@@ -135,109 +148,111 @@ export default function TopicStepperAssessment() {
   }
 
   return (
-    <div className='min-h-screen pt-20 pb-12'>
-      <div className='max-w-3xl mx-auto px-4 space-y-6'>
-        {/* HEADER */}
-        <div className='text-center'>
-          <Badge>{assessment.category}</Badge>
-          <h1 className='text-3xl font-bold'>{assessment.title}</h1>
-          <p className='text-muted-foreground'>{assessment.description}</p>
-        </div>
+    <RoleGuard allowedRoles={[UserRole.CARER]}>
+      <div className='min-h-screen pt-20 pb-12'>
+        <div className='max-w-3xl mx-auto px-4 space-y-6'>
+          {/* HEADER */}
+          <div className='text-center'>
+            <Badge>{assessment.category}</Badge>
+            <h1 className='text-3xl font-bold'>{assessment.title}</h1>
+            <p className='text-muted-foreground'>{assessment.description}</p>
+          </div>
 
-        {/* PROGRESS */}
-        <div className='text-sm text-muted-foreground text-center'>
-          Topic {currentTopicIndex + 1} of {assessment.topics.length} · Page {currentPage + 1} of {totalPages}
-        </div>
+          {/* PROGRESS */}
+          <div className='text-sm text-muted-foreground text-center'>
+            Topic {currentTopicIndex + 1} of {assessment.topics.length} · Page {currentPage + 1} of {totalPages}
+          </div>
 
-        {/* CARD */}
-        <Card>
-          <CardContent className='p-6 space-y-6'>
-            <h2 className='text-xl font-semibold'>{currentTopic?.title}</h2>
+          {/* CARD */}
+          <Card>
+            <CardContent className='p-6 space-y-6'>
+              <h2 className='text-xl font-semibold'>{currentTopic?.title}</h2>
 
-            {visibleQuestions?.map((q, idx) => {
-              const selected = answers[q.id];
+              {visibleQuestions?.map((q, idx) => {
+                const selected = answers[q.id];
 
-              return (
-                <div
-                  key={q.id}
-                  className='space-y-3'
-                >
-                  <p className='font-medium'>
-                    {idx + 1 + currentPage * QUESTIONS_PER_PAGE}. {q.text}
-                  </p>
-                  <input
-                    type='range'
-                    min={1}
-                    max={5}
-                    step={1}
-                    value={answers[q.id]?.value ?? 3}
-                    onChange={(e) => {
-                      const value = Number(e.target.value);
-                      const option = q.options.find((o) => o.value === value);
+                return (
+                  <div
+                    key={q.id}
+                    className='space-y-3'
+                  >
+                    <p className='font-medium'>
+                      {idx + 1 + currentPage * QUESTIONS_PER_PAGE}. {q.text}
+                    </p>
+                    <input
+                      type='range'
+                      min={1}
+                      max={5}
+                      step={1}
+                      value={answers[q.id]?.value ?? 3}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+                        const option = q.options.find((o) => o.value === value);
 
-                      if (!option) return;
+                        if (!option) return;
 
-                      setAnswers((prev) => ({
-                        ...prev,
-                        [q.id]: {
-                          topicId: currentTopic?.id as unknown as number,
-                          value: option.value,
-                          optionId: option.id
-                        }
-                      }));
-                    }}
-                    className='w-full accent-primary'
-                  />
-                  {/* Labels row */}
-                  <div className='flex justify-between text-xs text-muted-foreground px-1'>
-                    {q.options.map((opt) => (
-                      <span
-                        key={opt.id}
-                        className={answers[q.id]?.value === opt.value ? 'text-primary font-medium' : ''}
-                      >
-                        {opt.label}
-                      </span>
-                    ))}
-                  </div>{' '}
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
+                        setAnswers((prev) => ({
+                          ...prev,
+                          [q.id]: {
+                            topicId: currentTopic?.id as unknown as number,
+                            value: option.value,
+                            optionId: option.id
+                          }
+                        }));
+                      }}
+                      className='w-full accent-primary'
+                    />
+                    {/* Labels row */}
+                    <div className='flex justify-between text-xs text-muted-foreground px-1'>
+                      {q.options.map((opt) => (
+                        <span
+                          key={opt.id}
+                          className={answers[q.id]?.value === opt.value ? 'text-primary font-medium' : ''}
+                        >
+                          {opt.label}
+                        </span>
+                      ))}
+                    </div>{' '}
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
 
-        {/* NAV */}
-        <div className='flex justify-between'>
-          <Button
-            variant='outline'
-            onClick={prev}
-          >
-            <ChevronLeft className='h-4 w-4' />
-            Previous
-          </Button>
-
-          {!isLastStep ? (
-            <Button onClick={next}>
-              Next
-              <ChevronRight className='h-4 w-4' />
-            </Button>
-          ) : (
-            <Button onClick={handleSubmit}>
-              <Send className='h-4 w-4' />
-              {submitMutation.isPending ? 'Submitting...' : 'Submit'}
-            </Button>
-          )}
-
-          {!isLastStep && (
+          {/* NAV */}
+          <div className='flex justify-between'>
             <Button
-              variant='secondary'
-              onClick={() => saveMutation.mutate()}
-              disabled={saveMutation.isPending}
+              variant='outline'
+              onClick={prev}
             >
-              {saveMutation.isPending ? 'Saving...' : 'Save Progress'}
+              <ChevronLeft className='h-4 w-4' />
+              Previous
             </Button>
-          )}
+
+            {!isLastStep ? (
+              <Button onClick={next}>
+                Next
+                <ChevronRight className='h-4 w-4' />
+              </Button>
+            ) : (
+              <Button onClick={handleSubmit}>
+                <Send className='h-4 w-4' />
+                {submitMutation.isPending ? 'Submitting...' : 'Submit'}
+              </Button>
+            )}
+
+            {!isLastStep && (
+              <Button
+                variant='secondary'
+                onClick={() => saveMutation.mutate()}
+                disabled={saveMutation.isPending}
+              >
+                {saveMutation.isPending ? 'Saving...' : 'Save Progress'}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </RoleGuard>
   );
 }

@@ -12,7 +12,8 @@
     "migrate:rollback": "knex --knexfile knexfile.ts migrate:rollback",
     "migrate:status": "knex --knexfile knexfile.ts migrate:status",
     "migrate:make": "knex --knexfile knexfile.ts migrate:make",
-    "seed": "knex --knexfile knexfile.ts seed:run"
+    "seed": "knex --knexfile knexfile.ts seed:run",
+    "create:admin": "ts-node src/cli/admin.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -28,6 +29,7 @@
     "mysql2": "^3.20.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "tsconfig-paths": "^4.2.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
