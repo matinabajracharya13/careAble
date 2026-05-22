@@ -45,3 +45,13 @@ export const changePasswordSchema = z
     path: ['confirmPassword']
   });
 export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
+
+// ─── Users ────────────────────────────────────────────────────────────────
+export const createRoleSchema = z.object({
+  role_name: z.string().min(2, 'Role name must be at least 2 characters').max(50),
+  description: z.string().min(1, 'Description is required'),
+  icon_key: z.string().min(1, 'Icon key is required'),
+  label: z.string(),
+  is_public_signup: z.boolean().default(false)
+});
+export type CreateRoleFormValues = z.infer<typeof createRoleSchema>;

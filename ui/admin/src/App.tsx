@@ -13,6 +13,7 @@ import { NotificationsPage } from '@/pages/notifications';
 import { LoginPage } from '@/pages/login';
 import { MessagesPage } from './pages/messages';
 import { VerifyCertificatePage } from './pages/verify-certificate';
+import { RolesPage } from './pages/roles';
 
 export default function App() {
   return (
@@ -39,6 +40,10 @@ export default function App() {
               <Route
                 path='/messages'
                 element={<MessagesPage />}
+              />
+              <Route
+                path='/roles'
+                element={<RolesPage />}
               />
               <Route
                 path='/verify-certificate'

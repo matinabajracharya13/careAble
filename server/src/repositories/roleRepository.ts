@@ -7,3 +7,27 @@ export const findRoleByName = async (role_name: string) => {
 export const findPublicRoles = async () => {
   return await db('roles').where({ is_public_signup: 1 }).select('role_id', 'role_name', 'description', 'label', 'icon_key');
 };
+
+export const findRoles = async () => {
+  return await db('roles').select('role_id', 'role_name', 'description', 'label', 'icon_key', 'is_public_signup');
+};
+
+export const createRole = async (role_name: string, description: string, label: string, icon_key: string, is_public_signup: number) => {
+  const [role_id] = await db('roles').insert({ role_name, description, label, icon_key, is_public_signup });
+  return role_id;
+};
+
+export const updateRole = async (
+  role_id: number,
+  role_name: string,
+  description: string,
+  label: string,
+  icon_key: string,
+  is_public_signup: number
+) => {
+  await db('roles').where({ role_id }).update({ role_name, description, label, icon_key, is_public_signup });
+};
+
+export const deleteRole = async (role_id: number) => {
+  await db('roles').where({ role_id }).del();
+};
