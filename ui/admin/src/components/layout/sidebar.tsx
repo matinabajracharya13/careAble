@@ -5,7 +5,19 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth-store';
 import { useThemeStore } from '@/store/theme-store';
-import { Award, ChevronLeft, ChevronRight, Key, LayoutDashboard, LogOut, MessageCircle, Settings, Shield, Users } from 'lucide-react';
+import {
+  Award,
+  ChevronLeft,
+  ChevronRight,
+  Key,
+  LayoutDashboard,
+  LogOut,
+  MessageCircle,
+  Rocket,
+  Settings,
+  Shield,
+  Users
+} from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const NAV_ITEMS = [
@@ -15,6 +27,8 @@ const NAV_ITEMS = [
   { href: '/roles', icon: Key, label: 'Roles' },
   // { href: '/analytics', icon: BarChart3, label: 'Analytics' },
   { href: '/verify-certificate', icon: Award, label: 'Verify Certificate' },
+  { href: '/onboarding', icon: Rocket, label: 'Onboarding' },
+
   // { href: '/notifications', icon: Bell, label: 'Notifications' },
   { href: '/settings', icon: Settings, label: 'Settings' }
 ];
