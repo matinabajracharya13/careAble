@@ -52,3 +52,42 @@ export const updateOnboardingCompletionStatus = async (userId: number, status: b
     updated_at: db.fn.now()
   });
 };
+
+export const findCategories = async () => {
+  try {
+    const categories = await db('onboarding_categories').select('*').orderBy('display_order', 'asc');
+    return categories;
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    throw error;
+  }
+};
+export const findAllOnboardingQuestions = async (category_id: number) => {
+  const questions = await db('onboarding_questions as q')
+    .leftJoin('question_options as o', 'o.question_id', 'q.question_id')
+    .where('q.category_id', category_id)
+    .groupBy('q.question_id')
+    .select(
+      'q.*',
+      db.raw(`
+        COALESCE(
+          json_group_array(
+            CASE
+              WHEN o.question_option_id IS NOT NULL THEN
+                json_object(
+                  'option_id', o.question_option_id,
+                  'option_text', o.option_text,
+                  'option_value', o.option_value
+                )
+            END
+          ),
+          '[]'
+        ) as options
+      `)
+    );
+
+  return questions.map((question) => ({
+    ...question,
+    options: JSON.parse(question.options || '[]').filter(Boolean)
+  }));
+};

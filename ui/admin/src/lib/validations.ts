@@ -55,3 +55,43 @@ export const createRoleSchema = z.object({
   is_public_signup: z.boolean().default(false)
 });
 export type CreateRoleFormValues = z.infer<typeof createRoleSchema>;
+
+/* =========================================================
+   ONBOARDING CATEGORY
+========================================================= */
+
+export const createCategorySchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().optional(),
+  icon: z.string().min(1, 'Icon is required'),
+  display_order: z.coerce.number().min(0)
+});
+
+export type CreateCategoryFormValues = z.infer<typeof createCategorySchema>;
+
+/* =========================================================
+   ONBOARDING QUESTION
+========================================================= */
+
+export const createQuestionSchema = z.object({
+  question_text: z.string().min(1, 'Question is required'),
+
+  question_type: z.enum(['single_select', 'multi_select', 'boolean']),
+
+  input_type: z.enum(['radio', 'select', 'multiselect']),
+
+  category_id: z.coerce.number().min(1, 'Category is required'),
+
+  is_required: z.boolean().optional().default(false),
+
+  profile_section: z.string().optional(),
+
+  profile_key: z.string().min(1, 'Profile key is required'),
+
+  profile_label: z.string().optional(),
+
+  // optional future support (role mapping)
+  role_ids: z.array(z.number()).optional()
+});
+
+export type CreateQuestionFormValues = z.infer<typeof createQuestionSchema>;
