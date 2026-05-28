@@ -223,7 +223,16 @@ export const candidatesApi = {
       data: Candidate;
     }>(`/candidates/${id}`);
     return res.data;
-  }
+  },
+  getCandidateHeatmap: async (id: string) => {
+  const res = await fetchWithAuth<{
+    success: boolean;
+    message: string;
+    data: any[];
+  }>(`/candidates/${id}/heatmap`);
+
+  return res.data;
+},
 };
 // ── Certificate API ───────────────────────────────────────────────────────────
 
