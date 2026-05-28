@@ -100,7 +100,7 @@ export const getLatestAttempts = async (userId: number) => {
 
 export const getHeatmapData = async (userId: number) => {
   const latestAttempts = await getLatestAttempts(userId);
-
+  console.log('Latest Attempts for Heatmap:', latestAttempts);
   const attemptIds = latestAttempts.map((a) => a.attempt_id);
 
   if (!attemptIds.length) return [];
@@ -109,7 +109,6 @@ export const getHeatmapData = async (userId: number) => {
     .join('assessment_topics as t', 't.assessment_topic_id', 'ds.assessment_topic_id')
     .whereIn('ds.attempt_id', attemptIds)
     .select('ds.assessment_topic_id', 'ds.score', 't.title');
-
   return rows.map((row) => ({
     id: `d${row.assessment_topic_id}`,
     title: row.title,

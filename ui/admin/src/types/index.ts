@@ -115,3 +115,17 @@ export interface CertificateResponse {
   message: string;
   data: CertificateData;
 }
+
+export interface Role {
+  role_id: string;
+  role_name: string;
+  description: string;
+  icon_key: string;
+  label: string;
+}
+
+export interface ApiResponse {
+  success: boolean;
+  message: string;
+  data?: any;
+}

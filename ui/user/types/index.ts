@@ -72,7 +72,7 @@ export interface Assessment {
 }
 
 export interface AssessmentTopic {
-  id: string;
+  id: number;
   title: string;
   description?: string;
   questions: AssessmentQuestion[];
@@ -222,19 +222,40 @@ export interface AssessmentListItem {
   status: 'completed' | 'available' | 'in_progress';
 }
 
-export interface Candidate {
-  id: string | number;
+export interface CandidateProfileResponse {
+  success: boolean;
+  data: CandidateProfile;
+}
 
+export interface CandidateProfile {
+  user_id: number;
   name: string;
-  title: string;
+  email: string;
+  postcode: string | null;
+  created_at: string;
+  is_active: number;
+  role: string;
 
-  location: string;
+  total_assessments_taken: AssessmentAttemptSummary[];
 
-  score: number;
+  total_certificates: number;
 
-  certs: string[];
+  certificates: Certificate[];
 
-  available: boolean;
+  dashboard_stats: any;
+}
 
-  experience: string;
+export interface AssessmentAttemptSummary {
+  assessment_id: number;
+  attempt_id: number;
+  submitted_at: string;
+  assessment_title: string;
+  assessment_description: string;
+  average_score: number;
+}
+
+export interface Certificate {
+  certificate_code: string;
+  issued_at: string;
+  assessment_title: string;
 }

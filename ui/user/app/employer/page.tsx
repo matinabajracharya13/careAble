@@ -9,6 +9,7 @@ import { candidatesApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { Award, ChevronRight, Mail, TrendingUp, Users } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 function ScoreRing({ score }: { score: number }) {
@@ -17,6 +18,7 @@ function ScoreRing({ score }: { score: number }) {
 }
 
 export default function EmployerPage() {
+  const router = useRouter();
   const { data: candidates, isLoading } = useQuery({
     queryKey: ['candidates'],
     queryFn: () => candidatesApi.getAllCandidates()
@@ -28,6 +30,11 @@ export default function EmployerPage() {
       title: `Invitation sent to ${name}!`,
       description: "They'll receive an email to complete your assessment."
     });
+  };
+
+  const handleViewProfile = (id: number) => {
+    // For now, just show a toast. You can replace with actual navigation later.
+    router.push(`/employer/candidate/${id}`);
   };
 
   return (
@@ -146,6 +153,7 @@ export default function EmployerPage() {
                     <Button
                       size='sm'
                       className='flex-1'
+                      onClick={() => handleViewProfile(candidate.id)}
                     >
                       View profile
                       <ChevronRight className='h-3.5 w-3.5' />

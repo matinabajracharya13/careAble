@@ -182,17 +182,7 @@ const RadarHeatmap = ({ data }: { data: HeatmapData[] }) => {
 
       </div>
 
-      {/* =========================
-           CERTIFICATE BUTTON 
-      ========================= */}
-      <div className="mt-8 flex justify-center">
-        <button
-          onClick={() => router.push('/certificate')}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-md transition"
-        >
-          View & Download Certificate
-        </button>
-      </div>
+    
 
     </div>
   );
