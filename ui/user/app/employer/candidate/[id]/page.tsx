@@ -21,6 +21,7 @@ import { Badge, Card, CardContent } from '@/components/ui/ui-components';
 import { Button } from '@/components/ui/button';
 import { cn, formatDate } from '@/lib/utils';
 import { candidatesApi } from '@/lib/api';
+import RadarHeatmap from '@/components/heatmap/RadarHeatmap';
 
 type Tab = 'profile' | 'assessments' | 'certificates' | 'insights' | 'heatMap';
 
@@ -42,11 +43,12 @@ const SECTION_ICONS: Record<string, any> = {
 export default function CandidateProfilePage() {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState<Tab>('profile');
-
+console.log('Candidate ID from URL:', id);
   const { data, isLoading } = useQuery({
     queryKey: ['candidate', id],
     queryFn: () => candidatesApi.getCandidateById(id as string)
   });
+
 
   if (isLoading) {
     return (
@@ -55,8 +57,11 @@ export default function CandidateProfilePage() {
       </div>
     );
   }
-
+  console.log('Candidate Data:', data);
   const candidate = data;
+  
+  const heatmapData = candidate?.dashboard_stats || [];
+  console.log('Heatmap Data:', heatmapData);
 
   if (!candidate) {
     return <div className='min-h-screen flex items-center justify-center text-muted-foreground'>Candidate not found</div>;
@@ -208,6 +213,21 @@ export default function CandidateProfilePage() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          )}
+
+          {/* HEAT MAP */}
+          {activeTab === 'heatMap' && (
+            <div>
+              {heatmapData.length > 0 ? (
+                <RadarHeatmap data={heatmapData} />
+              ) : (
+                <Card>
+                  <CardContent className='p-10 text-center text-muted-foreground'>
+                    No heat map data available
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
 
