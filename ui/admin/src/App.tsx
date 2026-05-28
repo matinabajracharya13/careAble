@@ -11,6 +11,8 @@ import { AnalyticsPage } from "@/pages/analytics";
 import { SettingsPage } from "@/pages/settings";
 import { NotificationsPage } from "@/pages/notifications";
 import { LoginPage } from "@/pages/login";
+import { MessagesPage } from "@/pages/messages";
+import { VerifyCertificatePage } from "@/pages/verify-certificate";
 import { NotFoundPage } from "@/pages/not-found";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
