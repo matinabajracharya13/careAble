@@ -151,7 +151,7 @@ const RadarHeatmap = ({ data }: { data: HeatmapData[] }) => {
       <div className="grid md:grid-cols-3 gap-4 mt-8">
 
         <div className="bg-green-500/10 border border-green-500/20 p-4 rounded-xl">
-          <h4 className="font-bold text-green-700 mb-2">Top 3 Strengths</h4>
+          <h4 className="font-bold text-green-700 mb-2">Top  Strengths</h4>
           {strengths.map(item => (
             <p key={item.id} className="text-sm">
               <span className="text-green-500 italic font-bold">✔</span>
