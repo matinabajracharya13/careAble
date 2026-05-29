@@ -12,6 +12,8 @@ export const findAllAssessments = () => {
       'a.assessment_id',
       'a.title',
       'a.domain',
+      'a.is_active',
+      'a.version',
       'a.description' // keep only what you need
     )
     .count('q.assessment_topic_id as totalQuestions');
@@ -45,6 +47,28 @@ export const findQuestionsByTopicIds = (topicIds: number[]) => {
   return db('assessment_questions').whereIn('assessment_topic_id', topicIds).orderBy('display_order');
 };
 
+export const findQuestionsByTopicId = (topicId: number) => {
+  return db('assessment_questions as q')
+    .leftJoin('assessment_question_options as o', 'o.assessment_question_id', 'q.assessment_question_id')
+    .where('q.assessment_topic_id', topicId)
+    .groupBy('q.assessment_question_id')
+    .select(
+      'q.*',
+      db.raw(`
+        COALESCE(
+          json_group_array(
+            json_object(
+              'assessment_question_options_id', o.assessment_question_options_id,
+              'option_label', o.option_label,
+              'option_value', o.option_value
+            )
+          ),
+          '[]'
+        ) as options
+      `)
+    )
+    .orderBy('q.display_order', 'asc');
+};
 export const findOptionsByQuestionIds = (questionIds: number[]) => {
   if (!questionIds.length) return [];
   return db('assessment_question_options').whereIn('assessment_question_id', questionIds);
@@ -192,4 +216,9 @@ export const deleteAssessmentProgress = async (userId: number, assessmentId: num
       attempt_id: attemptId
     })
     .del();
+};
+
+export const inserAssessmentTopic = async (data: any) => {
+  const [topicId] = await db('assessment_topics').insert(data);
+  return topicId;
 };

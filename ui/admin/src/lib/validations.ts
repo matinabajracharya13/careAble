@@ -95,3 +95,21 @@ export const createQuestionSchema = z.object({
 });
 
 export type CreateQuestionFormValues = z.infer<typeof createQuestionSchema>;
+
+export const createAssessmentSchema = z.object({
+  title: z.string().min(2, 'Title is required').max(255),
+
+  domain: z.string().min(2, 'Domain is required').max(100),
+
+  description: z.string(),
+
+  version: z.string().optional(),
+
+  is_active: z.boolean().default(true)
+});
+
+// ======================================================
+// TYPES
+// ======================================================
+
+export type CreateAssessmentFormValues = z.infer<typeof createAssessmentSchema>;

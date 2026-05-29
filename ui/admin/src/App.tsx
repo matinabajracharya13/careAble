@@ -15,6 +15,8 @@ import { MessagesPage } from './pages/messages';
 import { VerifyCertificatePage } from './pages/verify-certificate';
 import { RolesPage } from './pages/roles';
 import { OnboardingPage } from './pages/onboarding';
+import { AssessmentBuilderPage, AssessmentPage } from './pages/assessment-builder';
+import { AssessmentsPage } from './pages/assessments';
 
 export default function App() {
   return (
@@ -45,6 +47,14 @@ export default function App() {
               <Route
                 path='/onboarding'
                 element={<OnboardingPage />}
+              />
+              <Route
+                path='/assessments'
+                element={<AssessmentsPage />}
+              />
+              <Route
+                path='/assessments/:assessmentId'
+                element={<AssessmentBuilderPage />}
               />
               <Route
                 path='/roles'
