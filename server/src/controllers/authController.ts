@@ -8,8 +8,13 @@ import {
   verifyUserEmail,
   deleteVerificationToken,
   findAuthUserByEmail,
-  findAuthUserById
+  findAuthUserById,
+  createPasswordResetToken,
+  findPasswordResetToken,
+  markResetTokenUsed,
+  updateUserPassword
 } from '@/repositories/authRepository';
+import { sendPasswordResetEmail } from '@/services/email';
 
 import { hashPassword, comparePassword } from '@/utils/hash';
 
@@ -179,6 +184,53 @@ export const getCurrentUser = async (req: Request, res: Response, next: NextFunc
     };
 
     res.status(200).json(response);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) return next(new AppError('Email is required', 400));
+
+    const user = await findUserByEmail(email);
+
+    if (user) {
+      const token = generateRandomToken();
+      await createPasswordResetToken(user.user_id, token);
+      await sendPasswordResetEmail(email, token);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'If that email exists, a reset link has been sent.'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) return next(new AppError('Token and password are required', 400));
+
+    const record = await findPasswordResetToken(token);
+
+    if (!record) return next(new AppError('Invalid or expired reset link', 400));
+
+    if (new Date(record.expires_at) < new Date()) {
+      return next(new AppError('Reset link has expired', 400));
+    }
+
+    const passwordHash = await hashPassword(password);
+    await updateUserPassword(record.user_id, passwordHash);
+    await markResetTokenUsed(token);
+
+    res.status(200).json({ success: true, message: 'Password reset successfully' });
   } catch (err) {
     next(err);
   }

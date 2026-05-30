@@ -64,3 +64,24 @@ export const markOnboardingCompleted = async (userId: number) => {
     updated_at: db.fn.now()
   });
 };
+
+export const createPasswordResetToken = async (userId: number, token: string) => {
+  await db('password_reset_tokens').where({ user_id: userId }).del();
+  return db('password_reset_tokens').insert({
+    user_id: userId,
+    token,
+    expires_at: new Date(Date.now() + 1000 * 60 * 60)
+  });
+};
+
+export const findPasswordResetToken = async (token: string) => {
+  return db('password_reset_tokens').where({ token, used: false }).first();
+};
+
+export const markResetTokenUsed = async (token: string) => {
+  return db('password_reset_tokens').where({ token }).update({ used: true });
+};
+
+export const updateUserPassword = async (userId: number, passwordHash: string) => {
+  return db('users').where({ user_id: userId }).update({ password_hash: passwordHash, updated_at: db.fn.now() });
+};

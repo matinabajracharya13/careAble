@@ -6,6 +6,11 @@ const nextConfig = {
       { protocol: 'https', hostname: 'avatars.githubusercontent.com' },
     ],
   },
+  experimental: {
+    turbo: {
+      root: __dirname,
+    },
+  },
 };
 
 module.exports = nextConfig;
