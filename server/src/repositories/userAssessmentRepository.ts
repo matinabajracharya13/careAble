@@ -55,3 +55,43 @@ export const findUserAssessments = async (userId: number) => {
       `)
     );
 };
+
+// ─────────────────────────────────────────────
+// 1. Latest Attempt
+// ─────────────────────────────────────────────
+export const getLatestAttempt = async (userId: number, assessmentId: number) => {
+  const result = await db('assessment_attempts')
+    .where({
+      user_id: userId,
+      assessment_id: assessmentId
+    })
+    .orderBy('started_at', 'desc')
+    .first();
+  return result;
+};
+
+export const getAttemptDomainScores = async (attemptId: number) => {
+  const result = await db('domain_scores as ds')
+    // topic → competency mapping
+    .join('assessment_topic_competency_domains as atcd', 'atcd.assessment_topic_id', 'ds.assessment_topic_id')
+    // competency details
+    .join('competency_domains as dc', 'dc.domain_id', 'atcd.domain_id')
+    .where('ds.attempt_id', attemptId)
+    .select('ds.attempt_id', 'atcd.domain_id', 'dc.full_name as competency_title', db.raw('AVG(ds.score) as average_score'))
+    .groupBy('ds.attempt_id', 'atcd.domain_id', 'dc.domain_id');
+
+  return result;
+};
+// ─────────────────────────────────────────────
+// 3. Certificate
+// ─────────────────────────────────────────────
+export const getCertificateByAttempt = async (attemptId: number) => {
+  return db('certificates').where({ attempt_id: attemptId }).first();
+};
+
+// ─────────────────────────────────────────────
+// 4. Attempt Stats
+// ─────────────────────────────────────────────
+export const getAttemptStats = async (attemptId: number) => {
+  return db('assessment_attempts').where({ attempt_id: attemptId }).select('attempt_id', 'status', 'started_at', 'submitted_at').first();
+};

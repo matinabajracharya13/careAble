@@ -18,7 +18,7 @@ const CAREER_NAV = [
 const EMPLOYER_NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/employer', label: 'Talent Pool', icon: Users },
-  { href: '/verify-certificate', label: 'Verify Certificates', icon: Award }
+  { href: '/verify', label: 'Verify Certificates', icon: Award }
 ];
 
 export function Navbar() {

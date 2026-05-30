@@ -57,7 +57,7 @@ export function Assessments({ assessments, loading }: Props) {
                     <p className='text-xs text-muted-foreground mt-0.5'>Completed {a.completedAt ? formatDate(a.completedAt) : '–'}</p>
                   </div>
                   <div className='text-right shrink-0'>
-                    <div className={cn('text-xl font-display font-bold', 'text-success')}>{a.score}</div>
+                    <div className={cn('text-xl font-display font-bold', 'text-success')}>{a.score?.toFixed(2)}</div>
                   </div>
                 </div>
 

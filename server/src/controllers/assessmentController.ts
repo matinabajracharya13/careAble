@@ -19,6 +19,7 @@ import { generateCertificate } from '@/repositories/certificateRepository';
 import { addDomainScore } from '@/repositories/domainRepository';
 import { generateDomainScores } from '@/services/domain';
 import { calculateOverallMean } from '@/utils/capability';
+import { generateCompetencyScoresFromTopics, saveCompetencyScores } from '@/repositories/competancy';
 
 // GET ALL
 export const getAssessments = async (_req: Request, res: Response, next: NextFunction) => {
@@ -183,24 +184,49 @@ export const submitAssessmentResponses = async (req: Request, res: Response, nex
       topic_id: Number(answer.topicId)
     }));
 
-    // 1. save responses
+    // -------------------------------------------------
+    // 1. Save responses
+    // -------------------------------------------------
     await saveAssessmentResponses(attemptId, userId, assessmentId, formattedResponses);
 
-    // 3. get question -> topic mapping
+    // -------------------------------------------------
+    // 2. Build question -> topic map
+    // -------------------------------------------------
     const questionTopicMap: Record<number, number> = {};
+
     Object.entries(answers).forEach(([questionId, answer]: [string, any]) => {
       questionTopicMap[Number(questionId)] = Number(answer.topicId);
     });
-    // 4. generate domain scores
-    const domainScores = generateDomainScores(answers, questionTopicMap);
-    await addDomainScore(attemptId, domainScores);
 
-    // 6. certificate
-    const overAllScore = calculateOverallMean(domainScores);
+    // -------------------------------------------------
+    // 3. Calculate topic scores
+    // -------------------------------------------------
+    const topicScores = generateDomainScores(answers, questionTopicMap);
+
+    await addDomainScore(attemptId, topicScores);
+
+    // -------------------------------------------------
+    // 4. Calculate competency scores
+    // -------------------------------------------------
+    const competencyScores = await generateCompetencyScoresFromTopics(topicScores);
+
+    // -------------------------------------------------
+    // 5. Save competency scores
+    // -------------------------------------------------
+    await saveCompetencyScores(attemptId, competencyScores);
+
+    // -------------------------------------------------
+    // 6. Generate certificate
+    // -------------------------------------------------
+    const overallScore = calculateOverallMean(competencyScores);
+
     const certificate = await generateCertificate(attemptId, assessmentId, userId);
-    certificate.overall_mean_score = overAllScore;
 
-    // //cleanup assessment_progress data
+    certificate.overall_mean_score = overallScore;
+
+    // -------------------------------------------------
+    // 7. Cleanup progress
+    // -------------------------------------------------
     await deleteAssessmentProgress(userId, assessmentId, attemptId);
 
     return res.status(201).json({

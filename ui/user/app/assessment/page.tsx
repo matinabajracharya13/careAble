@@ -7,7 +7,6 @@ import { Badge, Card, CardContent } from '@/components/ui/ui-components';
 import { UserRole } from '@/config/role';
 import { ASSESSMENT_IN_PROGRESS_KEY } from '@/constants/app';
 import { assessmentApi } from '@/lib/api';
-import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { BookOpen, ChevronRight, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -17,24 +16,32 @@ export default function AssessmentListPage() {
   const [search, setSearch] = useState('');
   const router = useRouter();
 
-  // 1. fetch assessments
+  // ─────────────────────────────
+  // FETCH ASSESSMENTS
+  // ─────────────────────────────
   const { data: assessments, isLoading } = useQuery({
     queryKey: ['assessments'],
     queryFn: assessmentApi.getAssessments
   });
 
-  // 2. fetch progress
+  // ─────────────────────────────
+  // FETCH PROGRESS
+  // ─────────────────────────────
   const { data: progress } = useQuery({
     queryKey: ['assessment-progress'],
     queryFn: assessmentApi.getUserAssessmentProgress
   });
 
-  const handleStartAssessment = async (assessmentId: number, status?: string, attemtpId?: string) => {
+  // ─────────────────────────────
+  // START / RESUME
+  // ─────────────────────────────
+  const handleStartAssessment = async (assessmentId: number, status?: string, attemptId?: string) => {
     try {
-      if (status === ASSESSMENT_IN_PROGRESS_KEY && attemtpId) {
-        router.push(`/assessment/${assessmentId}/${attemtpId}`);
+      if (status === ASSESSMENT_IN_PROGRESS_KEY && attemptId) {
+        router.push(`/assessment/${assessmentId}/${attemptId}`);
         return;
       }
+
       const response = await assessmentApi.startAssessment(assessmentId);
 
       router.push(`/assessment/${assessmentId}/${response.attempt_id}`);
@@ -43,95 +50,157 @@ export default function AssessmentListPage() {
     }
   };
 
-  // 3. map progress by assessment_id
+  // ─────────────────────────────
+  // LATEST ATTEMPT MAP
+  // ─────────────────────────────
   const progressMap = useMemo(() => {
-    return new Map(progress?.map((p: any) => [p.assessment_id, p]) || []);
+    const map = new Map<number, any>();
+
+    (progress || []).forEach((p: any) => {
+      const existing = map.get(p.assessment_id);
+
+      // keep latest attempt (simple max by attempt_id)
+      if (!existing || existing.attempt_id < p.attempt_id) {
+        map.set(p.assessment_id, p);
+      }
+    });
+
+    return map;
   }, [progress]);
 
+  // ─────────────────────────────
+  // NORMALIZE STATUS
+  // ─────────────────────────────
+  const normalizeStatus = (status?: string) => {
+    if (!status) return 'NOT_STARTED';
+    return status.toUpperCase();
+  };
+
+  // ─────────────────────────────
+  // RENDER
+  // ─────────────────────────────
   return (
     <RoleGuard allowedRoles={[UserRole.CARER]}>
       <div className='min-h-screen bg-background pt-20 pb-12'>
         <div className='container mx-auto px-4 max-w-5xl'>
-          {/* Header */}
-          <div className='mb-10 space-y-2 animate-fade-in'>
+          {/* HEADER */}
+          <div className='mb-10 space-y-2'>
             <Badge className='bg-primary/10 text-primary border-primary/20'>Skill assessments</Badge>
+
             <h1 className='text-4xl font-display font-bold'>Choose your assessment</h1>
-            <p className='text-muted-foreground max-w-xl'>
-              Each assessment is designed by industry experts. Pass to earn a verified certificate.
-            </p>
+
+            <p className='text-muted-foreground'>Each assessment is designed by industry experts.</p>
           </div>
 
-          {/* Filters */}
-          <div className='flex flex-col sm:flex-row gap-3 mb-8'>
+          {/* SEARCH */}
+          <div className='mb-8'>
             <Input
-              placeholder='Search by title or category…'
+              placeholder='Search assessments…'
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className='max-w-sm'
             />
           </div>
 
-          {/* Grid */}
+          {/* LOADING */}
           {isLoading ? (
-            <div className='flex items-center justify-center h-48'>
-              <Loader2 className='h-8 w-8 animate-spin text-primary' />
+            <div className='flex justify-center py-20'>
+              <Loader2 className='animate-spin' />
             </div>
           ) : (
             <div className='grid md:grid-cols-2 gap-5'>
               {assessments
                 ?.filter((a: any) => (a.title + a.domain).toLowerCase().includes(search.toLowerCase()))
-                .map((assessment) => {
+                .map((assessment: any) => {
                   const progress = progressMap.get(assessment.assessment_id);
 
-                  const status = progress?.status;
+                  const status = normalizeStatus(progress?.status);
+                  const attemptId = progress?.attempt_id;
 
-                  return (
-                    <Card
-                      key={assessment.assessment_id}
-                      className={cn('card-hover animate-fade-in')}
-                      style={{
-                        animationDelay: `0.07s`
-                      }}
-                    >
-                      <CardContent className='p-6 space-y-4'>
-                        {/* Icon */}
-                        <div className='flex items-start justify-between gap-3'>
-                          <div className='h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0'>
-                            <BookOpen className='h-6 w-6 text-primary' />
-                          </div>
+                  // ─────────────────────────────
+                  // ACTION BUTTONS
+                  // ─────────────────────────────
+                  const renderActions = () => {
+                    // NOT STARTED
+                    if (!progress) {
+                      return (
+                        <Button
+                          size='sm'
+                          onClick={() => handleStartAssessment(assessment.assessment_id)}
+                        >
+                          Start
+                          <ChevronRight className='h-4 w-4' />
+                        </Button>
+                      );
+                    }
 
-                          {/* Resume badge */}
-                          {status === ASSESSMENT_IN_PROGRESS_KEY && <Badge variant='outline'>In Progress</Badge>}
+                    // IN PROGRESS
+                    if (status === 'IN_PROGRESS') {
+                      return (
+                        <div className='flex gap-2'>
+                          <Button
+                            size='sm'
+                            variant='outline'
+                            onClick={() => router.push(`/assessment/${assessment.assessment_id}/${attemptId}`)}
+                          >
+                            Resume
+                          </Button>
                         </div>
+                      );
+                    }
 
-                        {/* Title */}
-                        <div>
-                          <h3 className='font-display font-semibold text-lg'>{assessment.title}</h3>
-                          <p className='text-sm text-muted-foreground mt-1 line-clamp-2'>{assessment.description}</p>
-                        </div>
-
-                        {/* meta */}
-                        <div className='flex items-center gap-4 text-xs text-muted-foreground'>
-                          <span className='flex items-center gap-1'>
-                            <BookOpen className='h-3.5 w-3.5' />
-                            {assessment.totalQuestions} questions
-                          </span>
-                        </div>
-
-                        {/* footer */}
-                        <div className='flex items-center justify-between pt-2 border-t border-border'>
-                          <span className='text-xs text-muted-foreground'>{assessment.domain}</span>
+                    // COMPLETED
+                    if (status === 'COMPLETED') {
+                      return (
+                        <div className='flex gap-2'>
+                          <Button
+                            size='sm'
+                            onClick={() => router.push(`/assessment/${assessment.assessment_id}/details`)}
+                          >
+                            Details
+                          </Button>
 
                           <Button
                             size='sm'
-                            onClick={() => handleStartAssessment(assessment.assessment_id, status, progress?.attempt_id)}
+                            variant='outline'
+                            onClick={() => handleStartAssessment(assessment.assessment_id)}
                           >
-                            <>
-                              {status === ASSESSMENT_IN_PROGRESS_KEY ? 'Resume assessment' : 'Start assessment'}
-
-                              <ChevronRight className='h-4 w-4' />
-                            </>
+                            Reattempt
                           </Button>
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  };
+
+                  return (
+                    <Card key={assessment.assessment_id}>
+                      <CardContent className='p-6 space-y-4'>
+                        {/* HEADER */}
+                        <div className='flex justify-between'>
+                          <div className='h-10 w-10 bg-primary/10 flex items-center justify-center rounded-lg'>
+                            <BookOpen />
+                          </div>
+
+                          {status === 'IN_PROGRESS' && <Badge variant='outline'>In Progress</Badge>}
+
+                          {status === 'COMPLETED' && <Badge className='bg-green-100 text-green-700'>Completed</Badge>}
+                        </div>
+
+                        {/* TITLE */}
+                        <h3 className='font-semibold text-lg'>{assessment.title}</h3>
+
+                        <p className='text-sm text-muted-foreground'>{assessment.description}</p>
+
+                        {/* META */}
+                        <div className='text-xs text-muted-foreground'>{assessment.totalQuestions} questions</div>
+
+                        {/* FOOTER */}
+                        <div className='flex items-center justify-between pt-2 border-t'>
+                          <span className='text-xs text-muted-foreground'>{assessment.domain}</span>
+
+                          {renderActions()}
                         </div>
                       </CardContent>
                     </Card>

@@ -230,7 +230,7 @@ export default function CertificatePage() {
               Anyone can verify the authenticity of this certificate using the verification code{' '}
               <span className='font-mono font-semibold text-primary'>{cert.certificate_code}</span> at{' '}
               <a
-                href='https://CareAble.dev/verify'
+                href={`${process.env.NEXT_PUBLIC_APP_URL}/verify`}
                 className='text-primary hover:underline inline-flex items-center gap-1'
               >
                 CareAble.dev/verify <ExternalLink className='h-3 w-3' />

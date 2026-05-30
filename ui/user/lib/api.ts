@@ -129,6 +129,15 @@ export const assessmentApi = {
 
     return res.data;
   },
+  getAttemptDetail: async (assessmentId: number): Promise<Assessment[]> => {
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: Assessment[];
+    }>(`/assessments/${assessmentId}/details`);
+
+    return res.data;
+  },
 
   startAssessment: async (assessmentId: number): Promise<AssessmentAttempt> => {
     const res = await fetchWithAuth<{
@@ -225,14 +234,14 @@ export const candidatesApi = {
     return res.data;
   },
   getCandidateHeatmap: async (id: string) => {
-  const res = await fetchWithAuth<{
-    success: boolean;
-    message: string;
-    data: any[];
-  }>(`/candidates/${id}/heatmap`);
+    const res = await fetchWithAuth<{
+      success: boolean;
+      message: string;
+      data: any[];
+    }>(`/candidates/${id}/heatmap`);
 
-  return res.data;
-},
+    return res.data;
+  }
 };
 // ── Certificate API ───────────────────────────────────────────────────────────
 
