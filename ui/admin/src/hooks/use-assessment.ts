@@ -37,16 +37,29 @@ export interface AssessmentQuestion {
 
   is_required: boolean;
 
-  is_reverse_scored: boolean;
-
-  weight: number;
-
-  helper_text?: string;
-
-  display_order?: number;
-
   options: AssessmentQuestionOption[];
 }
+
+export type AssessmentQuestionOptionPayload = {
+  assessment_question_options_id: number | null;
+  option_label: string;
+  option_value: string;
+  score_value: number;
+};
+
+export type AssessmentQuestionPayload = {
+  assessment_question_id: number | null;
+  question_text: string;
+  question_type: string;
+  display_order: number;
+  options: AssessmentQuestionOptionPayload[];
+};
+
+export type SaveAssessmentQuestionsPayload = {
+  assessment_id: number;
+  assessment_topic_id: number;
+  questions: AssessmentQuestionPayload[];
+};
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -153,9 +166,10 @@ export function useUpdateAssessmentTopic() {
 // CREATE QUESTION
 // ======================================================
 
-export function useCreateAssessmentQuestion() {
+export function useSaveAssessmentQuestions() {
   return useMutation({
-    mutationFn: (data: Partial<AssessmentQuestion>) => post<ApiResponse>('/admin/assessment-questions', data)
+    mutationFn: (data: SaveAssessmentQuestionsPayload) =>
+      post<ApiResponse>(`/admin/assessments/topics/${data.assessment_topic_id}/questions`, data)
   });
 }
 

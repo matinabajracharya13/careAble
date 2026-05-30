@@ -38,7 +38,7 @@ export function AssessmentTopicSidebar({ topics, activeTopicId, onSelect, assess
 
     setLocalTopics((prev) => [...prev, draft]);
 
-    setEditingId(draft?.assessment_topic_id);
+    setEditingId(Number(draft?.assessment_topic_id));
   };
 
   // =========================
@@ -52,29 +52,55 @@ export function AssessmentTopicSidebar({ topics, activeTopicId, onSelect, assess
   // SAVE TOPIC
   // =========================
   const saveTopic = async (topic: any) => {
-    // VALIDATION
     if (!topic.title.trim()) return;
 
-    // CREATE
-    if (topic.isDraft) {
-      await createTopic.mutateAsync({
-        assessment_id: assessmentId,
-        title: topic.title,
-        code: topic.code
-      });
-    }
+    try {
+      // =========================
+      // CREATE
+      // =========================
+      if (topic.isDraft) {
+        const response = await createTopic.mutateAsync({
+          assessment_id: assessmentId,
+          title: topic.title,
+          code: topic.code
+        });
 
-    // UPDATE
-    else {
-      // await updateTopicApi.mutateAsync({
-      //   id: topic.assessment_topic_id,
-      //   assessment_id: assessmentId,
-      //   title: topic.title,
-      //   code: topic.code
-      // });
-    }
+        const newTopicId = response?.data?.topic_id;
 
-    setEditingId(null);
+        // replace draft with saved topic
+        setLocalTopics((prev) =>
+          prev.map((t) =>
+            t.assessment_topic_id === topic.assessment_topic_id
+              ? {
+                  ...t,
+                  assessment_topic_id: newTopicId,
+                  isDraft: false
+                }
+              : t
+          )
+        );
+
+        // auto select new topic
+        onSelect(newTopicId);
+      }
+
+      // =========================
+      // UPDATE
+      // =========================
+      else {
+        return;
+        // await updateTopicApi.mutateAsync({
+        //   id: topic.assessment_topic_id,
+        //   assessment_id: assessmentId,
+        //   title: topic.title,
+        //   code: topic.code
+        // });
+      }
+
+      setEditingId(null);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   // =========================

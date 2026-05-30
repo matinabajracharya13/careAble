@@ -9,7 +9,8 @@ import {
   createAssessmentTopic,
   getAllAssessments,
   getAssessmentQuestionTopicByID,
-  getAssessmentTopics
+  getAssessmentTopics,
+  saveQuestionsController
 } from '@/controllers/admin/assessmentController';
 
 const router = Router();
@@ -26,7 +27,7 @@ router.get('/onboarding/categories', authenticate, getAllOnboardingCategories);
 router.get('/onboarding/questions/:category_id', authenticate, getAllOnboardingQuestions);
 router.get('/assessments/:assessmentId/topics', authenticate, getAssessmentTopics);
 router.post('/assessments/:assessmentId/topics', authenticate, createAssessmentTopic);
-
+router.post('/assessments/topics/:topicId/questions', authenticate, saveQuestionsController);
 router.get('/assessments/topics/:topicId/questions', authenticate, getAssessmentQuestionTopicByID);
 
 export default router;

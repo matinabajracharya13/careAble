@@ -222,3 +222,70 @@ export const inserAssessmentTopic = async (data: any) => {
   const [topicId] = await db('assessment_topics').insert(data);
   return topicId;
 };
+
+// ======================================================
+// SAVE QUESTIONS WITH OPTIONS
+// ======================================================
+
+export const saveAssessmentQuestions = async (assessment_topic_id: number, questions: any[], assessment_id: number) => {
+  return await db.transaction(async (trx) => {
+    for (const question of questions) {
+      let questionId = question.assessment_question_id;
+
+      // ======================================================
+      // CREATE QUESTION
+      // ======================================================
+
+      if (!questionId) {
+        const [createdQuestionId] = await trx('assessment_questions').insert({
+          assessment_topic_id,
+          assessment_id,
+
+          question_text: question.question_text,
+
+          question_type: question.question_type,
+
+          created_at: trx.fn.now(),
+
+          updated_at: trx.fn.now()
+        });
+
+        questionId = createdQuestionId;
+      }
+
+      // ======================================================
+      // UPDATE QUESTION
+      // ======================================================
+      else {
+        await trx('assessment_questions').where('assessment_question_id', questionId).update({
+          question_text: question.question_text,
+
+          question_type: question.question_type,
+
+          updated_at: trx.fn.now()
+        });
+
+        // remove existing options
+        await trx('assessment_question_options').where('assessment_question_id', questionId).del();
+      }
+
+      // ======================================================
+      // INSERT OPTIONS
+      // ======================================================
+
+      if (question.options?.length) {
+        const optionPayload = question.options.map((option: any) => ({
+          assessment_question_id: questionId,
+
+          option_label: option.option_label,
+
+          option_value: option.option_value
+        }));
+
+        await trx('assessment_question_options').insert(optionPayload);
+      }
+    }
+
+    return true;
+  });
+};

@@ -45,7 +45,10 @@ export function AssessmentBuilderPage() {
   const [questionsState, setQuestionsState] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!questions?.length) return;
+    if (!questions?.length) {
+      setQuestionsState([]);
+      return;
+    }
 
     setQuestionsState((prev) => {
       const prevString = JSON.stringify(prev);
@@ -112,6 +115,7 @@ export function AssessmentBuilderPage() {
             topicId={activeTopicId}
             questions={questionsState}
             setQuestions={setQuestionsState}
+            assessmentId={Number(assessmentId)}
           />
         </div>
       </div>
