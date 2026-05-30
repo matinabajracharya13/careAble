@@ -75,10 +75,10 @@ export const seed = async (knex: Knex): Promise<void> => {
     ])
     .returning(['category_id', 'title']);
 
-  const rolesFromDb = await knex('roles').whereIn('role_name', ['carer', 'employer']).select('role_id', 'role_name');
+  const rolesFromDb = await knex('roles').where('role_name', 'carer').select('role_id', 'role_name');
   const mappings = insertedCategories.flatMap((cat: any) =>
     rolesFromDb
-      .filter((role) => ['carer', 'employer'].includes(role.role_name)) // optional filter
+      .filter((role) => 'carer') // optional filter
       .map((role) => ({
         category_id: cat.category_id,
         role_id: role.role_id
