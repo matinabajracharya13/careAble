@@ -17,8 +17,11 @@ let users: User[] = [
 ];
 let nextId = 3;
 
-export const getUsers = async (_req: Request, res: Response): Promise<void> => {
-  const users = await findAllUsers();
+export const getUsers = async (req: Request, res: Response): Promise<void> => {
+  const search = req.query.search as string | undefined;
+  const limit = req.query.limit ? Number(req.query.limit) : 20;
+
+  const users = await findAllUsers(search, limit);
 
   const response: ApiResponse = {
     success: true,
@@ -28,6 +31,7 @@ export const getUsers = async (_req: Request, res: Response): Promise<void> => {
 
   res.status(200).json(response);
 };
+
 // GET /api/users/:id
 export const getUserById = (req: Request, res: Response, next: NextFunction): void => {
   const user = users.find((u) => u.id === Number(req.params.id));
