@@ -16,6 +16,7 @@ import {
   Rocket,
   Settings,
   Shield,
+  TestTube,
   Users
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -25,7 +26,7 @@ const NAV_ITEMS = [
   { href: '/users', icon: Users, label: 'Users' },
   { href: '/messages', icon: MessageCircle, label: 'Messages' },
   { href: '/roles', icon: Key, label: 'Roles' },
-  // { href: '/analytics', icon: BarChart3, label: 'Analytics' },
+  { href: '/assessments', icon: TestTube, label: 'Assessment' },
   { href: '/verify-certificate', icon: Award, label: 'Verify Certificate' },
   { href: '/onboarding', icon: Rocket, label: 'Onboarding' },
 
