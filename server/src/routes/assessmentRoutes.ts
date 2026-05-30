@@ -9,6 +9,7 @@ import {
   getUserAssessmentAttemptID
 } from '@/controllers/assessmentController';
 import { authenticate } from '@/middleware/authenticate';
+import { getUserAssessmentAttemptDetail } from '@/controllers/userAssessmentController';
 
 const router = Router();
 router.use(authenticate);
@@ -19,5 +20,5 @@ router.post('/:id/attempts/:attemptId/save-progress', saveAssessmentProgress);
 router.get('/:id/attempts/:attemptId/progress', getUserAssessmentAttemptID);
 router.post('/:id/attempts/:attemptId/submit', submitAssessmentResponses);
 router.post('/:id/start', startAssessment);
-
+router.get('/:id/details', getUserAssessmentAttemptDetail);
 export default router;

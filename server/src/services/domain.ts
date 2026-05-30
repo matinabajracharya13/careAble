@@ -47,3 +47,35 @@ export const generateDomainScores = (answers: Record<string, any>, questionTopic
     };
   });
 };
+
+export const generateCompetencyScoresFromTopics = async (
+  topicScores: {
+    assessment_topic_id: number;
+    score: number;
+  }[]
+) => {
+  const topicIds = topicScores.map((t) => t.assessment_topic_id);
+
+  const mappings = await db('assessment_topic_competency_domains')
+    .whereIn('assessment_topic_id', topicIds)
+    .select('assessment_topic_id', 'domain_code');
+
+  const competencyMap: Record<string, number[]> = {};
+
+  for (const topic of topicScores) {
+    const domains = mappings.filter((m) => m.assessment_topic_id === topic.assessment_topic_id);
+
+    for (const domain of domains) {
+      if (!competencyMap[domain.domain_code]) {
+        competencyMap[domain.domain_code] = [];
+      }
+
+      competencyMap[domain.domain_code].push(topic.score);
+    }
+  }
+
+  return Object.entries(competencyMap).map(([domain_code, scores]) => ({
+    domain_code,
+    score: scores.reduce((a, b) => a + b, 0) / scores.length
+  }));
+};

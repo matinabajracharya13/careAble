@@ -100,18 +100,25 @@ export const getLatestAttempts = async (userId: number) => {
 
 export const getHeatmapData = async (userId: number) => {
   const latestAttempts = await getLatestAttempts(userId);
-  console.log('Latest Attempts for Heatmap:', latestAttempts);
-  const attemptIds = latestAttempts.map((a) => a.attempt_id);
 
+  const attemptIds = latestAttempts.map((a) => a.attempt_id);
   if (!attemptIds.length) return [];
 
   const rows = await db('domain_scores as ds')
-    .join('assessment_topics as t', 't.assessment_topic_id', 'ds.assessment_topic_id')
+    // topic → domain mapping
+    .join('assessment_topic_competency_domains as td', 'td.assessment_topic_id', 'ds.assessment_topic_id')
+
+    // domain master
+    .join('competency_domains as d', 'd.domain_id', 'td.domain_id')
+
     .whereIn('ds.attempt_id', attemptIds)
-    .select('ds.assessment_topic_id', 'ds.score', 't.title');
-  return rows.map((row) => ({
-    id: `d${row.assessment_topic_id}`,
-    title: row.title,
-    score: Number(row.score)
+
+    .select('d.domain_id as domain_id', 'd.name as title', db.raw('AVG(ds.score) as score'))
+    .groupBy('d.domain_id', 'd.name');
+
+  return rows.map((r) => ({
+    id: r.domain_id,
+    title: r.title,
+    score: Number(r.score)
   }));
 };

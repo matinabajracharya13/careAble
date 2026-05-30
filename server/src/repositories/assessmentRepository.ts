@@ -19,8 +19,8 @@ export const findAllAssessments = () => {
     .count('q.assessment_topic_id as totalQuestions');
 };
 
-export const findAssessmentById = (id: number) => {
-  return db('assessments').where('assessment_id', id).first();
+export const findAssessmentById = async (id: number) => {
+  return await db('assessments').where('assessment_id', id).first();
 };
 
 export const insertAssessment = (data: any) => {

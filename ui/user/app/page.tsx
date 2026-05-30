@@ -98,14 +98,12 @@ const FEATURES = [
 ];
 
 const PARTNERS = [
-  { name: 'TechCorp', tier: 'platinum' },
-  { name: 'InnovateCo', tier: 'platinum' },
-  { name: 'DataFlow', tier: 'gold' },
-  { name: 'CloudSync', tier: 'gold' },
-  { name: 'BuildRight', tier: 'gold' },
-  { name: 'Nexus AI', tier: 'silver' },
-  { name: 'Vertex Labs', tier: 'silver' },
-  { name: 'BlueWave', tier: 'silver' }
+  { name: 'La Trobe University', tier: 'platinum' },
+  { name: 'Partner 1', tier: 'platinum' },
+  { name: 'Partner 2', tier: 'gold' },
+  { name: 'Partner 3', tier: 'gold' },
+  { name: 'Partner 4', tier: 'gold' },
+  { name: 'Partner 5', tier: 'silver' }
 ];
 
 const TESTIMONIALS = [

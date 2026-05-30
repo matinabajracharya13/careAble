@@ -1,123 +1,145 @@
-import { Knex } from "knex";
+import { Knex } from 'knex';
 
 export async function seed(knex: Knex): Promise<void> {
   // ─────────────────────────────────────────────
-  // CLEAN EXISTING DATA (order matters)
+  // CLEAN (FK SAFE ORDER)
   // ─────────────────────────────────────────────
-  await knex("assessment_question_options").del();
-  await knex("assessment_questions").del();
-  await knex("assessment_topics").del();
-  await knex("assessments").del();
+  await knex('assessment_topic_competency_domains').del();
+  await knex('assessment_question_options').del();
+  await knex('assessment_questions').del();
+  await knex('assessment_topics').del();
+  await knex('assessments').del();
 
   // ─────────────────────────────────────────────
-  // 1. ASSESSMENT
+  // CREATE ASSESSMENT
   // ─────────────────────────────────────────────
-  const [assessmentId] = await knex("assessments").insert({
-    title: "Caregiver Wellbeing Assessment",
-    domain: "Wellbeing",
-    description: "Understand your wellbeing across key life areas.",
-    version: "1.0",
-  });
+  const assessmentInsert = await knex('assessments')
+    .insert({
+      title: 'Caregiver Competency Assessment',
+      domain: 'Caregiving',
+      description: 'Measures caregiver competencies across 12 domains.',
+      version: '1.0'
+    })
+    .returning('assessment_id');
+
+  const assessmentId = typeof assessmentInsert[0] === 'object' ? (assessmentInsert[0] as any).assessment_id : assessmentInsert[0];
 
   // ─────────────────────────────────────────────
-  // 2. MOCK STRUCTURE
+  // TOPICS
   // ─────────────────────────────────────────────
-  const mockTopics = [
+  const topics = [
     {
-      code: "social",
-      title: "Social Connection & Belonging",
+      code: 'social',
+      title: 'Social & Communication Foundations',
+      domains: ['d5', 'd6', 'd1'],
       questions: [
-        "I maintain social connections outside my caregiving role.",
-        "I feel connected to peers, family, or community.",
-        "I seek support when feeling isolated.",
-        "I maintain interests or identity beyond caregiving.",
-        "I experience a sense of belonging rather than isolation.",
-      ],
+        'I maintain meaningful communication with others.',
+        'I can express my needs clearly.',
+        'I feel connected to my support network.',
+        'I manage group communication effectively.',
+        'I avoid misunderstandings in conversations.'
+      ]
     },
     {
-      code: "emotional",
-      title: "Emotional Wellbeing",
+      code: 'emotional',
+      title: 'Emotional Strength & Resilience',
+      domains: ['d3', 'd4'],
       questions: [
-        "I feel emotionally supported in my daily life.",
-        "I am able to manage stress effectively.",
-        "I feel overwhelmed by responsibilities.",
-        "I feel emotionally drained at the end of the day.",
-        "I can find time to relax and recharge.",
-      ],
+        'I manage stress effectively.',
+        'I recover quickly from emotional setbacks.',
+        'I feel emotionally balanced most days.',
+        'I take time to care for my emotional health.',
+        'I can regulate my emotions under pressure.'
+      ]
     },
     {
-      code: "physical",
-      title: "Physical Health",
+      code: 'care',
+      title: 'Practical Care & Safety',
+      domains: ['d7', 'd11'],
       questions: [
-        "I get enough sleep regularly.",
-        "I maintain a balanced and healthy diet.",
-        "I engage in regular physical activity.",
-        "I feel physically exhausted most of the time.",
-        "I take time to rest when needed.",
-        "I experience physical strain from caregiving tasks.",
-      ],
+        'I provide safe care consistently.',
+        'I can plan caregiving tasks efficiently.',
+        'I manage risks effectively.',
+        'I organize daily care routines well.',
+        'I anticipate care needs ahead of time.'
+      ]
     },
     {
-      code: "financial",
-      title: "Financial Stability",
+      code: 'growth',
+      title: 'Learning & Adaptability',
+      domains: ['d9', 'd10'],
       questions: [
-        "I feel financially secure in my current situation.",
-        "I can comfortably manage my daily expenses.",
-        "I have access to financial support if needed.",
-        "Caregiving has impacted my financial stability.",
-        "I am able to plan for future financial needs.",
-      ],
+        'I learn new caregiving skills easily.',
+        'I adapt to changing situations.',
+        'I use digital tools effectively.',
+        'I find and evaluate online information.',
+        'I stay open to feedback and improvement.'
+      ]
     },
     {
-      code: "caregiving",
-      title: "Caregiving Experience",
+      code: 'leadership',
+      title: 'Advocacy & Leadership',
+      domains: ['d2', 'd8', 'd12'],
       questions: [
-        "I feel confident in my caregiving abilities.",
-        "I understand the needs of the person I care for.",
-        "I feel overwhelmed by caregiving responsibilities.",
-        "I receive adequate support in my caregiving role.",
-        "I can balance caregiving with my personal life.",
-        "I feel appreciated for the care I provide.",
-        "I have access to resources that help me caregive effectively.",
-        "I feel stress related to caregiving duties.",
-        "I can take breaks when needed from caregiving.",
-        "I feel in control of my caregiving responsibilities.",
-      ],
-    },
+        'I advocate for the person I care for.',
+        'I make ethical decisions in caregiving.',
+        'I coordinate support when needed.',
+        'I take initiative in challenging situations.',
+        'I respect cultural and personal values.'
+      ]
+    }
   ];
 
-  // Likert scale options
+  // ─────────────────────────────────────────────
+  // LIKERT OPTIONS
+  // ─────────────────────────────────────────────
   const likertOptions = [
-    { label: "Strongly Disagree", value: 1 },
-    { label: "Disagree", value: 2 },
-    { label: "Neutral", value: 3 },
-    { label: "Agree", value: 4 },
-    { label: "Strongly Agree", value: 5 },
+    { label: 'Strongly Disagree', value: 1 },
+    { label: 'Disagree', value: 2 },
+    { label: 'Neutral', value: 3 },
+    { label: 'Agree', value: 4 },
+    { label: 'Strongly Agree', value: 5 }
   ];
 
   // ─────────────────────────────────────────────
-  // 3. INSERT TOPICS + QUESTIONS + OPTIONS
+  // INSERT DATA
   // ─────────────────────────────────────────────
-  for (const topic of mockTopics) {
-    const [topicId] = await knex("assessment_topics").insert({
-      assessment_id: assessmentId,
-      code: topic.code,
-      title: topic.title,
-    });
+  for (const topic of topics) {
+    const topicInsert = await knex('assessment_topics')
+      .insert({
+        assessment_id: assessmentId,
+        code: topic.code,
+        title: topic.title
+      })
+      .returning('assessment_topic_id');
+
+    const topicId = typeof topicInsert[0] === 'object' ? (topicInsert[0] as any).assessment_topic_id : topicInsert[0];
+
+    // ✅ FIXED: competency mapping table
+    await knex('assessment_topic_competency_domains').insert(
+      topic.domains.map((domainCode) => ({
+        assessment_topic_id: topicId,
+        domain_id: domainCode
+      }))
+    );
 
     for (const questionText of topic.questions) {
-      const [questionId] = await knex("assessment_questions").insert({
-        assessment_id: assessmentId,
-        assessment_topic_id: topicId,
-        question_text: questionText,
-        question_type: "likert",
-      });
+      const questionInsert = await knex('assessment_questions')
+        .insert({
+          assessment_id: assessmentId,
+          assessment_topic_id: topicId,
+          question_text: questionText,
+          question_type: 'likert'
+        })
+        .returning('assessment_question_id');
 
-      await knex("assessment_question_options").insert(
+      const questionId = typeof questionInsert[0] === 'object' ? (questionInsert[0] as any).assessment_question_id : questionInsert[0];
+
+      await knex('assessment_question_options').insert(
         likertOptions.map((opt) => ({
           assessment_question_id: questionId,
           option_label: opt.label,
-          numeric_value: opt.value,
+          option_value: opt.value
         }))
       );
     }
