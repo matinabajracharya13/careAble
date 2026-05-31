@@ -83,15 +83,11 @@ export const findAllCandidates = async () => {
   return rows.map(mapCandidate);
 };
 
-export const getCandidateProfile = async (userId: number) => {
-  // ─────────────────────────────────────────────
-  // 1. User profile
-  // ─────────────────────────────────────────────
+export const getUserDetail = async (userId: number) => {
   const profile = await db('users as u')
     .join('user_roles as ur', 'ur.user_id', 'u.user_id')
     .join('roles as r', 'r.role_id', 'ur.role_id')
     .where('u.user_id', userId)
-    .where('r.role_name', UserRole.CARER)
     .select(
       'u.user_id',
       db.raw("u.first_name || ' ' || u.last_name as name"),
@@ -106,6 +102,13 @@ export const getCandidateProfile = async (userId: number) => {
   if (!profile) {
     return null;
   }
+  return profile;
+};
+
+export const getCandidateProfile = async (userId: number, profile: any) => {
+  // ─────────────────────────────────────────────
+  // 1. User profile
+  // ─────────────────────────────────────────────
 
   // ─────────────────────────────────────────────
   // 2. Latest assessment attempts
@@ -170,24 +173,45 @@ export const getCandidateProfile = async (userId: number) => {
   const onboardingAnswers = await db('onboarding_answers as oa')
     .join('onboarding_questions as oq', 'oq.question_id', 'oa.question_id')
     .where('oa.user_id', userId)
-    .select('oq.profile_section', 'oq.profile_key', 'oq.profile_label', 'oa.answer_text');
+    .select('oq.profile_section', 'oq.profile_key', 'oq.profile_label', 'oq.question_id', 'oa.answer_text');
 
-  const insights: Record<string, any> = {};
+  const options = await db('question_options').select('question_option_id', 'question_id', 'option_text', 'option_value');
 
-  onboardingAnswers.forEach((item) => {
-    if (!item.profile_section || !item.profile_key) return;
+  // Group options by question_id
+  const optionMap = new Map<number, any[]>();
 
-    if (!insights[item.profile_section]) {
-      insights[item.profile_section] = [];
+  for (const option of options) {
+    if (!optionMap.has(option.question_id)) {
+      optionMap.set(option.question_id, []);
     }
 
-    insights[item.profile_section].push({
-      key: item.profile_key,
-      label: item.profile_label,
-      value: item.answer_text
-    });
-  });
+    optionMap.get(option.question_id)!.push(option);
+  }
 
+  const formatted = onboardingAnswers.map((row) => {
+    const selectedValues = String(row.answer_text || '')
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean);
+
+    const questionOptions = optionMap.get(row.question_id) || [];
+
+    const selectedOptions = questionOptions
+      .filter((option) => selectedValues.includes(String(option.option_value)))
+      .map((option) => ({
+        id: option.question_option_id,
+        value: option.option_value,
+        label: option.option_text
+      }));
+
+    return {
+      profile_section: row.profile_section,
+      profile_key: row.profile_key,
+      profile_label: row.profile_label,
+      value: selectedOptions.length > 0 ? selectedOptions.map((o) => o.label).join(', ') : row.answer_text,
+      selected_options: selectedOptions
+    };
+  });
   // ─────────────────────────────────────────────
   // 5. Dashboard stats
   // ─────────────────────────────────────────────
@@ -196,7 +220,7 @@ export const getCandidateProfile = async (userId: number) => {
   return {
     ...profile,
 
-    candidate_insights: insights,
+    candidate_insights: formatted,
 
     total_assessments_taken: assessments,
 

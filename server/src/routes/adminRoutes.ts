@@ -12,6 +12,8 @@ import {
   getAssessmentTopics,
   saveQuestionsController
 } from '@/controllers/admin/assessmentController';
+import { candidateProfile, getCandidates } from '@/controllers/candidateController';
+import { getUsers } from '@/controllers/userController';
 
 const router = Router();
 
@@ -22,6 +24,10 @@ router.get('/roles', authenticate, getAllRoles);
 router.post('/roles', authenticate, addRole);
 router.get('/assessments', authenticate, getAllAssessments);
 router.post('/assessments', authenticate, createAssessment);
+router.post('/assessments', authenticate, createAssessment);
+
+router.get('/users', getUsers);
+router.get('/users/:userId', candidateProfile);
 
 router.get('/onboarding/categories', authenticate, getAllOnboardingCategories);
 router.get('/onboarding/questions/:category_id', authenticate, getAllOnboardingQuestions);

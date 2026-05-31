@@ -129,3 +129,62 @@ export interface ApiResponse {
   message: string;
   data?: any;
 }
+
+export interface UserDetail {
+  user_id: number;
+  name: string;
+  email: string;
+  postcode: string | null;
+  created_at: string;
+  is_active: number;
+  role: string;
+  candidate_insights: CandidateInsights;
+  total_assessments_taken: AssessmentSummary[];
+  total_certificates: number;
+  certificates: CertificateSummary[];
+  dashboard_stats: CompetencyScore[];
+}
+
+export interface CandidateInsights {
+  employment: InsightItem[];
+  background: InsightItem[];
+  about: InsightItem[];
+  caregiving: InsightItem[];
+}
+
+export interface InsightItem {
+  key: string;
+  label: string;
+  selected_options: InsightOption[];
+}
+
+export interface InsightOption {
+  id: string | number;
+  label: string;
+}
+
+export interface AssessmentSummary {
+  assessment_id: number;
+  attempt_id: number;
+  submitted_at: string;
+  assessment_title: string;
+  assessment_description: string;
+  average_score: number;
+}
+
+export interface CertificateSummary {
+  certificate_code: string;
+  issued_at: number;
+  assessment_title: string;
+}
+
+export interface CompetencyScore {
+  id: string;
+  title: string;
+  score: number;
+}
+
+export interface UserDetailResponse {
+  success: boolean;
+  data: UserDetail;
+}

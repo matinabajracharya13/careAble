@@ -43,12 +43,11 @@ const SECTION_ICONS: Record<string, any> = {
 export default function CandidateProfilePage() {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState<Tab>('profile');
-console.log('Candidate ID from URL:', id);
+  console.log('Candidate ID from URL:', id);
   const { data, isLoading } = useQuery({
     queryKey: ['candidate', id],
     queryFn: () => candidatesApi.getCandidateById(id as string)
   });
-
 
   if (isLoading) {
     return (
@@ -59,7 +58,7 @@ console.log('Candidate ID from URL:', id);
   }
   console.log('Candidate Data:', data);
   const candidate = data;
-  
+
   const heatmapData = candidate?.dashboard_stats || [];
   console.log('Heatmap Data:', heatmapData);
 
@@ -223,9 +222,7 @@ console.log('Candidate ID from URL:', id);
                 <RadarHeatmap data={heatmapData} />
               ) : (
                 <Card>
-                  <CardContent className='p-10 text-center text-muted-foreground'>
-                    No heat map data available
-                  </CardContent>
+                  <CardContent className='p-10 text-center text-muted-foreground'>No heat map data available</CardContent>
                 </Card>
               )}
             </div>
@@ -233,49 +230,42 @@ console.log('Candidate ID from URL:', id);
 
           {/* INSIGHTS */}
           {activeTab === 'insights' && (
-            <div className='space-y-4'>
-              {Object.entries(candidate.candidate_insights || {}).map(([section, items]: any) => {
-                const Icon = SECTION_ICONS[section] || Brain;
+            <div className='space-y-6'>
+              <Card>
+                <CardContent className='p-6 space-y-6'>
+                  {Object.entries(candidate.candidate_insights || {}).map(([section, items]: any) => {
+                    const Icon = SECTION_ICONS?.[section] || Brain;
 
-                return (
-                  <Card key={section}>
-                    <CardContent className='p-6'>
-                      <div className='flex items-center gap-2 mb-5'>
-                        <div className='h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center'>
-                          <Icon className='h-4 w-4 text-primary' />
-                        </div>
+                    return (
+                      <div
+                        key={section}
+                        className='space-y-3'
+                      >
+                        {/* Items Grid */}
+                        <div
+                          key={items.profile_key}
+                          className='rounded-xl border p-4 space-y-2'
+                        >
+                          {/* Label */}
+                          <p className='text-xs text-muted-foreground'>{items.profile_label}</p>
 
-                        <div>
-                          <h2 className='font-semibold capitalize'>{section}</h2>
-
-                          <p className='text-xs text-muted-foreground'>Candidate profile insights</p>
-                        </div>
-                      </div>
-
-                      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                        {items.map((item: any) => (
-                          <div
-                            key={item.key}
-                            className='rounded-xl border p-4'
-                          >
-                            <p className='text-xs text-muted-foreground mb-2'>{item.label}</p>
-
-                            {Array.isArray(item.value) ? (
-                              <div className='flex flex-wrap gap-2'>
-                                {item.value.map((v: string) => (
-                                  <Badge key={v}>{v}</Badge>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className='text-sm font-medium'>{item.value || '-'}</p>
-                            )}
+                          {/* Values */}
+                          <div className='flex flex-wrap gap-2'>
+                            {items?.selected_options.map((v: any) => (
+                              <Badge
+                                key={v.id}
+                                variant='secondary'
+                              >
+                                {v.label}
+                              </Badge>
+                            ))}
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                    );
+                  })}
+                </CardContent>
+              </Card>
             </div>
           )}
         </div>
