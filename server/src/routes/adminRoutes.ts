@@ -1,9 +1,6 @@
 import { Router } from 'express';
 
-import { getCurrentUser, login } from '@/controllers/admin/authController';
-import { authenticate } from '@/middleware/authenticate';
-import { addRole, getAllRoles } from '@/controllers/admin/rolesController';
-import { getAllOnboardingCategories, getAllOnboardingQuestions } from '@/controllers/admin/onboardingController';
+import { getAnalytics } from '@/controllers/admin/analyticsController';
 import {
   createAssessment,
   createAssessmentTopic,
@@ -12,28 +9,35 @@ import {
   getAssessmentTopics,
   saveQuestionsController
 } from '@/controllers/admin/assessmentController';
-import { candidateProfile, getCandidates } from '@/controllers/candidateController';
+import { getCurrentUser, login } from '@/controllers/admin/authController';
+import * as DashboardController from '@/controllers/admin/dashboardController';
+import { getAllOnboardingCategories, getAllOnboardingQuestions } from '@/controllers/admin/onboardingController';
+import { addRole, getAllRoles } from '@/controllers/admin/rolesController';
+import { candidateProfile } from '@/controllers/candidateController';
 import { getUsers } from '@/controllers/userController';
+import { authenticate } from '@/middleware/authenticate';
 
 const router = Router();
 
 router.post('/login', login);
 
-router.get('/me', authenticate, getCurrentUser);
-router.get('/roles', authenticate, getAllRoles);
-router.post('/roles', authenticate, addRole);
-router.get('/assessments', authenticate, getAllAssessments);
-router.post('/assessments', authenticate, createAssessment);
-router.post('/assessments', authenticate, createAssessment);
+router.use(authenticate);
 
+router.get('/me', getCurrentUser);
+router.get('/roles', getAllRoles);
+router.post('/roles', addRole);
+router.get('/assessments', getAllAssessments);
+router.post('/assessments', createAssessment);
+router.post('/assessments', createAssessment);
+router.post('/analytics', getAnalytics);
 router.get('/users', getUsers);
+router.get('/dashboard', DashboardController.getDashboard);
 router.get('/users/:userId', candidateProfile);
-
-router.get('/onboarding/categories', authenticate, getAllOnboardingCategories);
-router.get('/onboarding/questions/:category_id', authenticate, getAllOnboardingQuestions);
-router.get('/assessments/:assessmentId/topics', authenticate, getAssessmentTopics);
-router.post('/assessments/:assessmentId/topics', authenticate, createAssessmentTopic);
-router.post('/assessments/topics/:topicId/questions', authenticate, saveQuestionsController);
-router.get('/assessments/topics/:topicId/questions', authenticate, getAssessmentQuestionTopicByID);
+router.get('/onboarding/categories', getAllOnboardingCategories);
+router.get('/onboarding/questions/:category_id', getAllOnboardingQuestions);
+router.get('/assessments/:assessmentId/topics', getAssessmentTopics);
+router.post('/assessments/:assessmentId/topics', createAssessmentTopic);
+router.post('/assessments/topics/:topicId/questions', saveQuestionsController);
+router.get('/assessments/topics/:topicId/questions', getAssessmentQuestionTopicByID);
 
 export default router;

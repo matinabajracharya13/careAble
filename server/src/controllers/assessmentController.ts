@@ -20,6 +20,7 @@ import { addDomainScore } from '@/repositories/domainRepository';
 import { generateDomainScores } from '@/services/domain';
 import { calculateOverallMean } from '@/utils/capability';
 import { generateCompetencyScoresFromTopics, saveCompetencyScores } from '@/repositories/competancy';
+import { activityService } from '@/services/activities';
 
 // GET ALL
 export const getAssessments = async (_req: Request, res: Response, next: NextFunction) => {
@@ -173,6 +174,10 @@ export const submitAssessmentResponses = async (req: Request, res: Response, nex
       return next(new AppError('Unauthorized', 401));
     }
 
+    const assessment = await findAssessmentById(assessmentId);
+    if (!assessment) {
+      return next(new AppError('Assessment Not found', 404));
+    }
     if (!answers || typeof answers !== 'object') {
       return next(new AppError('Invalid payload', 400));
     }
@@ -228,6 +233,17 @@ export const submitAssessmentResponses = async (req: Request, res: Response, nex
     // 7. Cleanup progress
     // -------------------------------------------------
     await deleteAssessmentProgress(userId, assessmentId, attemptId);
+    await activityService.assessment.completed({
+      userId,
+      assessmentId,
+      attemptId,
+      score: overallScore
+    });
+    await activityService.certificate.issued({
+      userId,
+      assessmentTitle: assessment.title,
+      certificateId: certificate.certificate_id
+    });
 
     return res.status(201).json({
       success: true,

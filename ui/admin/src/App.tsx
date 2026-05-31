@@ -1,23 +1,23 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ProtectedRoute } from '@/components/auth/protected-route';
+import { AppLayout } from '@/components/layout/app-layout';
+import { ToastContainer } from '@/components/ui/toast-container';
+import { queryClient } from '@/lib/query-client';
+import { DashboardPage } from '@/pages/dashboard';
+import { LoginPage } from '@/pages/login';
+import { NotificationsPage } from '@/pages/notifications';
+import { SettingsPage } from '@/pages/settings';
+import { UsersPage } from '@/pages/users';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { queryClient } from '@/lib/query-client';
-import { AppLayout } from '@/components/layout/app-layout';
-import { ProtectedRoute } from '@/components/auth/protected-route';
-import { ToastContainer } from '@/components/ui/toast-container';
-import { DashboardPage } from '@/pages/dashboard';
-import { UsersPage } from '@/pages/users';
-import { AnalyticsPage } from '@/pages/analytics';
-import { SettingsPage } from '@/pages/settings';
-import { NotificationsPage } from '@/pages/notifications';
-import { LoginPage } from '@/pages/login';
-import { MessagesPage } from './pages/messages';
-import { VerifyCertificatePage } from './pages/verify-certificate';
-import { RolesPage } from './pages/roles';
-import { OnboardingPage } from './pages/onboarding';
-import { AssessmentBuilderPage, AssessmentPage } from './pages/assessment-builder';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import AnalyticsPage from './pages/analytics';
+import { AssessmentBuilderPage } from './pages/assessment-builder';
 import { AssessmentsPage } from './pages/assessments';
+import { MessagesPage } from './pages/messages';
+import { OnboardingPage } from './pages/onboarding';
+import { RolesPage } from './pages/roles';
 import UserDetailPage from './pages/user-details';
+import { VerifyCertificatePage } from './pages/verify-certificate';
 
 export default function App() {
   return (
