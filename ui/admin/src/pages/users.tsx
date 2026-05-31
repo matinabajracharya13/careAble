@@ -1,14 +1,8 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Search, MoreHorizontal, Trash2, Pencil, UserCheck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,14 +10,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FormField } from '@/components/ui/form-field';
-import { Label } from '@/components/ui/label';
-import { useUsers, useCreateUser, useDeleteUser } from '@/hooks/use-users';
-import { useUIStore } from '@/store/ui-store';
-import { createUserSchema, type CreateUserFormValues } from '@/lib/validations';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useCreateUser, useDeleteUser, useUsers } from '@/hooks/use-users';
 import { formatDate } from '@/lib/utils';
-import type { User, UserStatus, UserRole } from '@/types';
+import { createUserSchema, type CreateUserFormValues } from '@/lib/validations';
+import { useUIStore } from '@/store/ui-store';
+import type { User, UserRole, UserStatus } from '@/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, MoreHorizontal, Pencil, Plus, Search, Trash2, UserCheck } from 'lucide-react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 const STATUS_VARIANT: Record<UserStatus, 'success' | 'pending' | 'destructive'> = {
   active: 'success',
@@ -41,10 +41,10 @@ export function UsersPage() {
   const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const { addToast } = useUIStore();
+  const navigate = useNavigate();
 
   // TanStack Query – swap placeholderData for real API
   const { data, isLoading } = useUsers({ search, limit: 20 });
-  console.log(data);
   const createUser = useCreateUser();
   const deleteUser = useDeleteUser();
 
@@ -195,6 +195,13 @@ export function UsersPage() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align='end'>
+                                <DropdownMenuItem
+                                  className='gap-2'
+                                  onClick={() => navigate(`/users/${user.id}`)}
+                                >
+                                  <Eye className='h-4 w-4' /> View
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
                                 <DropdownMenuItem className='gap-2'>
                                   <Pencil className='h-4 w-4' /> Edit
                                 </DropdownMenuItem>

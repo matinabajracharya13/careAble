@@ -1,5 +1,5 @@
 import { del, get, post, put } from '@/lib/api';
-import type { CreateUserInput, PaginatedResponse, PaginationParams, UpdateUserInput, User } from '@/types';
+import type { CreateUserInput, PaginatedResponse, PaginationParams, UpdateUserInput, User, UserDetailResponse } from '@/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // ─── Query Keys ───────────────────────────────────────────────────────────
@@ -15,14 +15,14 @@ export const userKeys = {
 export function useUsers(params: PaginationParams = {}) {
   return useQuery({
     queryKey: userKeys.list(params),
-    queryFn: () => get<PaginatedResponse<User>>('/users', params as Record<string, unknown>)
+    queryFn: () => get<PaginatedResponse<User>>('/admin/users', params as Record<string, unknown>)
   });
 }
 
-export function useUser(id: string) {
+export function useUser(id: number) {
   return useQuery({
-    queryKey: userKeys.detail(id),
-    queryFn: () => get<User>(`/users/${id}`),
+    queryKey: userKeys.detail(`${id}`),
+    queryFn: () => get<UserDetailResponse>(`/admin/users/${id}`),
     enabled: !!id
   });
 }

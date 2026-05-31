@@ -17,6 +17,7 @@ import { RolesPage } from './pages/roles';
 import { OnboardingPage } from './pages/onboarding';
 import { AssessmentBuilderPage, AssessmentPage } from './pages/assessment-builder';
 import { AssessmentsPage } from './pages/assessments';
+import UserDetailPage from './pages/user-details';
 
 export default function App() {
   return (
@@ -39,6 +40,10 @@ export default function App() {
               <Route
                 path='/users'
                 element={<UsersPage />}
+              />
+              <Route
+                path='/users/:id'
+                element={<UserDetailPage />}
               />
               <Route
                 path='/messages'

@@ -1,7 +1,8 @@
 // controllers/candidate.controller.ts
 
+import { UserRole } from '@/enums/user-role';
 import { AppError } from '@/middleware/errorHandler';
-import { findAllCandidates, getCandidateProfile } from '@/repositories/candidatesRepository';
+import { findAllCandidates, getCandidateProfile, getUserDetail } from '@/repositories/candidatesRepository';
 import { Request, Response, NextFunction } from 'express';
 
 export const getCandidates = async (_req: Request, res: Response, next: NextFunction) => {
@@ -25,8 +26,22 @@ export const candidateProfile = async (req: Request, res: Response, next: NextFu
     if (!userId) {
       return next(new AppError('Invalid user id', 400));
     }
-
-    const data = await getCandidateProfile(userId);
+    const userDetail = await getUserDetail(userId);
+    if (!userDetail) {
+      res.json({
+        success: true,
+        data: null
+      });
+      return;
+    }
+    if (userDetail.role !== UserRole.CARER) {
+      return res.json({
+        success: true,
+        data: userDetail
+      });
+    }
+    const data = await getCandidateProfile(userId, userDetail);
+    console.log(data);
 
     if (!data) {
       return res.json({
@@ -43,6 +58,7 @@ export const candidateProfile = async (req: Request, res: Response, next: NextFu
 
     res.json(response);
   } catch (err) {
+    console.log(err);
     next(err);
   }
 };
