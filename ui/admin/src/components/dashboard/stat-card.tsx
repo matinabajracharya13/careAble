@@ -1,13 +1,15 @@
-import { TrendingUp, TrendingDown } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+'use client';
+
+import { ReactNode } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface StatCardProps {
   title: string;
-  value: string;
+  value: string | number;
   change?: number;
   changeLabel?: string;
-  icon: React.ReactNode;
+  icon?: ReactNode;
   iconColor?: string;
 }
 
@@ -15,24 +17,24 @@ export function StatCard({ title, value, change, changeLabel, icon, iconColor }:
   const isPositive = (change ?? 0) >= 0;
 
   return (
-    <Card className="animate-fade-in">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold font-display tracking-tight">{value}</p>
-            {change !== undefined && (
-              <div className={cn("flex items-center gap-1 text-xs font-medium", isPositive ? "text-success" : "text-destructive")}>
-                {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                <span>{isPositive ? "+" : ""}{change}%</span>
-                {changeLabel && <span className="text-muted-foreground font-normal">{changeLabel}</span>}
-              </div>
-            )}
-          </div>
-          <div className={cn("flex items-center justify-center w-10 h-10 rounded-lg", iconColor ?? "bg-primary/10 text-primary")}>
-            {icon}
-          </div>
+    <Card className='hover:shadow-sm transition-shadow'>
+      <CardContent className='p-4 flex items-center justify-between'>
+        {/* LEFT */}
+        <div className='space-y-1'>
+          <p className='text-sm text-muted-foreground'>{title}</p>
+
+          <p className='text-2xl font-bold'>{value}</p>
+
+          {change !== undefined && (
+            <p className={cn('text-xs font-medium', isPositive ? 'text-green-600' : 'text-red-500')}>
+              {isPositive ? '+' : ''}
+              {change}% {changeLabel}
+            </p>
+          )}
         </div>
+
+        {/* ICON */}
+        {icon && <div className={cn('p-2 rounded-lg', iconColor || 'bg-muted text-muted-foreground')}>{icon}</div>}
       </CardContent>
     </Card>
   );

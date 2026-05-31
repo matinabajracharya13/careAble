@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { AppError } from '@/middleware/errorHandler';
 import { getAllOnboardingQuestions, insertOnboardingAnswers, updateOnboardingCompletionStatus } from '@/repositories/onboardingRepository';
 import { OnboardingAnswer } from '@/types';
+import { activityService } from '@/services/activities';
 
 export const getOnboardingQuestions = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -80,7 +81,12 @@ export const completeOnboarding = async (req: Request, res: Response, next: Next
       return next(new AppError('Failed to save onboarding answers', 500));
     }
     await updateOnboardingCompletionStatus(userId, true);
-
+    await activityService.onboardingCompleted({
+      userId,
+      actorId: userId,
+      sectionsCompleted: ['onboarding'],
+      completionPercent: 100
+    });
     res.status(200).json({
       success: true,
       message: 'Onboarding completed successfully'

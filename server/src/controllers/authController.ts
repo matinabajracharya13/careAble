@@ -30,13 +30,13 @@ import { assignUserRole } from '@/repositories/userRoleRepository';
 import { baseLogin } from '@/services/auth';
 import { loginRules } from '@/utils/authRules';
 import userResponse from '@/services/response';
+import { logActivity } from '@/repositories/activitiesRepository';
+import { activityService } from '@/services/activities';
 
 // SIGNUP
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password, role, first_name, last_name, phone, date_of_birth, postcode, research_consent, accepted_terms } = req.body;
-
-    console.log(req.body);
 
     const selectedRole = await findRoleByName(role);
 
@@ -45,7 +45,6 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     }
 
     const existingUser = await findUserByEmail(email);
-    console.log(existingUser);
     if (existingUser) {
       return next(new AppError('Email already exists', 409));
     }
@@ -67,7 +66,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     });
 
     await assignUserRole(userId, selectedRole.role_id);
-
+    await activityService.user.registered({ userId, email, role: selectedRole, source: 'web' });
     const verificationToken = generateRandomToken();
 
     await createVerificationToken({

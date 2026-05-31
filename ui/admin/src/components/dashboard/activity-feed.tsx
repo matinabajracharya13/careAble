@@ -1,62 +1,46 @@
-import { formatDistanceToNow } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useActivityFeed } from "@/hooks/use-dashboard";
+'use client';
 
-// Tiny date helper without importing date-fns if not installed
-function timeAgo(dateStr: string) {
-  try {
-    return formatDistanceToNow(new Date(dateStr), { addSuffix: true });
-  } catch {
-    return "";
-  }
-}
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { formatDate } from '@/lib/utils';
 
-export function ActivityFeed() {
-  const { data: items, isLoading } = useActivityFeed();
+const TYPE_COLOR: Record<string, string> = {
+  assessment_completed: 'bg-blue-500/10 text-blue-600',
+  certificate_issued: 'bg-green-500/10 text-green-600',
+  role_changed: 'bg-orange-500/10 text-orange-600',
+  user_registered: 'bg-purple-500/10 text-purple-600',
+  system_alert: 'bg-red-500/10 text-red-600'
+};
 
+export function ActivityFeed({ data }: any) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="h-[320px]">
-          <div className="px-6 pb-4 space-y-4">
-            {isLoading
-              ? Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <Skeleton className="h-8 w-8 rounded-full shrink-0" />
-                    <div className="space-y-1 flex-1">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-3 w-20" />
-                    </div>
-                  </div>
-                ))
-              : items?.map((item) => {
-                  const initials = item.user.name
-                    .split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
-                  return (
-                    <div key={item.id} className="flex items-start gap-3 animate-fade-in">
-                      <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm leading-snug">
-                          <span className="font-semibold">{item.user.name}</span>
-                          {" "}<span className="text-muted-foreground">{item.action}</span>{" "}
-                          <span className="font-medium">{item.target}</span>
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{timeAgo(item.createdAt)}</p>
-                      </div>
-                    </div>
-                  );
-                })}
+    <Card className='p-4 space-y-4'>
+      <h2 className='font-semibold text-lg'>Recent Activity</h2>
+
+      <div className='space-y-3'>
+        {data?.map((item: any) => (
+          <div
+            key={item.id}
+            className='flex gap-3 border-b pb-3 last:border-0'
+          >
+            <div className='w-2 h-2 mt-2 rounded-full bg-primary' />
+
+            <div className='flex-1'>
+              <div className='flex items-center gap-2'>
+                <p className='font-medium text-sm'>{item.title}</p>
+
+                <Badge className={TYPE_COLOR[item.type]}>{item.type}</Badge>
+              </div>
+
+              {item.description && <p className='text-xs text-muted-foreground'>{item.description}</p>}
+
+              <p className='text-xs text-muted-foreground mt-1'>
+                {item.user} • {formatDate(item.created_at)}
+              </p>
+            </div>
           </div>
-        </ScrollArea>
-      </CardContent>
+        ))}
+      </div>
     </Card>
   );
 }

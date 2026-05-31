@@ -22,3 +22,22 @@ export const authApi = {
     return res.data;
   }
 };
+
+export const adminApi = {
+  getAnalytics: async () => {
+    const res = await get<{
+      success: boolean;
+      message: string;
+      data: any;
+    }>('/admin/analytics');
+    return res.data;
+  },
+  getDashboard: async () => {
+    const res = await get<{
+      success: boolean;
+      message: string;
+      data: any;
+    }>('/admin/dashboard');
+    return res.data;
+  }
+};
