@@ -13,6 +13,7 @@ import { Award, BookOpen, Loader2, Lock, Pencil, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import type { User as UserType } from '@/types';
+import { queryKeys } from '@/lib/query-keys';
 
 // ── Tab list ──────────────────────────────────────────────────────────────────
 const ROLE_TAB_ACCESS: Record<string, TabId[]> = {
@@ -36,12 +37,12 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
 
   const { data: certificates, isLoading: certsLoading } = useQuery({
-    queryKey: ['all-certificates'],
+    queryKey: queryKeys.certificates.all,
     queryFn: certificateApi.getCertificate
   });
 
   const { data: assessments, isLoading: assesmentsLoading } = useQuery({
-    queryKey: ['user-assesments', user?.id],
+    queryKey: queryKeys.userAssessments.list(user?.id),
     queryFn: userAssessmentApi.get
   });
   const allowedTabs = ROLE_TAB_ACCESS[(user as UserType)?.role] || [];

@@ -7,6 +7,7 @@ import { Badge, Card, CardContent } from '@/components/ui/ui-components';
 import { UserRole } from '@/config/role';
 import { ASSESSMENT_IN_PROGRESS_KEY } from '@/constants/app';
 import { assessmentApi } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import { useQuery } from '@tanstack/react-query';
 import { BookOpen, ChevronRight, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -20,7 +21,7 @@ export default function AssessmentListPage() {
   // FETCH ASSESSMENTS
   // ─────────────────────────────
   const { data: assessments, isLoading } = useQuery({
-    queryKey: ['assessments'],
+    queryKey: queryKeys.assessments.all,
     queryFn: assessmentApi.getAssessments
   });
 
@@ -28,7 +29,7 @@ export default function AssessmentListPage() {
   // FETCH PROGRESS
   // ─────────────────────────────
   const { data: progress } = useQuery({
-    queryKey: ['assessment-progress'],
+    queryKey: queryKeys.assessments.progress.user(),
     queryFn: assessmentApi.getUserAssessmentProgress
   });
 

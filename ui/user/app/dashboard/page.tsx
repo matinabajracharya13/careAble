@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, Progress } from '@/components/ui/ui-components';
 import { useAuth } from '@/context/AuthContext';
 import { assessmentApi, statsApi } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -31,12 +32,12 @@ import React, { useMemo } from 'react';
 // ── Career Dashboard ──────────────────────────────────────────────────────────
 function CareerDashboard({ user }: { user: NonNullable<ReturnType<typeof useAuth>['user']> }) {
   const { data: assessments, isLoading } = useQuery({
-    queryKey: ['assessments'],
+    queryKey: queryKeys.assessments.all,
     queryFn: assessmentApi.getAssessments
   });
 
   const { data: stats, isLoading: isStatLoading } = useQuery({
-    queryKey: ['stats'],
+    queryKey: queryKeys.dashboard.stats,
     queryFn: statsApi.getStats,
     refetchOnMount: true
   });

@@ -43,9 +43,8 @@ const SECTION_ICONS: Record<string, any> = {
 export default function CandidateProfilePage() {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState<Tab>('profile');
-  console.log('Candidate ID from URL:', id);
   const { data, isLoading } = useQuery({
-    queryKey: ['candidate', id],
+    queryKey: queryKeys.candidate.detail(id),
     queryFn: () => candidatesApi.getCandidateById(id as string)
   });
 
@@ -56,11 +55,9 @@ export default function CandidateProfilePage() {
       </div>
     );
   }
-  console.log('Candidate Data:', data);
   const candidate = data;
 
   const heatmapData = candidate?.dashboard_stats || [];
-  console.log('Heatmap Data:', heatmapData);
 
   if (!candidate) {
     return <div className='min-h-screen flex items-center justify-center text-muted-foreground'>Candidate not found</div>;
