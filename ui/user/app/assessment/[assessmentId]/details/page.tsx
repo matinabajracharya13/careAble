@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/ui-components';
 import { Loader2, Award, RotateCcw, Play } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
+import { queryKeys } from '@/lib/query-keys';
 
 export default function AttemptDetailPage() {
   const params = useParams();
@@ -14,7 +15,7 @@ export default function AttemptDetailPage() {
   const assessmentId = Number(params.assessmentId);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['attempt-detail', assessmentId],
+    queryKey: queryKeys.assessments.attemptDetail(assessmentId),
     queryFn: () => assessmentApi.getAttemptDetail(assessmentId)
   });
 

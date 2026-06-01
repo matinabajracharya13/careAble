@@ -6,8 +6,9 @@ import { toast } from '@/components/ui/toast';
 import { Badge, Card, CardContent } from '@/components/ui/ui-components';
 import { UserRole } from '@/config/role';
 import { assessmentApi } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import { Assessment, AssessmentTopic } from '@/types';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Loader, Send } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -19,14 +20,15 @@ export default function TopicStepperAssessment() {
   const id = params.assessmentId as string;
   const attemptID = params.attemptId as string;
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { data: assessment, isLoading } = useQuery({
-    queryKey: ['assessment', id],
+    queryKey: queryKeys.assessments.detail(id),
     queryFn: () => assessmentApi.getAssessment(id)
   });
 
   const { data: progress } = useQuery({
-    queryKey: ['assessment-progress', attemptID],
+    queryKey: queryKeys.assessments.progress.attempt(attemptID),
     queryFn: () => assessmentApi.getProgress(id, attemptID),
     refetchOnMount: true
   });
@@ -57,6 +59,17 @@ export default function TopicStepperAssessment() {
         title: 'Progress saved',
         description: 'You can continue later.'
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.assessments.all
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.users.all
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.dashboard.root
+      });
     }
   });
 
@@ -65,10 +78,25 @@ export default function TopicStepperAssessment() {
       assessmentApi.submitAssessment(id, attemptID, {
         answers
       }),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: 'Assessment submitted',
         description: 'Your competency profile has been updated.'
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['assessment', id]
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ['dashboard']
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ['user-profile']
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ['analytics']
       });
 
       router.push('/dashboard');

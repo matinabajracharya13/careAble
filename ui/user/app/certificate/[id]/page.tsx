@@ -14,6 +14,7 @@ import { useParams } from 'next/navigation';
 import { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { queryKeys } from '@/lib/query-keys';
 
 // ── Certificate visual ────────────────────────────────────────────────────────
 function CertificateCard({ cert, isCapturing = false }: { cert: any; isCapturing?: boolean }) {
@@ -143,10 +144,9 @@ export default function CertificatePage() {
   const [isCapturing, setIsCapturing] = useState(false);
 
   const { data: cert, isLoading } = useQuery({
-    queryKey: ['certificate', certId],
+    queryKey: queryKeys.certificates.detail(certId),
     queryFn: () => certificateApi.getCertificateByCode(certId)
   });
-
   // ── PDF download ────────────────────────────────────────────────────────────
   const handleDownloadPdf = async () => {
     if (!printRef.current) return;

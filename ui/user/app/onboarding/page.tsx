@@ -13,6 +13,7 @@ import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import type { OnboardingCategory, OnboardingQuestion, OnboardingResponse } from '@/types';
 import { DEFAULT_SIGNUP_ROLE } from '@/constants/roles';
+import { queryKeys } from '@/lib/query-keys';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   Briefcase,
@@ -177,13 +178,11 @@ export default function OnboardingPage() {
   const [responses, setResponses] = useState<Record<string, string | string[] | number>>({});
 
   const { data: categories, isLoading } = useQuery({
-    queryKey: ['onboarding-categories'],
+    queryKey: queryKeys.onboarding.categories,
     queryFn: onboardingApi.getCategories,
     enabled: !!user,
-    retry: false,
-   
+    retry: false
   });
-
   const submitMutation = useMutation({
     mutationFn: onboardingApi.submitResponses,
     onSuccess: () => {
