@@ -83,6 +83,8 @@ export const getDashboardStats = async (userId: number) => {
 export const getLatestAttempts = async (userId: number) => {
   return db('assessment_attempts as aa')
     .where('aa.user_id', userId)
+    .whereNotNull('aa.submitted_at')
+
     .whereRaw(
       `
       aa.attempt_id = (
@@ -100,9 +102,9 @@ export const getLatestAttempts = async (userId: number) => {
 
 export const getHeatmapData = async (userId: number) => {
   const latestAttempts = await getLatestAttempts(userId);
-
   const attemptIds = latestAttempts.map((a) => a.attempt_id);
   if (!attemptIds.length) return [];
+  console.log(attemptIds);
 
   const rows = await db('domain_scores as ds')
     // topic → domain mapping
@@ -115,6 +117,8 @@ export const getHeatmapData = async (userId: number) => {
 
     .select('d.domain_id as domain_id', 'd.name as title', db.raw('AVG(ds.score) as score'))
     .groupBy('d.domain_id', 'd.name');
+
+  console.log(rows);
 
   return rows.map((r) => ({
     id: r.domain_id,
