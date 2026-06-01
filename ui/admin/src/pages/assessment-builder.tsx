@@ -25,10 +25,10 @@ export function AssessmentBuilderPage() {
   const [activeTopicId, setActiveTopicId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (topics.length > 0 && !activeTopicId) {
+    if (topics?.length > 0 && !activeTopicId) {
       setActiveTopicId(topics[0].assessment_topic_id);
     }
-  }, [topics, activeTopicId]);
+  }, [topics]);
 
   // =====================================================
   // FETCH QUESTIONS
@@ -45,18 +45,15 @@ export function AssessmentBuilderPage() {
   const [questionsState, setQuestionsState] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!questions?.length) {
-      setQuestionsState([]);
+    if (questions?.length === 0) {
       return;
     }
 
     setQuestionsState((prev) => {
-      const prevString = JSON.stringify(prev);
-      const nextString = JSON.stringify(questions);
+      const prevStr = JSON.stringify(prev);
+      const nextStr = JSON.stringify(questions);
 
-      if (prevString === nextString) {
-        return prev;
-      }
+      if (prevStr === nextStr) return prev;
 
       return questions;
     });

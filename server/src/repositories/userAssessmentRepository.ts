@@ -29,7 +29,6 @@ export const findUserAssessments = async (userId: number) => {
       [userId]
     )
     .as('latest_attempt');
-  console.log('latestAttempts', latestAttempts.toQuery());
   // 3. certificate join
   const certificates = db('certificates as c').select('c.attempt_id', 'c.certificate_code').as('cert');
 
@@ -38,21 +37,26 @@ export const findUserAssessments = async (userId: number) => {
     .leftJoin(latestAttempts, 'a.assessment_id', 'latest_attempt.assessment_id')
     .leftJoin(attemptScores, 'latest_attempt.attempt_id', 'attempt_scores.attempt_id')
     .leftJoin(certificates, 'latest_attempt.attempt_id', 'cert.attempt_id')
+    .where(function () {
+      this.where('a.is_active', 1).orWhereNotNull('cert.certificate_code');
+    })
     .select(
       'a.assessment_id as id',
       'a.title',
-      'latest_attempt.attempt_id as attemptId', // ✅ IMPORTANT
+      'latest_attempt.attempt_id as attemptId',
 
       db.raw('COALESCE(attempt_scores.total_score, NULL) as score'),
       'latest_attempt.submitted_at as completedAt',
       'cert.certificate_code as certificateCode',
+
       db.raw(`
-        CASE
-          WHEN latest_attempt.attempt_id IS NULL THEN 'available'
-          WHEN latest_attempt.attempt_status = 'in_progress' THEN 'in_progress'
-          ELSE 'completed'
-        END as status
-      `)
+      CASE
+        WHEN latest_attempt.attempt_id IS NULL THEN 'available'
+        WHEN latest_attempt.attempt_status = 'in_progress' THEN 'in_progress'
+        WHEN cert.certificate_code IS NOT NULL THEN 'completed'
+        ELSE 'completed'
+      END as status
+    `)
     );
 };
 

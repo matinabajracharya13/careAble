@@ -1,124 +1,126 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
 import { Brain, ChevronRight, Pencil, Plus, Trash2, Check, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 
-import { useCreateAssessmentTopic, useUpdateAssessmentTopic } from '@/hooks/use-assessment';
+import { useCreateAssessmentTopic } from '@/hooks/use-assessment';
+import { useCompetencyDomains } from '@/hooks/use-competency';
 
 export function AssessmentTopicSidebar({ topics, activeTopicId, onSelect, assessmentId }: any) {
-  const [editingId, setEditingId] = useState<number | null>(null);
-
+  const [editingId, setEditingId] = useState<number | string | null>(null);
   const [localTopics, setLocalTopics] = useState<any[]>([]);
+  const [selectedDomains, setSelectedDomains] = useState<Record<string, number[]>>({});
 
   const createTopic = useCreateAssessmentTopic();
-  const updateTopicApi = useUpdateAssessmentTopic();
-  // const deleteTopicApi = useDeleteAssessmentTopic();
 
-  // =========================
-  // SYNC SERVER
-  // =========================
+  const { data: domainData } = useCompetencyDomains();
+  const domains = domainData?.data ?? [];
+
+  // ======================================================
+  // SYNC TOPICS FROM SERVER
+  // ======================================================
   useEffect(() => {
-    setLocalTopics(topics || []);
+    if (!topics?.length) return;
+
+    setLocalTopics(topics);
+
+    // hydrate selected domains from backend
+    const mapped: Record<string, number[]> = {};
+
+    for (const t of topics) {
+      mapped[t.assessment_topic_id] = t.domains?.map((d: any) => d.domain_id) || [];
+    }
+
+    setSelectedDomains(mapped);
   }, [topics]);
 
-  // =========================
-  // ADD LOCAL DRAFT
-  // =========================
+  // ======================================================
+  // ADD TOPIC
+  // ======================================================
   const addTopic = () => {
+    const draftId = `draft-${Date.now()}`;
+
     const draft = {
-      assessment_topic_id: `draft-${Date.now()}`,
+      assessment_topic_id: draftId,
       title: '',
       code: '',
-      isDraft: true
+      isDraft: true,
+      domains: []
     };
 
     setLocalTopics((prev) => [...prev, draft]);
-
-    setEditingId(Number(draft?.assessment_topic_id));
+    setEditingId(draftId);
+    setSelectedDomains((prev) => ({ ...prev, [draftId]: [] }));
   };
 
-  // =========================
-  // UPDATE LOCAL
-  // =========================
+  // ======================================================
+  // UPDATE FIELD
+  // ======================================================
   const updateTopicField = (id: any, field: string, value: string) => {
     setLocalTopics((prev) => prev.map((t) => (t.assessment_topic_id === id ? { ...t, [field]: value } : t)));
   };
 
-  // =========================
+  // ======================================================
+  // TOGGLE DOMAIN
+  // ======================================================
+  const toggleDomain = (topicId: any, domainId: number) => {
+    setSelectedDomains((prev) => {
+      const current = prev[topicId] || [];
+
+      return {
+        ...prev,
+        [topicId]: current.includes(domainId) ? current.filter((d) => d !== domainId) : [...current, domainId]
+      };
+    });
+  };
+
+  // ======================================================
   // SAVE TOPIC
-  // =========================
+  // ======================================================
   const saveTopic = async (topic: any) => {
     if (!topic.title.trim()) return;
 
+    const domain_ids = selectedDomains[topic.assessment_topic_id] || [];
+
     try {
-      // =========================
-      // CREATE
-      // =========================
-      if (topic.isDraft) {
-        const response = await createTopic.mutateAsync({
-          assessment_id: assessmentId,
-          title: topic.title,
-          code: topic.code
-        });
+      const response = await createTopic.mutateAsync({
+        assessment_id: assessmentId,
+        title: topic.title,
+        code: topic.code,
+        domain_ids
+      });
 
-        const newTopicId = response?.data?.topic_id;
+      const newId = response?.data?.assessment_topic_id;
 
-        // replace draft with saved topic
-        setLocalTopics((prev) =>
-          prev.map((t) =>
-            t.assessment_topic_id === topic.assessment_topic_id
-              ? {
-                  ...t,
-                  assessment_topic_id: newTopicId,
-                  isDraft: false
-                }
-              : t
-          )
-        );
+      // replace draft id
+      setLocalTopics((prev) =>
+        prev.map((t) => (t.assessment_topic_id === topic.assessment_topic_id ? { ...t, assessment_topic_id: newId, isDraft: false } : t))
+      );
 
-        // auto select new topic
-        onSelect(newTopicId);
-      }
-
-      // =========================
-      // UPDATE
-      // =========================
-      else {
-        return;
-        // await updateTopicApi.mutateAsync({
-        //   id: topic.assessment_topic_id,
-        //   assessment_id: assessmentId,
-        //   title: topic.title,
-        //   code: topic.code
-        // });
-      }
+      // move selected domains
+      setSelectedDomains((prev) => {
+        const copy = { ...prev };
+        copy[newId] = copy[topic.assessment_topic_id] || [];
+        delete copy[topic.assessment_topic_id];
+        return copy;
+      });
 
       setEditingId(null);
-    } catch (error) {
-      console.error(error);
+      onSelect(newId);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  // =========================
-  // DELETE
-  // =========================
-  const deleteTopic = async (topic: any) => {
-    // remove local draft only
-    if (topic.isDraft) {
-      setLocalTopics((prev) => prev.filter((t) => t.assessment_topic_id !== topic.assessment_topic_id));
-
-      return;
-    }
-
-    // // remove DB topic
-    // await deleteTopicApi.mutateAsync({
-    //   id: topic.assessment_topic_id,
-    //   assessment_id: assessmentId
-    // });
+  // ======================================================
+  // DELETE TOPIC (LOCAL ONLY)
+  // ======================================================
+  const deleteTopic = (topic: any) => {
+    setLocalTopics((prev) => prev.filter((t) => t.assessment_topic_id !== topic.assessment_topic_id));
   };
 
   return (
@@ -127,7 +129,6 @@ export function AssessmentTopicSidebar({ topics, activeTopicId, onSelect, assess
       <div className='p-4 border-b flex items-center justify-between'>
         <div>
           <h2 className='font-semibold'>Assessment Topics</h2>
-
           <p className='text-xs text-muted-foreground'>Organize questions by topic</p>
         </div>
 
@@ -140,17 +141,18 @@ export function AssessmentTopicSidebar({ topics, activeTopicId, onSelect, assess
         </Button>
       </div>
 
-      {/* TOPICS */}
+      {/* LIST */}
       <div className='flex-1 overflow-auto p-2 space-y-2'>
         {localTopics.map((topic: any) => {
           const active = activeTopicId === topic.assessment_topic_id;
-
           const editing = editingId === topic.assessment_topic_id;
+
+          const selected = selectedDomains[topic.assessment_topic_id] || topic.domains?.map((d: any) => d.domain_id) || [];
 
           return (
             <div
               key={topic.assessment_topic_id}
-              className={`rounded-xl border p-3 transition-all ${active ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}
+              className={`rounded-xl border p-3 ${active ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}
             >
               <div className='flex justify-between gap-2'>
                 {/* LEFT */}
@@ -162,28 +164,57 @@ export function AssessmentTopicSidebar({ topics, activeTopicId, onSelect, assess
                   <div className='flex-1 space-y-2'>
                     {editing ? (
                       <>
-                        {/* TITLE */}
                         <Input
                           placeholder='Topic title'
                           value={topic.title}
                           onChange={(e) => updateTopicField(topic.assessment_topic_id, 'title', e.target.value)}
                         />
 
-                        {/* CODE */}
                         <Input
-                          placeholder='code (e.g. social)'
+                          placeholder='Code'
                           value={topic.code}
                           onChange={(e) => updateTopicField(topic.assessment_topic_id, 'code', e.target.value)}
                         />
+
+                        {/* DOMAIN SELECT */}
+                        <div className='flex flex-wrap gap-2 pt-1'>
+                          {domains.map((d: any) => {
+                            const isActive = selected.includes(d.domain_id);
+
+                            return (
+                              <Badge
+                                key={d.domain_id}
+                                onClick={() => toggleDomain(topic.assessment_topic_id, d.domain_id)}
+                                className={`cursor-pointer ${isActive ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}
+                              >
+                                {d.name}
+                              </Badge>
+                            );
+                          })}
+                        </div>
                       </>
                     ) : (
                       <div
-                        className='cursor-pointer'
                         onClick={() => onSelect(topic.assessment_topic_id)}
+                        className='cursor-pointer'
                       >
                         <p className='font-medium text-sm'>{topic.title}</p>
-
                         <p className='text-xs text-muted-foreground'>{topic.code || 'No code'}</p>
+
+                        <div className='flex flex-wrap gap-1 mt-2'>
+                          {selected.map((id: number) => {
+                            const d = domains.find((x: any) => x.domain_id === id);
+
+                            return (
+                              <Badge
+                                key={id}
+                                variant='secondary'
+                              >
+                                {d?.name}
+                              </Badge>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -193,7 +224,6 @@ export function AssessmentTopicSidebar({ topics, activeTopicId, onSelect, assess
                 <div className='flex gap-1'>
                   {editing ? (
                     <>
-                      {/* SAVE */}
                       <Button
                         size='icon'
                         variant='ghost'
@@ -202,24 +232,16 @@ export function AssessmentTopicSidebar({ topics, activeTopicId, onSelect, assess
                         <Check className='h-4 w-4 text-green-600' />
                       </Button>
 
-                      {/* CANCEL */}
                       <Button
                         size='icon'
                         variant='ghost'
-                        onClick={() => {
-                          if (topic.isDraft) {
-                            setLocalTopics((prev) => prev.filter((t) => t.assessment_topic_id !== topic.assessment_topic_id));
-                          }
-
-                          setEditingId(null);
-                        }}
+                        onClick={() => setEditingId(null)}
                       >
                         <X className='h-4 w-4' />
                       </Button>
                     </>
                   ) : (
                     <>
-                      {/* EDIT */}
                       <Button
                         size='icon'
                         variant='ghost'
@@ -228,7 +250,6 @@ export function AssessmentTopicSidebar({ topics, activeTopicId, onSelect, assess
                         <Pencil className='h-3 w-3' />
                       </Button>
 
-                      {/* DELETE */}
                       <Button
                         size='icon'
                         variant='ghost'
