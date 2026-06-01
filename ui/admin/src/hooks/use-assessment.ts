@@ -152,6 +152,12 @@ export function useUpdateAssessmentTopic() {
   });
 }
 
+export function useUpdateAssessment() {
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => put<ApiResponse>(`/admin/assessments/${id}`, data)
+  });
+}
+
 // ======================================================
 // DELETE TOPIC
 // ======================================================

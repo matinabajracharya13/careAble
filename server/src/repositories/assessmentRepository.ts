@@ -3,20 +3,29 @@ import db from '@/db';
 // ─────────────────────────────────────────────
 // BASIC CRUD
 // ─────────────────────────────────────────────
-export const findAllAssessments = () => {
+
+const baseAssessmentQuery = () => {
   return db('assessments as a')
     .leftJoin('assessment_topics as t', 'a.assessment_id', 't.assessment_id')
-    .leftJoin('assessment_questions as q', 't.assessment_topic_id', 'q.assessment_topic_id')
+    .leftJoin('assessment_questions as q', 't.assessment_topic_id', 'q.assessment_topic_id');
+};
+const selectAssessmentFields = (query: any) => {
+  return query
     .groupBy('a.assessment_id')
-    .select(
-      'a.assessment_id',
-      'a.title',
-      'a.domain',
-      'a.is_active',
-      'a.version',
-      'a.description' // keep only what you need
-    )
+    .select('a.assessment_id', 'a.title', 'a.domain', 'a.is_active', 'a.version', 'a.description')
     .count('q.assessment_topic_id as totalQuestions');
+};
+export const findAllAssessments = (options?: { isAdmin?: boolean }) => {
+  let query = baseAssessmentQuery();
+
+  // ======================================================
+  // ROLE FILTER
+  // ======================================================
+  if (!options?.isAdmin) {
+    query = query.where('a.is_active', 1);
+  }
+
+  return selectAssessmentFields(query);
 };
 
 export const findAssessmentById = async (id: number) => {
@@ -40,6 +49,15 @@ export const deleteAssessmentById = (id: number) => {
 // ─────────────────────────────────────────────
 export const findTopicsByAssessment = (assessmentId: number) => {
   return db('assessment_topics').where('assessment_id', assessmentId).orderBy('display_order');
+};
+
+export const findTopicsWithDomainByAssessment = (assessmentId: number) => {
+  return db('assessment_topics as at')
+    .leftJoin('assessment_topic_competency_domains as atcd', 'atcd.assessment_topic_id', 'at.assessment_topic_id')
+    .leftJoin('competency_domains as cd', 'cd.domain_id', 'atcd.domain_id')
+    .where('at.assessment_id', assessmentId)
+    .select('at.assessment_topic_id', 'at.title', 'at.code', 'at.display_order', 'cd.domain_id', 'cd.name as domain_name')
+    .orderBy('at.display_order', 'asc');
 };
 
 export const findQuestionsByTopicIds = (topicIds: number[]) => {
@@ -219,8 +237,28 @@ export const deleteAssessmentProgress = async (userId: number, assessmentId: num
 };
 
 export const inserAssessmentTopic = async (data: any) => {
-  const [topicId] = await db('assessment_topics').insert(data);
-  return topicId;
+  return await db.transaction(async (trx) => {
+    const { domain_ids, ...topicData } = data;
+
+    // ======================================================
+    // 1. INSERT TOPIC
+    // ======================================================
+    const [topicId] = await trx('assessment_topics').insert(topicData);
+
+    // ======================================================
+    // 2. INSERT DOMAIN MAPPINGS (if any)
+    // ======================================================
+    if (Array.isArray(domain_ids) && domain_ids.length) {
+      const mappings = domain_ids.map((domainId: number) => ({
+        assessment_topic_id: topicId,
+        domain_id: domainId
+      }));
+
+      await trx('assessment_topic_competency_domains').insert(mappings);
+    }
+
+    return topicId;
+  });
 };
 
 // ======================================================

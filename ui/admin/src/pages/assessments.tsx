@@ -1,11 +1,11 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Activity, MoreHorizontal, Pencil, Plus, Search, Trash2, Eye, Layers3 } from 'lucide-react';
+import { Activity, Check, Eye, MoreHorizontal, Plus, Search, Trash2 } from 'lucide-react';
 
-import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,8 +31,9 @@ import { Textarea } from '@/components/ui/textarea';
 
 import { useUIStore } from '@/store/ui-store';
 
-import { useAssessments, useCreateAssessment } from '@/hooks/use-assessment';
+import { assessmentKeys, useAssessments, useCreateAssessment, useUpdateAssessment } from '@/hooks/use-assessment';
 
+import { queryClient } from '@/lib/query-client';
 import { createAssessmentSchema, type CreateAssessmentFormValues } from '@/lib/validations';
 
 export function AssessmentsPage() {
@@ -57,6 +58,7 @@ export function AssessmentsPage() {
   // ======================================================
 
   const createAssessment = useCreateAssessment();
+  const updateAssessment = useUpdateAssessment();
 
   // ======================================================
   // FORM
@@ -74,7 +76,24 @@ export function AssessmentsPage() {
       is_active: true
     }
   });
+  const handleToggleActive = async (assessment: any) => {
+    try {
+      await updateAssessment.mutateAsync({ id: assessment.assessment_id, data: { is_active: assessment.is_active === 1 ? 0 : 1 } });
 
+      addToast({
+        title: assessment.is_active ? 'Assessment deactivated' : 'Assessment published',
+        variant: 'success'
+      });
+
+      // invalidate list
+      queryClient.invalidateQueries({ queryKey: assessmentKeys.lists() });
+    } catch (e) {
+      addToast({
+        title: 'Error updating status',
+        variant: 'destructive'
+      });
+    }
+  };
   // ======================================================
   // CREATE
   // ======================================================
@@ -210,6 +229,7 @@ export function AssessmentsPage() {
                       <tr
                         key={assessment.assessment_id}
                         className='hover:bg-muted/30 transition'
+                        onClick={() => navigate(`/assessments/${assessment.assessment_id}`)}
                       >
                         {/* TITLE */}
                         <td className='px-6 py-4'>
@@ -262,9 +282,12 @@ export function AssessmentsPage() {
                                 Open Builder
                               </DropdownMenuItem>
 
-                              <DropdownMenuItem className='gap-2'>
-                                <Pencil className='h-4 w-4' />
-                                Edit
+                              <DropdownMenuItem
+                                className='gap-2'
+                                onClick={() => handleToggleActive(assessment)}
+                              >
+                                <Check className='h-4 w-4' />
+                                {assessment.is_active ? 'Mark as Inactive' : 'Mark as Active'}
                               </DropdownMenuItem>
 
                               <DropdownMenuSeparator />

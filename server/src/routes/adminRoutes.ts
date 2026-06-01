@@ -7,7 +7,8 @@ import {
   getAllAssessments,
   getAssessmentQuestionTopicByID,
   getAssessmentTopics,
-  saveQuestionsController
+  saveQuestionsController,
+  updateAssessment
 } from '@/controllers/admin/assessmentController';
 import { getCurrentUser, login } from '@/controllers/admin/authController';
 import * as DashboardController from '@/controllers/admin/dashboardController';
@@ -16,6 +17,7 @@ import { addRole, getAllRoles } from '@/controllers/admin/rolesController';
 import { candidateProfile } from '@/controllers/candidateController';
 import { getUsers } from '@/controllers/userController';
 import { authenticate } from '@/middleware/authenticate';
+import { getAllCompetencyDomain } from '@/controllers/admin/competencyDomainController';
 
 const router = Router();
 
@@ -28,12 +30,14 @@ router.get('/roles', getAllRoles);
 router.post('/roles', addRole);
 router.get('/assessments', getAllAssessments);
 router.post('/assessments', createAssessment);
-router.post('/assessments', createAssessment);
+router.put('/assessments/:assessmentId', updateAssessment);
+
 router.post('/analytics', getAnalytics);
 router.get('/users', getUsers);
 router.get('/dashboard', DashboardController.getDashboard);
 router.get('/users/:userId', candidateProfile);
 router.get('/onboarding', getAllOnBoarding);
+router.get('/competancy-domain', getAllCompetencyDomain);
 
 router.get('/onboarding/:roleId/categories', getAllOnboardingCategories);
 router.get('/onboarding/questions/:category_id', getAllOnboardingQuestions);
