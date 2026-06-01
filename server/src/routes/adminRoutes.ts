@@ -11,7 +11,7 @@ import {
 } from '@/controllers/admin/assessmentController';
 import { getCurrentUser, login } from '@/controllers/admin/authController';
 import * as DashboardController from '@/controllers/admin/dashboardController';
-import { getAllOnboardingCategories, getAllOnboardingQuestions } from '@/controllers/admin/onboardingController';
+import { getAllOnBoarding, getAllOnboardingCategories, getAllOnboardingQuestions } from '@/controllers/admin/onboardingController';
 import { addRole, getAllRoles } from '@/controllers/admin/rolesController';
 import { candidateProfile } from '@/controllers/candidateController';
 import { getUsers } from '@/controllers/userController';
@@ -33,7 +33,9 @@ router.post('/analytics', getAnalytics);
 router.get('/users', getUsers);
 router.get('/dashboard', DashboardController.getDashboard);
 router.get('/users/:userId', candidateProfile);
-router.get('/onboarding/categories', getAllOnboardingCategories);
+router.get('/onboarding', getAllOnBoarding);
+
+router.get('/onboarding/:roleId/categories', getAllOnboardingCategories);
 router.get('/onboarding/questions/:category_id', getAllOnboardingQuestions);
 router.get('/assessments/:assessmentId/topics', getAssessmentTopics);
 router.post('/assessments/:assessmentId/topics', createAssessmentTopic);

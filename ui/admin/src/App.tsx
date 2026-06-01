@@ -14,10 +14,11 @@ import AnalyticsPage from './pages/analytics';
 import { AssessmentBuilderPage } from './pages/assessment-builder';
 import { AssessmentsPage } from './pages/assessments';
 import { MessagesPage } from './pages/messages';
-import { OnboardingPage } from './pages/onboarding';
 import { RolesPage } from './pages/roles';
 import UserDetailPage from './pages/user-details';
 import { VerifyCertificatePage } from './pages/verify-certificate';
+import { OnboardingPage } from './pages/onboarding';
+import { OnboardingBuilderPage } from './pages/onboarding-builder';
 
 export default function App() {
   return (
@@ -52,6 +53,10 @@ export default function App() {
               <Route
                 path='/onboarding'
                 element={<OnboardingPage />}
+              />
+              <Route
+                path='/onboarding/:id'
+                element={<OnboardingBuilderPage />}
               />
               <Route
                 path='/assessments'
