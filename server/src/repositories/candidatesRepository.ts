@@ -106,13 +106,6 @@ export const getUserDetail = async (userId: number) => {
 };
 
 export const getCandidateProfile = async (userId: number, profile: any) => {
-  // ─────────────────────────────────────────────
-  // 1. User profile
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
-  // 2. Latest assessment attempts
-  // ─────────────────────────────────────────────
   const latestAttempts = db('assessment_attempts as aa')
     .select('aa.assessment_id', 'aa.attempt_id', 'aa.submitted_at')
     .where('aa.user_id', userId)
