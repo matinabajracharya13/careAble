@@ -15,7 +15,7 @@ export function LivePreview({ questions }: any) {
                 {i + 1}. {q.question_text}
               </p>
 
-              {q.is_required && <p className='text-xs text-red-500'>* Required</p>}
+              {q.is_required === 1 && <p className='text-xs text-red-500'>* Required</p>}
             </div>
 
             {/* RADIO */}

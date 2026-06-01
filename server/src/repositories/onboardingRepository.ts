@@ -1,6 +1,20 @@
 import db from '@/db';
 import { OnboardingAnswer } from '@/types';
 
+export const getOnboardingRoles = async () => {
+  return db('onboarding_category_roles as orc')
+    .join('roles as r', 'r.role_id', 'orc.role_id')
+    .join('onboarding_categories as oc', 'oc.category_id', 'orc.category_id')
+    .leftJoin('onboarding_questions as oq', 'oq.category_id', 'oc.category_id')
+    .groupBy('r.role_id', 'r.role_name')
+    .select(
+      'r.role_id',
+      'r.role_name',
+      db.raw('COUNT(DISTINCT oc.category_id) as category_count'),
+      db.raw('COUNT(DISTINCT oq.question_id) as question_count')
+    );
+};
+
 export const getAllOnboardingQuestions = async (role: string) => {
   return (
     db('onboarding_categories as c')
@@ -52,16 +66,22 @@ export const updateOnboardingCompletionStatus = async (userId: number, status: b
     updated_at: db.fn.now()
   });
 };
-
-export const findCategories = async () => {
+export const findCategories = async (roleId?: number) => {
   try {
-    const categories = await db('onboarding_categories').select('*').orderBy('display_order', 'asc');
+    if (!roleId) return []; // ✅ prevents knex crash
+
+    const categories = await db('onboarding_categories as oc')
+      .join('onboarding_category_roles as orc', 'orc.category_id', 'oc.category_id')
+      .where('orc.role_id', roleId)
+      .select('oc.category_id', 'oc.title', 'oc.description', 'oc.display_order')
+      .orderBy('oc.display_order', 'asc');
     return categories;
   } catch (error) {
-    console.error('Error fetching categories:', error);
-    throw error;
+    console.error('Error fetching categories by role:', error);
+    return []; // ✅ always return empty list instead of throwing
   }
 };
+
 export const findAllOnboardingQuestions = async (category_id: number) => {
   const questions = await db('onboarding_questions as q')
     .leftJoin('question_options as o', 'o.question_id', 'q.question_id')

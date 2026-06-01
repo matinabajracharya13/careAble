@@ -113,3 +113,9 @@ export const createAssessmentSchema = z.object({
 // ======================================================
 
 export type CreateAssessmentFormValues = z.infer<typeof createAssessmentSchema>;
+
+export const createOnboardingSchema = z.object({
+  role_id: z.coerce.number().min(1, 'Role is required')
+});
+
+export type CreateOnboardingFormValues = z.infer<typeof createOnboardingSchema>;

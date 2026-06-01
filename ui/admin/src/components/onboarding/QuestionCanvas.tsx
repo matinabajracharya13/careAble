@@ -133,7 +133,7 @@ export function QuestionCanvas({ questions, setQuestions }: any) {
 
                       <span className='px-2 py-1 bg-muted rounded'>{q.input_type}</span>
 
-                      {q.is_required && <span className='px-2 py-1 bg-red-100 text-red-600 rounded'>required</span>}
+                      {q.is_required === 1 && <span className='px-2 py-1 bg-red-100 text-red-600 rounded'>required</span>}
                     </div>
                   </div>
 
