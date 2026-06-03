@@ -126,7 +126,7 @@ export default function AttemptDetailPage() {
 
                 return (
                   <div
-                    key={d.domain_score_id}
+                    key={d?.domain_score_id}
                     className='space-y-1'
                   >
                     <div className='flex justify-between text-sm'>

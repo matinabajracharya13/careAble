@@ -10,7 +10,7 @@ export function formatDate(dateString: string): string {
     day: '2-digit',
     month: 'long',
     year: 'numeric'
-  })?.format(new Date(dateString));
+  }).format(new Date(dateString));
 }
 
 export function formatScore(score: number): string {

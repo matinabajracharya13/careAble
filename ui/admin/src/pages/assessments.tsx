@@ -229,7 +229,6 @@ export function AssessmentsPage() {
                       <tr
                         key={assessment.assessment_id}
                         className='hover:bg-muted/30 transition'
-                        onClick={() => navigate(`/assessments/${assessment.assessment_id}`)}
                       >
                         {/* TITLE */}
                         <td className='px-6 py-4'>
