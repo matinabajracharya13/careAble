@@ -488,7 +488,7 @@ export default function SignupPage() {
                       </p>
 
                       <p className='text-xs text-muted-foreground'>
-                        Optional. Helps improve
+                        Required. Helps improve
                         support services and
                         platform insights.
                       </p>

@@ -8,7 +8,7 @@ const userResponse = (user: any) => {
     name: `${first_name} ${last_name}`,
     email,
     phone,
-    dob,
+    date_of_birth:user.date_of_birth,
     postcode,
     role,
     created_at,

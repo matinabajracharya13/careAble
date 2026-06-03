@@ -118,7 +118,7 @@ export default function LoginPage() {
             <p className="text-center text-sm text-muted-foreground">
               Don't have an account?{" "}
               <Link href="/signup" className="text-primary font-medium hover:underline">
-                Create one free
+                Create an account.
               </Link>
             </p>
           </CardContent>

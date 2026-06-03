@@ -78,11 +78,9 @@ export default function TopicStepperAssessment() {
       assessmentApi.submitAssessment(id, attemptID, {
         answers
       }),
-    onSuccess: async () => {
-      toast({
-        title: 'Assessment submitted',
-        description: 'Your competency profile has been updated.'
-      });
+    onSuccess: async (data:any) => {
+      console.log(data)
+    
       await queryClient.invalidateQueries({
         queryKey: ['assessment', id]
       });
@@ -98,8 +96,21 @@ export default function TopicStepperAssessment() {
       await queryClient.invalidateQueries({
         queryKey: ['analytics']
       });
+      if(data?.certificate){
+          toast({
+        title: 'Assessment submitted',
+        description: 'Your competency profile has been updated.'
+      });
+        router.push(`/certificate/${data?.certificate?.certificate_code}`);
+        return
+      }
+        toast({
+        title: 'Assessment submitted, failed to generate certificate',
+        description: 'Redirecting to dashbaord.'
+      });
+              router.push(`/dashboard`);
 
-      router.push('/dashboard');
+
     },
     onError: () => {
       toast({
